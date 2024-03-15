@@ -14,7 +14,7 @@ export default defineConfig({
         modules: { scopeBehaviour: 'global', },
     },
     input: 'src/index.ts',
-    base: '/waku-chat-vue/',
+    base: '/waku-chat-vue-plugin/',
     resolve: {
         preserveSymlinks: true,
     },
@@ -22,7 +22,7 @@ export default defineConfig({
         lib: {
             entry: resolve(__dirname, './src/index.ts'),
             name: 'ChatComponent',
-            fileName: 'waku-chat-vue',
+            fileName: 'waku-chat-vue-plugin',
         },
         rollupOptions: {
             external: ['vue'],

@@ -1,7 +1,7 @@
 import { Message, Participant } from "../types/ChatTypes";
 import { ref, inject } from "vue";
 import * as protobuf from "protobufjs";
-import { LightNode, Encoder, Decoder, IFilterSubscription } from "@waku/sdk";
+import { LightNode, Encoder, Decoder, IFilterSubscription, PageDirection } from "@waku/sdk";
 import { changeTopic } from "../plugins/vue-waku";
 import { ChatComponentOptions } from "../types/ChatTypes";
 
@@ -32,7 +32,35 @@ const chatState = ref<{
 
 let sendMessageToServer = async (msg: Message) => { console.log(msg) };
 
-const myInfo = ref<Participant>({ id: "", name: "User" });
+const myInfo = ref<Participant>({ id: "", name: "" });
+
+const retrieveMessages = async (_channel: string, _topic: string, callback: (msg: any) => void) => {
+
+    if (!wakuData.lightNode || !wakuData.ChatDecoder || !wakuData.ChatInterface) return;
+    const topic = _topic.toLowerCase().replace(/\s/g, '');
+    const channel = _channel.toLowerCase().replace(/\s/g, '');
+
+    // Choose a content topic
+    const contentTopic = `/${channel}/1/${topic}/proto`;
+
+    // Get the time frame
+    const endTime = new Date();
+    const startTime = new Date();
+    startTime.setMilliseconds(endTime.getMilliseconds() - (24 * 60 * 60 * 1000));
+
+    // Retrieve a week of messages
+    const queryOptions: any = {
+        timeFilter: {
+            startTime,
+            endTime,
+        },
+        contentTopic,
+        pageDirection: PageDirection.BACKWARD,
+    };
+
+    await wakuData.lightNode.store.queryWithOrderedCallback([wakuData.ChatDecoder], callback, queryOptions);
+
+}
 
 export const setRoom = async (_room: string) => {
     if (!wakuData.lightNode) return
@@ -43,11 +71,13 @@ export const setRoom = async (_room: string) => {
     wakuData.ChatEncoder = encoder as Encoder;
     wakuData.ChatDecoder = decoder as Decoder;
 
-    chatState.value.messageList = []
     chatState.value.participants = [myInfo.value]
 
     wakuData.subscription = await wakuData.lightNode.filter.createSubscription();
+    await retrieveMessages(channelName, _room, messageCallback)
+
     await wakuData.subscription.subscribe([wakuData.ChatDecoder], messageCallback);
+
 
     if (!wakuData.pingInterval)
         wakuData.pingInterval = setInterval(pingAndReinitiateSubscription, 10000);
@@ -75,7 +105,18 @@ export const getStatus = () => {
     return chatState.value.status
 }
 
+export const setMyID = (_newID: string) => {
+    myInfo.value.id = _newID
+    localStorage.setItem('myWakuChatId', _newID);
+    if (!getMyName()) {
+        setMyName(`User ${getMyID().substring(0, 10)}`)
+    }
+}
+
 export const getMyID = () => {
+    if (!myInfo.value.id)
+        return localStorage.getItem('myWakuChatId') || '';
+
     return myInfo.value.id
 }
 
@@ -88,11 +129,10 @@ export const getMyName = () => {
 }
 
 export const privateRoom = (userId: string) => {
-    const myId = myInfo.value.id;
-    if (userId === myId)
+    if (userId === getMyID())
         setRoom(userId)
     else
-        setRoom(userId < myId ? userId + ' & ' + myId : myId + ' & ' + userId);
+        setRoom(userId < getMyID() ? userId + ' & ' + getMyID() : getMyID() + ' & ' + userId);
 }
 
 export const getOptions = () => {
@@ -115,9 +155,11 @@ export const loadChat = (async () => {
     if (!options) return
 
     wakuData.lightNode = await wakuData.startWaku();
-    myInfo.value.id = wakuData.lightNode.libp2p.peerId.toString();
-    myInfo.value.name = `User ${myInfo.value.id.substring(0, 10)}`
-    setRoom(options.availableRooms[0])
+
+    if (!getMyID()) {
+        setMyID(wakuData.lightNode.libp2p.peerId.toString());
+    }
+    await setRoom(options.availableRooms[0])
 
     sendMessageToServer = async (msg: Message) => {
         if (!wakuData.lightNode) return
@@ -143,7 +185,7 @@ export const sendMessage = (msgData: { text?: string, emoji?: string }, msgType:
         type: msgType,
         data: msgData,
         timestamp: timestamp,
-        id: myInfo.value.id + timestamp,
+        id: getMyID() + timestamp,
     }
     setTimeout(async () => {
         await sendMessageToServer(msg)
@@ -152,19 +194,31 @@ export const sendMessage = (msgData: { text?: string, emoji?: string }, msgType:
 
 const messageCallback = (wakuMessage: any) => {
     if (!wakuData.ChatInterface || !wakuMessage.payload) return;
-    const messageObj: any = wakuData.ChatInterface.decode(wakuMessage.payload);
-    if (!messageObj) return
-
-    chatState.value.messageList = [...chatState.value.messageList, messageObj]
-
-    for (let i = 0; i < chatState.value.participants.length; i++) {
-        if (chatState.value.participants[i].id === messageObj.author.id) {
-            chatState.value.participants[i] = messageObj.author;
-            return;
-        }
+    let messageObj: any = undefined;
+    try {
+        messageObj = wakuData.ChatInterface.decode(wakuMessage.payload);
+    } catch (err) {
+        console.error("Decoding Error: ", err)
+        return
     }
-    chatState.value.participants = [...chatState.value.participants, messageObj.author]
+    if (!messageObj) return;
 
+    const existingMessageIndex = chatState.value.messageList.findIndex(message => message.id === messageObj.id);
+    if (existingMessageIndex !== -1) return;
+
+    const insertIndex = chatState.value.messageList.findIndex(message => message.timestamp > messageObj.timestamp);
+    if (insertIndex !== -1) {
+        chatState.value.messageList.splice(insertIndex, 0, messageObj);
+    } else {
+        chatState.value.messageList.push(messageObj);
+    }
+
+    const authorIndex = chatState.value.participants.findIndex(participant => participant.id === messageObj.author.id);
+    if (authorIndex !== -1) {
+        chatState.value.participants[authorIndex] = messageObj.author;
+    } else {
+        chatState.value.participants.push(messageObj.author);
+    }
 };
 
 const pingAndReinitiateSubscription = async () => {
@@ -180,7 +234,7 @@ const pingAndReinitiateSubscription = async () => {
             error instanceof Error &&
             error.message.includes("peer has no subscriptions")
         ) {
-            // Reinitiate the subscription if the ping fails
+            wakuData.subscription = await wakuData.lightNode.filter.createSubscription();
             await wakuData.subscription.subscribe([wakuData.ChatDecoder], messageCallback);
         } else {
             throw error;

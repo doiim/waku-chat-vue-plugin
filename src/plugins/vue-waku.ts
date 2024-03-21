@@ -4,6 +4,7 @@ import {
   waitForRemotePeer,
   createDecoder,
   createEncoder,
+  Protocols,
 } from "@waku/sdk";
 import { bootstrap } from "@libp2p/bootstrap";
 
@@ -28,7 +29,7 @@ const plugin = {
       await node.start();
 
       // Wait for a successful peer connection
-      await waitForRemotePeer(node);
+      await waitForRemotePeer(node, [Protocols.Store]);
       return node
     }
 
@@ -70,12 +71,11 @@ export const changeTopic = (_channel: string, _topic: string) => {
 
   // Choose a content topic
   const contentTopic = `/${channel}/1/${topic}/proto`;
-
   // Create a message encoder and decoder
   const encoder = createEncoder({
-    contentTopic: contentTopic, // message content topic
-    ephemeral: true, // allows messages not be stored on the network
+    contentTopic
   });
   const decoder = createDecoder(contentTopic);
+
   return { encoder, decoder }
 }

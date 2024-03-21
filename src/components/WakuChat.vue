@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watchEffect, onBeforeUnmount } from "vue";
+import { ref, onMounted, watchEffect, onBeforeUnmount, defineProps } from "vue";
 import { Message } from "../types/ChatTypes";
 import {
   initialization,
@@ -12,10 +12,16 @@ import {
   getRoom,
   setMyName,
   getMyName,
+  setMyID,
   getMyID,
   getOptions,
   onDestroyWaku
 } from "../components/WakuLogic"
+
+const props = defineProps<{
+  externalUserId: string | undefined;
+}>()
+
 
 const isChatOpen = ref<boolean>(false);
 
@@ -43,8 +49,6 @@ const messageContainerRef = ref<HTMLElement | null>(null);
 
 onMounted(() => {
   initialization();
-
-  editedUserName.value = getMyName();
 
   const handleNickNameChange = (event: Event) => {
     const newNick = (event as CustomEvent).detail;
@@ -86,9 +90,13 @@ const changeRoomDropdown = (selectedRoom: string) => {
   setRoom(selectedRoom);
 };
 
-const openChat = () => {
+const openChat = async () => {
   if (getStatus() !== "connected") {
-    loadChat()
+    await loadChat()
+    if (props.externalUserId) {
+      setMyID(props.externalUserId)
+    }
+    editedUserName.value = getMyName();
   }
   isChatOpen.value = true
 }
@@ -112,6 +120,12 @@ const scrollToBottom = () => {
 };
 
 watchEffect(() => {
+  if (props.externalUserId) {
+    setMyID(props.externalUserId)
+  }
+});
+
+watchEffect(() => {
   messageFiltered.value = getMessageList().filter(message => {
     return message.room === getRoom();
   })
@@ -120,8 +134,8 @@ watchEffect(() => {
 });
 
 watchEffect(() => {
-  const props = getOptions();
-  const cssConfig = props?.cssConfig as Record<string, string> | undefined;;
+  const options = getOptions();
+  const cssConfig = options?.cssConfig as Record<string, string> | undefined;;
 
   if (!cssConfig) return;
 
@@ -434,12 +448,17 @@ watchEffect(() => {
 }
 
 .own-message div {
-  align-self: start;
+  align-self: end;
 }
 
 .own-message .message {
   background-color: v-bind('computedCss.myMessageColor');
   color: v-bind('computedCss.myMessageTextColor');
+  align-self: end;
+}
+
+.own-message .timestamp {
+  align-self: end;
 }
 
 .user-name-baloon {
@@ -467,7 +486,7 @@ watchEffect(() => {
 }
 
 .message-container div {
-  align-self: end;
+  align-self: start;
 }
 
 .message {

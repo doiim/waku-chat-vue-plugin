@@ -90,9 +90,9 @@ This will generate the compiled project in the dist folder.
 
 ![Waku Logo](https://github.com/doiim/waku-chat-vue-plugin/blob/main/assets/waku.png)
 
-<div style="text-align:center;">
+<p align="center">
     <img src="https://github.com/doiim/waku-chat-vue-plugin/blob/main/assets/doiim.png" alt="Doiim Logo">
-</div>
+</p>
 
 ## References
 

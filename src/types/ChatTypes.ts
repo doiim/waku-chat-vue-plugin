@@ -10,7 +10,7 @@ export type Message = {
 
 export type Participant = { id: string, name: string }
 
-export interface ChatComponentOptions {
+export interface WakuChatVuePluginOptions {
     wakuChannelName: string,
     wakuPeers?: string[],
     availableRooms: string[],

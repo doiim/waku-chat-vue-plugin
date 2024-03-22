@@ -3,14 +3,14 @@ import { ref, inject } from "vue";
 import * as protobuf from "protobufjs";
 import { LightNode, Encoder, Decoder, IFilterSubscription, PageDirection } from "@waku/sdk";
 import { changeTopic } from "../plugins/vue-waku";
-import { ChatComponentOptions } from "../types/ChatTypes";
+import { WakuChatVuePluginOptions } from "../types/ChatTypes";
 
 type WakuData = {
     startWaku?: () => Promise<LightNode>,
     ChatInterface?: protobuf.Type,
     ChatEncoder?: Encoder,
     ChatDecoder?: Decoder,
-    ChatOptions?: ChatComponentOptions,
+    ChatOptions?: WakuChatVuePluginOptions,
     lightNode?: LightNode,
     subscription?: IFilterSubscription,
     pingInterval?: NodeJS.Timeout

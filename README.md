@@ -21,9 +21,9 @@ Follow these steps to install and use the package in your project:
     ```js
     import { createApp } from 'vue'
     import App from './App.vue'
-    import ChatComponent from 'waku-chat-vue-plugin';
+    import WakuChatVuePlugin from 'waku-chat-vue-plugin';
 
-    createApp(App).use(ChatComponent, {
+    createApp(App).use(WakuChatVuePlugin, {
         wakuChannelName: 'my-app-name',
         wakuPeers: [],
         availableRooms: ['General', 'Off'],

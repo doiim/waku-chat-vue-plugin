@@ -74,7 +74,7 @@ Here are the available configuration options:
     * otherMessageTextColor
 
 ## Examples
-You can find examples in the [examples](https://github.com/doiim/waku-chat-vue-plugin/tree/main/examples) folder.
+You can find a vue example [here](https://github.com/doiim/waku-chat-vue).
 
 ## Building the Plugin
 To build the plugin, first clone this repo, install dependencies in the project root, and build the project:

@@ -1,6 +1,6 @@
-# Waku Chat Component
+# Waku Chat Vue Plugin
 
-This document describes the Waku Chat component.
+This document describes a plugin made with Waku and Vue, that implements a simple chat.
 
 <!--- [Live Demo!](https://doiim.github.io/waku-chat-vue/) -->
 

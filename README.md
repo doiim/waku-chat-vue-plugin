@@ -2,7 +2,7 @@
 
 This document describes the Waku Chat component.
 
-[Live Demo!](https://doiim.github.io/waku-chat-vue-plugin/examples/vue-example/)
+<!--- [Live Demo!](https://doiim.github.io/waku-chat-vue/) -->
 
 ## Usage
 

@@ -71,7 +71,7 @@ Here are the available configuration options:
     * myMessageColor
     * myMessageTextColor
     * otherMessageColor
-    * otherMessageTextColorDoiim
+    * otherMessageTextColor
 
 ## Examples
 You can find examples in the [examples](https://github.com/doiim/waku-chat-vue-plugin/tree/main/examples) folder.

@@ -1,3 +1,7 @@
+<p align="center">
+    <img src="https://github.com/doiim/waku-chat-vue-plugin/blob/main/assets/logos.png" alt="Doiim + Waku Logo">
+</p>
+
 # Waku Chat Vue Plugin
 
 This document describes a plugin made with Waku and Vue, that implements a simple chat.
@@ -97,10 +101,6 @@ To build the plugin, first clone this repo, install dependencies in the project 
     ```
 
 This will generate the compiled project in the dist folder.
-
-<p align="center">
-    <img src="https://github.com/doiim/waku-chat-vue-plugin/blob/main/assets/logos.png" alt="Doiim + Waku Logo">
-</p>
 
 ## References
 

@@ -88,11 +88,11 @@ To build the plugin, first clone this repo, install dependencies in the project 
 
 This will generate the compiled project in the dist folder.
 
-![Waku Logo](https://github.com/doiim/waku-chat-vue-plugin/blob/main/assets/waku.png)
-
 <p align="center">
     <img src="https://github.com/doiim/waku-chat-vue-plugin/blob/main/assets/doiim.png" alt="Doiim Logo">
 </p>
+
+![Waku Logo](https://github.com/doiim/waku-chat-vue-plugin/blob/main/assets/waku.png)
 
 ## References
 

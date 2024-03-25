@@ -2,11 +2,9 @@
 
 This document describes a plugin made with Waku and Vue, that implements a simple chat.
 
-<!--- [Live Demo!](https://doiim.github.io/waku-chat-vue/) -->
+[Live Demo!](https://doiim.github.io/waku-chat-vue/)
 
 ## Usage
-
-### Vue
 
 Follow these steps to install and use the package in your project:
 
@@ -16,14 +14,25 @@ Follow these steps to install and use the package in your project:
     $ npm install waku-chat-vue-plugin 
     ```
 
-2. In your `main.js` file, import the component and pass it to the `use` function. You can also set configuration options:
+2. In your `main.js` file, import the component and pass it to the `use` function.
 
     ```js
     import { createApp } from 'vue'
     import App from './App.vue'
     import WakuChatVuePlugin from 'waku-chat-vue-plugin';
 
-    createApp(App).use(WakuChatVuePlugin, {
+    createApp(App).use(WakuChatVuePlugin).mount('#app');
+    ```
+
+3.  You can also set configuration options:
+
+    ```js
+    import { createApp } from 'vue'
+    import App from './App.vue'
+    import WakuChatVuePlugin from 'waku-chat-vue-plugin';
+
+    createApp(App).use(WakuChatVuePlugin,
+    {
         wakuChannelName: 'my-app-name',
         wakuPeers: [],
         availableRooms: ['General', 'Off'],
@@ -41,17 +50,18 @@ Follow these steps to install and use the package in your project:
             otherMessageColor: 'rgba(136, 153, 166, 0.3)',
             otherMessageTextColor: 'rgba(29, 78, 216, 1)',
         }
-    }).mount('#app');
+    }
+    ).mount('#app');
     ```
 
 ### Configuration Options
 
 Here are the available configuration options:
 
-- `wakuChannelName`: (string) The name that will be used to create your message's topic on Waku.
-- `wakuPeers`: (string[]) Waku peers to connect by default. If you don't set this, Waku will use automatic peers. Use this to set your own peers.
-- `availableRooms`: (string[]) Rooms available on your chat to separate messages. Default value is ['General','Support','Off-Topic']
-- `changeNickMode`: ('message' | 'interface') 'message' allows your app to change nicknames via a dispatch event, 'interface' allows users to directly change their nicknames and allows the same method as 'message'. Any other value won't allow change nicknames.
+- `wakuChannelName`: (string) (optional) - The name that will be used to create your message's topic on Waku.
+- `wakuPeers`: (string[]) (optional) - Waku peers to connect by default. If you don't set this, Waku will use automatic peers. Use this to set your own peers.
+- `availableRooms`: (string[]) (optional) - Rooms available on your chat to separate messages. Default value is ['General','Support','Off-Topic']
+- `changeNickMode`: ('message' | 'interface') (optional) - 'message' allows your app to change nicknames via a dispatch event, 'interface' allows users to directly change their nicknames and allows the same method as 'message'. Any other value won't allow change nicknames.
 
     If you set 'message' or 'interface', in your code you can call:
     ```js
@@ -60,18 +70,18 @@ Here are the available configuration options:
     ```
     To change user’s nickname.
 
-- `cssConfig`: (Object) Allow you to change css colors. If you don’t set any of them, a default value will be applied. They are:
-    * primaryColor
-    * primaryColorHover
-    * primaryTextColor
-    * secondaryColor
-    * secondaryColorHover
-    * secondaryTextColor
-    * backgroundColor
-    * myMessageColor
-    * myMessageTextColor
-    * otherMessageColor
-    * otherMessageTextColor
+- `cssConfig`: (Object) (optional) - Allow you to change css colors. If you don’t set any of them, a default value will be applied. They are:
+    * primaryColor: (string)(optional) - primary color in a string format
+    * primaryColorHover: (string)(optional) - primary color hover in a string format
+    * primaryTextColor: (string)(optional) - primary text color in a string format
+    * secondaryColor: (string)(optional) - secondary color in a string format
+    * secondaryColorHover: (string)(optional) - secondary color hover in a string format
+    * secondaryTextColor: (string)(optional) - secondary text color in a string format
+    * backgroundColor: (string)(optional) - background color in a string format
+    * myMessageColor: (string)(optional) - color for my messages in a string format
+    * myMessageTextColor: (string)(optional) - text color for my messages in a string format
+    * otherMessageColor: (string)(optional) - color for others messagesin a string format
+    * otherMessageTextColor: (string)(optional) - text color for others messagesin a string format
 
 ## Examples
 You can find a vue example [here](https://github.com/doiim/waku-chat-vue).
@@ -89,10 +99,8 @@ To build the plugin, first clone this repo, install dependencies in the project 
 This will generate the compiled project in the dist folder.
 
 <p align="center">
-    <img src="https://github.com/doiim/waku-chat-vue-plugin/blob/main/assets/doiim.png" alt="Doiim Logo">
+    <img src="https://github.com/doiim/waku-chat-vue-plugin/blob/main/assets/logos.png" alt="Doiim + Waku Logo">
 </p>
-
-![Waku Logo](https://github.com/doiim/waku-chat-vue-plugin/blob/main/assets/waku.png)
 
 ## References
 

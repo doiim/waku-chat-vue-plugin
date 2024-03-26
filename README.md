@@ -18,17 +18,8 @@ Follow these steps to install and use the package in your project:
     $ npm install waku-chat-vue-plugin 
     ```
 
-2. In your `main.js` file, import the component and pass it to the `use` function.
-
-    ```js
-    import { createApp } from 'vue'
-    import App from './App.vue'
-    import WakuChatVuePlugin from 'waku-chat-vue-plugin';
-
-    createApp(App).use(WakuChatVuePlugin).mount('#app');
-    ```
-
-3.  You can also set configuration options:
+2. In your `main.js` file, import the component and pass it to the `use` function. Passing on the options field
+the app name and rooms available on your chat.
 
     ```js
     import { createApp } from 'vue'
@@ -38,8 +29,22 @@ Follow these steps to install and use the package in your project:
     createApp(App).use(WakuChatVuePlugin,
     {
         wakuChannelName: 'my-app-name',
-        wakuPeers: [],
         availableRooms: ['General', 'Off'],
+    }).mount('#app');
+    ```
+
+3.  You can also set other configuration options:
+
+    ```js
+    import { createApp } from 'vue'
+    import App from './App.vue'
+    import WakuChatVuePlugin from 'waku-chat-vue-plugin';
+
+    createApp(App).use(WakuChatVuePlugin,
+    {
+        wakuChannelName: 'my-app-name',
+        availableRooms: ['General', 'Off'],
+        wakuPeers: ['your/waku/peer/string/address/here'],
         changeNickMode: 'message',
         cssConfig: {
             primaryColor: 'rgba(29, 78, 216, 1)',
@@ -62,9 +67,9 @@ Follow these steps to install and use the package in your project:
 
 Here are the available configuration options:
 
-- `wakuChannelName`: (string) (optional) - The name that will be used to create your message's topic on Waku.
+- `wakuChannelName`: (string) - The name that will be used to create your message's topic on Waku.
+- `availableRooms`: (string[]) - Rooms available on your chat to separate messages.
 - `wakuPeers`: (string[]) (optional) - Waku peers to connect by default. If you don't set this, Waku will use automatic peers. Use this to set your own peers.
-- `availableRooms`: (string[]) (optional) - Rooms available on your chat to separate messages. Default value is ['General','Support','Off-Topic']
 - `changeNickMode`: ('message' | 'interface') (optional) - 'message' allows your app to change nicknames via a dispatch event, 'interface' allows users to directly change their nicknames and allows the same method as 'message'. Any other value won't allow change nicknames.
 
     If you set 'message' or 'interface', in your code you can call:

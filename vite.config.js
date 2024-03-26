@@ -25,10 +25,13 @@ export default defineConfig({
             fileName: 'waku-chat-vue-plugin',
         },
         rollupOptions: {
-            external: ['vue'],
+            external: ['vue','protobufjs','@waku/sdk','@libp2p/bootstrap'],
             output: {
                 globals: {
                     vue: 'Vue',
+                    protobufjs:'protobufjs',
+                    '@waku/sdk':'@waku/sdk',
+                    '@libp2p/bootstrap':'@libp2p/bootstrap'
                 },
             },
         },

@@ -2,7 +2,6 @@
 import { ref, onMounted, watchEffect, onBeforeUnmount, defineProps } from "vue";
 import { Message } from "../types/ChatTypes";
 import {
-  initialization,
   sendMessage,
   loadChat,
   setRoom,
@@ -21,7 +20,6 @@ import {
 const props = defineProps<{
   externalUserId: string | undefined;
 }>()
-
 
 const isChatOpen = ref<boolean>(false);
 
@@ -48,8 +46,6 @@ const editedUserName = ref('');
 const messageContainerRef = ref<HTMLElement | null>(null);
 
 onMounted(() => {
-  initialization();
-
   const handleNickNameChange = (event: Event) => {
     const newNick = (event as CustomEvent).detail;
 
@@ -493,7 +489,7 @@ watchEffect(() => {
   min-width: 96px;
   max-width: 67%;
   padding: 10px;
-  border-radius: 16px;
+  border-radius: 8px;
   background-color: v-bind('computedCss.otherMessageColor');
   color: v-bind('computedCss.otherMessageTextColor');
 }

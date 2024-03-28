@@ -1,22 +1,20 @@
 import { Message, Participant } from "../types/ChatTypes";
 import { ref, inject } from "vue";
-import * as protobuf from "protobufjs";
-import { LightNode, Encoder, Decoder, IFilterSubscription, PageDirection } from "@waku/sdk";
-import { changeTopic } from "../plugins/vue-waku";
+import { changeTopic, loadPlugin } from "../plugins/vue-waku";
 import { WakuChatVuePluginOptions } from "../types/ChatTypes";
 
 type WakuData = {
-    startWaku?: () => Promise<LightNode>,
-    ChatInterface?: protobuf.Type,
-    ChatEncoder?: Encoder,
-    ChatDecoder?: Decoder,
+    startWaku?: () => Promise<any>,
+    ChatInterface?: any,
+    ChatEncoder?: any,
+    ChatDecoder?: any,
     ChatOptions?: WakuChatVuePluginOptions,
-    lightNode?: LightNode,
-    subscription?: IFilterSubscription,
+    lightNode?: any,
+    subscription?: any,
     pingInterval?: NodeJS.Timeout
 }
 
-const wakuData: WakuData = {}
+let wakuData: WakuData = {}
 
 const chatState = ref<{
     status: string,
@@ -55,7 +53,7 @@ const retrieveMessages = async (_channel: string, _topic: string, callback: (msg
             endTime,
         },
         contentTopic,
-        pageDirection: PageDirection.BACKWARD,
+        pageDirection: "backward",
     };
 
     await wakuData.lightNode.store.queryWithOrderedCallback([wakuData.ChatDecoder], callback, queryOptions);
@@ -67,9 +65,9 @@ export const setRoom = async (_room: string) => {
     const options = getOptions()
     if (!options) return
     const channelName = options.wakuChannelName ? options.wakuChannelName : 'my-app'
-    const { encoder, decoder } = changeTopic(channelName, _room)
-    wakuData.ChatEncoder = encoder as Encoder;
-    wakuData.ChatDecoder = decoder as Decoder;
+    const { encoder, decoder } = await changeTopic(channelName, _room)
+    wakuData.ChatEncoder = encoder;
+    wakuData.ChatDecoder = decoder;
 
     chatState.value.participants = [myInfo.value]
 
@@ -136,13 +134,14 @@ export const privateRoom = (userId: string) => {
 }
 
 export const getOptions = () => {
+    if (!wakuData.ChatOptions) {
+        loadOptions();
+    }
     return wakuData.ChatOptions
 }
 
-export const initialization = () => {
-    wakuData.startWaku = inject("startWaku") as () => Promise<LightNode>;
-    wakuData.ChatInterface = inject("chatInterface") as protobuf.Type;
-    wakuData.ChatOptions = inject("chatOptions") as any;
+const loadOptions = () => {
+    wakuData.ChatOptions = inject("ChatOptions") as any;
     if (wakuData.ChatOptions && !wakuData.ChatOptions.availableRooms.length) {
         wakuData.ChatOptions.availableRooms = ['General']
     }
@@ -150,6 +149,7 @@ export const initialization = () => {
 
 export const loadChat = (async () => {
     chatState.value.status = "connecting"
+    wakuData = await loadPlugin()
     if (!wakuData.startWaku) return
     const options = getOptions()
     if (!options) return
@@ -173,6 +173,7 @@ export const loadChat = (async () => {
             payload: serialisedMessage,
         });
     };
+
     chatState.value.status = "connected";
 });
 

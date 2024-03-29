@@ -146,7 +146,7 @@ Here are the available configuration options:
             * btn: (Object)  - Allow you to change colors from room button.  
                 * text: (string)  - text color.  
                 * textHover: (string)  - text hover color.
-            * dropdown: (Object)  - Allow you to change colors from room dorpdown.   
+            * dropdown: (Object)  - Allow you to change colors from room dropdown.   
                 * main: (string)  - main color.   
                 * text: (string)  - text color.  
                 * hover: (string)  - hover option color.  

@@ -136,60 +136,60 @@ Here are the available configuration options:
     ```
     To change user’s nickname.
 
-- `cssConfig`:(Object) (optional) - Allow you to change css. If you don’t set any of them, a default value will be applied. They are:
-    * colors:(Object) (optional) - Allow you to change colors of components.
-        * header: (Object) (optional) - Allow you to change colors from header.
-            * main: (string) (optional) - main color.
-            * text: (string) (optional) -  text color
-            * textHover: (string) (optional) - text hover color.
-        * room: (Object) (optional) - Allow you to change colors from room components.  
-            * btn: (Object) (optional) - Allow you to change colors from room button.  
-                * text: (string) (optional) - text color.  
-                * textHover: (string) (optional) - text hover color.
-            * dropdown: (Object) (optional) - Allow you to change colors from room dorpdown.   
-                * main: (string) (optional) - main color.   
-                * text: (string) (optional) - text color.  
-                * hover: (string) (optional) - hover option color.  
-                * selected: (string) (optional) - selected option color.  
-        * subHeader: (Object) (optional) - Allow you to change colors from sub header.  
-            * main: (string) (optional) - main color.  
-            * text: (string) (optional) - text color.  
-            * textHover: (string) (optional) - text hover color.  
-        * loadBtn: (Object) (optional) - Allow you to change colors from load button. 
-            * main: (string) (optional) - main color.  
-            * hover: (string) (optional) - hover color.  
-            * text: (string) (optional) - text color.  
-            * textHover: (string) (optional) - text hover color.  
-        * loadingBtn: (Object) (optional) - Allow you to change colors from loading spinner.  
-            * main: (string) (optional) - main color.  
-            * text: (string) (optional) - text color.  
-        * openBtn: (Object) (optional) - Allow you to change colors from open button.  
-            * main: (string) (optional) - main color.  
-            * hover: (string) (optional) - hover color.  
-            * text: (string) (optional) - text color.  
-            * textHover: (string) (optional) - text hover color.  
-        * sendBtn: (Object) (optional) - Allow you to change colors from send button.  
-            * main: (string) (optional) - main color.  
-            * hover: (string) (optional) - hover color.  
-            * text: (string) (optional) - text color.  
-            * textHover: (string) (optional) - text hover color.  
-        * input: (Object) (optional) - Allow you to change colors from message input.  
-            * main: (string) (optional) - main color.  
-            * placeholder: (string) (optional) - placeholder text color. 
-            * text: (string) (optional) - text color.  
-        * minimizeBtn: (Object) (optional) - Allow you to change colors from minimize button.
-            * main: (string) (optional) - main color.  
-            * hover: (string) (optional) - hover button color. 
-        * chat: (Object) (optional) - Allow you to change colors from chat content.  
-            * myMessage: (Object) (optional) - Allow you to change colors from use messages.  
-                * main: (string) (optional) - main color.  
-                * text: (string) (optional) - text color.  
-            * otherMessage: (Object) (optional) - Allow you to change colors from others messages.  
-                * main: (string) (optional) - main color.  
-                * text: (string) (optional) - text color.  
-            * timestamp: (string) (optional) - timestamp text color.  
-        * background: (string) (optional) - Allow you to change background color.   
-        * border: (string) (optional) - Allow you to change border color.   
+- `cssConfig`:(Object) (optional) - Allow you to change css. ALl of them are optional, if you don’t set any of them, a default value will be applied. They are:
+    * colors:(Object)  - Allow you to change colors of components.
+        * header: (Object)  - Allow you to change colors from header.
+            * main: (string)  - main color.
+            * text: (string)  -  text color
+            * textHover: (string)  - text hover color.
+        * room: (Object)  - Allow you to change colors from room components.  
+            * btn: (Object)  - Allow you to change colors from room button.  
+                * text: (string)  - text color.  
+                * textHover: (string)  - text hover color.
+            * dropdown: (Object)  - Allow you to change colors from room dorpdown.   
+                * main: (string)  - main color.   
+                * text: (string)  - text color.  
+                * hover: (string)  - hover option color.  
+                * selected: (string)  - selected option color.  
+        * subHeader: (Object)  - Allow you to change colors from sub header.  
+            * main: (string)  - main color.  
+            * text: (string)  - text color.  
+            * textHover: (string)  - text hover color.  
+        * loadBtn: (Object)  - Allow you to change colors from load button. 
+            * main: (string)  - main color.  
+            * hover: (string)  - hover color.  
+            * text: (string)  - text color.  
+            * textHover: (string)  - text hover color.  
+        * loadingBtn: (Object)  - Allow you to change colors from loading spinner.  
+            * main: (string)  - main color.  
+            * text: (string)  - text color.  
+        * openBtn: (Object)  - Allow you to change colors from open button.  
+            * main: (string)  - main color.  
+            * hover: (string)  - hover color.  
+            * text: (string)  - text color.  
+            * textHover: (string)  - text hover color.  
+        * sendBtn: (Object)  - Allow you to change colors from send button.  
+            * main: (string)  - main color.  
+            * hover: (string)  - hover color.  
+            * text: (string)  - text color.  
+            * textHover: (string)  - text hover color.  
+        * input: (Object)  - Allow you to change colors from message input.  
+            * main: (string)  - main color.  
+            * placeholder: (string)  - placeholder text color. 
+            * text: (string)  - text color.  
+        * minimizeBtn: (Object)  - Allow you to change colors from minimize button.
+            * main: (string)  - main color.  
+            * hover: (string)  - hover button color. 
+        * chat: (Object)  - Allow you to change colors from chat content.  
+            * myMessage: (Object)  - Allow you to change colors from use messages.  
+                * main: (string)  - main color.  
+                * text: (string)  - text color.  
+            * otherMessage: (Object)  - Allow you to change colors from others messages.  
+                * main: (string)  - main color.  
+                * text: (string)  - text color.  
+            * timestamp: (string)  - timestamp text color.  
+        * background: (string)  - Allow you to change background color.   
+        * border: (string)  - Allow you to change border color.   
 
 ## Examples
 You can find a vue example [here](https://github.com/doiim/waku-chat-vue).

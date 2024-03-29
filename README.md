@@ -47,17 +47,74 @@ the app name and rooms available on your chat.
         wakuPeers: ['your/waku/peer/string/address/here'],
         changeNickMode: 'message',
         cssConfig: {
-            primaryColor: 'rgba(29, 78, 216, 1)',
-            primaryColorHover: 'rgba(29, 78, 180, 1)',
-            primaryTextColor: 'rgba(255, 255, 255, 1)',
-            secondaryColor: 'rgba(229, 231, 235, 1)',
-            secondaryColorHover: 'rgba(229, 231, 235, 0.7)',
-            secondaryTextColor: 'rgba(0, 0, 0, 1)',
-            backgroundColor: 'rgba(0, 0, 0, 0.01)',
-            myMessageColor: 'rgba(29, 78, 216, 1)',
-            myMessageTextColor: 'rgba(255, 255, 255, 1)',
-            otherMessageColor: 'rgba(136, 153, 166, 0.3)',
-            otherMessageTextColor: 'rgba(29, 78, 216, 1)',
+            colors: {
+                header: {
+                    main: 'rgba(219, 234, 254, 1)',
+                    text: 'rgba(107, 114, 128, 1)',
+                    textHover: 'rgba(37, 99, 235, 1)',
+                },
+                room: {
+                    btn: {
+                        text: 'rgba(31, 41, 55, 1)',
+                        textHover: 'rgba(37, 99, 235, 1)',
+                    },
+                    dropdown: {
+                        main: 'rgba(255, 255, 255, 1)',
+                        text: 'rgba(31, 41, 55, 1)',
+                        hover: 'rgba(243, 244, 246, 1)',
+                        selected: 'rgba(29, 78, 216, 1)'
+                    }
+                },
+                subHeader: {
+                    main: 'rgba(239, 246, 255, 1)',
+                    text: 'rgba(37, 99, 235, 1)',
+                    textHover: 'rgba(37, 99, 235, 1)',
+                },
+                loadBtn: {
+                    main: 'rgba(37, 99, 235, 1)',
+                    hover: 'rgba(59, 130, 246,1)',
+                    text: 'rgba(249, 250, 251, 1)',
+                    textHover: 'rgba(37, 99, 235, 1)',
+                },
+                loadingBtn: {
+                    main: 'rgba(37, 99, 235, 1)',
+                    text: 'rgba(249, 250, 251, 1)',
+                },
+                openBtn: {
+                    main: 'rgba(37, 99, 235, 1)',
+                    hover: 'rgba(59, 130, 246,1)',
+                    text: 'rgba(249, 250, 251, 1)',
+                    textHover: 'rgba(37, 99, 235, 1)',
+                },
+                sendBtn: {
+                    main: 'rgba(37, 99, 235, 1)',
+                    hover: 'rgba(59, 130, 246,1)',
+                    text: 'rgba(249, 250, 251, 1)',
+                    textHover: 'rgba(37, 99, 235, 1)',
+                },
+                input: {
+                    main: 'rgba(229, 231, 235, 1)',
+                    placeholder: 'rgba(156, 163, 175, 1)',
+                    text: 'rgba(31, 41, 55, 1)'
+                },
+                minimizeBtn: {
+                    main: 'rgba(107, 114, 128, 1)',
+                    hover: 'rgba(37, 99, 235, 1)',
+                },
+                chat: {
+                    myMessage: {
+                        main: 'rgba(37, 99, 235, 1)',
+                        text: 'rgba(249, 250, 251, 1)',
+                    },
+                    otherMessage: {
+                        main: 'rgba(229, 231, 235, 1)',
+                        text: 'rgba(31, 41, 55, 1)',
+                    },
+                    timestamp: 'rgba(156, 163, 175, 1)',
+                },
+                background: 'rgba(249, 250, 251, 1)',
+                border: 'rgba(37, 99, 235, 1)',
+            }
         }
     }
     ).mount('#app');
@@ -79,18 +136,60 @@ Here are the available configuration options:
     ```
     To change user’s nickname.
 
-- `cssConfig`: (Object) (optional) - Allow you to change css colors. If you don’t set any of them, a default value will be applied. They are:
-    * primaryColor: (string)(optional) - primary color in a string format
-    * primaryColorHover: (string)(optional) - primary color hover in a string format
-    * primaryTextColor: (string)(optional) - primary text color in a string format
-    * secondaryColor: (string)(optional) - secondary color in a string format
-    * secondaryColorHover: (string)(optional) - secondary color hover in a string format
-    * secondaryTextColor: (string)(optional) - secondary text color in a string format
-    * backgroundColor: (string)(optional) - background color in a string format
-    * myMessageColor: (string)(optional) - color for my messages in a string format
-    * myMessageTextColor: (string)(optional) - text color for my messages in a string format
-    * otherMessageColor: (string)(optional) - color for others messagesin a string format
-    * otherMessageTextColor: (string)(optional) - text color for others messagesin a string format
+- `cssConfig`:(Object) (optional) - Allow you to change css. If you don’t set any of them, a default value will be applied. They are:
+    * colors:(Object) (optional) - Allow you to change colors of components.
+        * header: (Object) (optional) - Allow you to change colors from header.
+            * main: (string) (optional) - main color.
+            * text: (string) (optional) -  text color
+            * textHover: (string) (optional) - text hover color.
+        * room: (Object) (optional) - Allow you to change colors from room components.  
+            * btn: (Object) (optional) - Allow you to change colors from room button.  
+                * text: (string) (optional) - text color.  
+                * textHover: (string) (optional) - text hover color.
+            * dropdown: (Object) (optional) - Allow you to change colors from room dorpdown.   
+                * main: (string) (optional) - main color.   
+                * text: (string) (optional) - text color.  
+                * hover: (string) (optional) - hover option color.  
+                * selected: (string) (optional) - selected option color.  
+        * subHeader: (Object) (optional) - Allow you to change colors from sub header.  
+            * main: (string) (optional) - main color.  
+            * text: (string) (optional) - text color.  
+            * textHover: (string) (optional) - text hover color.  
+        * loadBtn: (Object) (optional) - Allow you to change colors from load button. 
+            * main: (string) (optional) - main color.  
+            * hover: (string) (optional) - hover color.  
+            * text: (string) (optional) - text color.  
+            * textHover: (string) (optional) - text hover color.  
+        * loadingBtn: (Object) (optional) - Allow you to change colors from loading spinner.  
+            * main: (string) (optional) - main color.  
+            * text: (string) (optional) - text color.  
+        * openBtn: (Object) (optional) - Allow you to change colors from open button.  
+            * main: (string) (optional) - main color.  
+            * hover: (string) (optional) - hover color.  
+            * text: (string) (optional) - text color.  
+            * textHover: (string) (optional) - text hover color.  
+        * sendBtn: (Object) (optional) - Allow you to change colors from send button.  
+            * main: (string) (optional) - main color.  
+            * hover: (string) (optional) - hover color.  
+            * text: (string) (optional) - text color.  
+            * textHover: (string) (optional) - text hover color.  
+        * input: (Object) (optional) - Allow you to change colors from message input.  
+            * main: (string) (optional) - main color.  
+            * placeholder: (string) (optional) - placeholder text color. 
+            * text: (string) (optional) - text color.  
+        * minimizeBtn: (Object) (optional) - Allow you to change colors from minimize button.
+            * main: (string) (optional) - main color.  
+            * hover: (string) (optional) - hover button color. 
+        * chat: (Object) (optional) - Allow you to change colors from chat content.  
+            * myMessage: (Object) (optional) - Allow you to change colors from use messages.  
+                * main: (string) (optional) - main color.  
+                * text: (string) (optional) - text color.  
+            * otherMessage: (Object) (optional) - Allow you to change colors from others messages.  
+                * main: (string) (optional) - main color.  
+                * text: (string) (optional) - text color.  
+            * timestamp: (string) (optional) - timestamp text color.  
+        * background: (string) (optional) - Allow you to change background color.   
+        * border: (string) (optional) - Allow you to change border color.   
 
 ## Examples
 You can find a vue example [here](https://github.com/doiim/waku-chat-vue).

@@ -14,7 +14,7 @@ export interface WakuChatVuePluginOptions {
     wakuChannelName: string,
     wakuPeers?: string[],
     availableRooms: string[],
-    changeNickMode: 'message' | 'interface' | 'none',
+    changeNickMode: 'application' | 'user' | 'none',
     allowPrivateChat: boolean,
     cssConfig?: WakuChatConfigCss
 }
@@ -64,11 +64,13 @@ export interface WakuChatConfigCss {
             hover: string,
             text: string,
             textHover: string,
+            disabled: string,
         },
         input: {
             main: string,
             placeholder: string,
             text: string,
+            disabled: string,
         },
         minimizeBtn: {
             main: string,

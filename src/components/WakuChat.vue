@@ -51,6 +51,12 @@ const computedCss = ref<WakuChatConfigCss>({
       main: 'rgba(239, 246, 255, 1)',
       text: 'rgba(37, 99, 235, 1)',
       textHover: 'rgba(37, 99, 235, 1)',
+      editName: {
+        main: 'rgba(229, 231, 235, 1)',
+        placeholder: 'rgba(156, 163, 175, 1)',
+        text: 'rgba(31, 41, 55, 1)',
+        disabled: 'rgba(229, 231, 235, 1)',
+      }
     },
     loadBtn: {
       main: 'rgba(37, 99, 235, 1)',
@@ -132,7 +138,7 @@ const exitEditMode = () => {
 
 const saveEditedUserName = () => {
   setMyName(editedUserName.value);
-  exitEditMode();
+  exitEditMode()
 };
 
 const getRoomName = (room: string) => {
@@ -155,7 +161,6 @@ const openChat = async () => {
     if (props.externalUserId) {
       setMyID(props.externalUserId)
     }
-    editedUserName.value = getMyName();
   }
   isChatOpen.value = true
 }
@@ -178,6 +183,10 @@ const scrollToBottom = () => {
     }, 100);
   }
 };
+
+watchEffect(() => {
+  editedUserName.value = getMyName()
+});
 
 watchEffect(() => {
   if (props.externalUserId) {
@@ -258,10 +267,22 @@ watchEffect(() => {
       </div>
       <div v-show="settingsMenu" class="chat-subHeader">
         <div class="user-section">
-          <div v-if="getOptions()?.changeNickMode === 'user'" class="user-name-input" @click="enterEditMode">
-            <span v-if="!editMode">{{ getMyName() }}</span>
-            <input v-model="editedUserName" v-else @blur="exitEditMode" @keypress.enter="saveEditedUserName"
-              class="edit-user-input" />
+          <div v-if="getOptions()?.changeNickMode === 'user'" class="user-name-input">
+            <div v-if="!editMode">
+              <span>{{ getMyName() }}</span>
+              <svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg"
+                @click="enterEditMode">
+                <path
+                  d="M7 12.3333H13M10 1.33334C10.2652 1.06813 10.6249 0.919128 11 0.919128C11.1857 0.919128 11.3696 0.955708 11.5412 1.02678C11.7128 1.09785 11.8687 1.20202 12 1.33334C12.1313 1.46466 12.2355 1.62057 12.3066 1.79215C12.3776 1.96373 12.4142 2.14762 12.4142 2.33334C12.4142 2.51906 12.3776 2.70296 12.3066 2.87454C12.2355 3.04612 12.1313 3.20202 12 3.33334L3.66667 11.6667L1 12.3333L1.66667 9.66668L10 1.33334Z"
+                  stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <div v-else>
+              <input v-model="editedUserName" @keypress.enter="saveEditedUserName"
+                class="edit-user-input" />
+              <button class="change-name-btn" @click="saveEditedUserName">OK</button>
+              <button class="cancel-change-name-btn" @click="exitEditMode">Cancel</button>
+            </div>
           </div>
           <div v-else>
             <span>{{ getMyName() }}</span>
@@ -330,13 +351,37 @@ watchEffect(() => {
 </template>
 
 <style lang="css" scoped>
-.user-name-input input {
+.user-name-input {
   width: 100%;
+}
+
+.user-name-input input {
+  width: fit-content;
+  max-width: 50%;
   outline: none;
   font-size: 14px;
   padding-left: 8px;
-  color: v-bind('computedCss.colors.input.text');
-  background-color: v-bind('computedCss.colors.input.main');
+  color: v-bind('computedCss.colors.subHeader.editName.text');
+  background-color: v-bind('computedCss.colors.subHeader.editName.main');
+}
+
+.user-name-input svg {
+  cursor: pointer;
+  stroke: v-bind('computedCss.colors.subHeader.editName.text');
+  margin-left: 8px;
+}
+
+.user-name-input>div {
+  display: flex;
+  width: 100%;
+}
+
+.change-name-btn {
+  margin-left: 8px;
+}
+
+.cancel-change-name-btn {
+  margin-left: auto;
 }
 
 .room-dropdown {

@@ -42,6 +42,12 @@ export interface WakuChatConfigCss {
             main: string,
             text: string,
             textHover: string,
+            editName: {
+                main: string,
+                placeholder: string,
+                text: string,
+                disabled: string,
+            }
         },
         loadBtn: {
             main: string,

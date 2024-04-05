@@ -86,14 +86,19 @@ export interface WakuChatConfigCss {
             myMessage: {
                 main: string,
                 text: string,
+                user: string
             },
             otherMessage: {
                 main: string,
                 text: string,
+                user: string
             },
             timestamp: string,
         },
         background: string,
         border: string,
+    },
+    shadows: {
+        openedComponent: number
     }
 }

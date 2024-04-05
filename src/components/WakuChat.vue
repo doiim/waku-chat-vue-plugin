@@ -38,7 +38,7 @@ const computedCss = ref<WakuChatConfigCss>({
     room: {
       btn: {
         text: 'rgba(37, 99, 235, 1)',
-        textHover: 'rgba(37, 99, 235, 1)',
+        textHover: 'rgba(30, 64, 175, 1)',
       },
       dropdown: {
         main: 'rgba(255, 255, 255, 1)',
@@ -94,16 +94,21 @@ const computedCss = ref<WakuChatConfigCss>({
     chat: {
       myMessage: {
         main: 'rgba(37, 99, 235, 1)',
+        user: 'rgba(37, 99, 235, 1)',
         text: 'rgba(249, 250, 251, 1)',
       },
       otherMessage: {
         main: 'rgba(229, 231, 235, 1)',
+        user: 'rgba(156, 163, 175, 1)',
         text: 'rgba(31, 41, 55, 1)',
       },
       timestamp: 'rgba(156, 163, 175, 1)',
     },
     background: 'rgba(249, 250, 251, 1)',
     border: 'rgba(37, 99, 235, 1)',
+  },
+  shadows: {
+    openedComponent: 0.8
   }
 });
 
@@ -232,120 +237,122 @@ watchEffect(() => {
 </script>
 
 <template>
-  <div v-if="getStatus() === 'connected'">
-    <div v-if="isChatOpen" class="chat-container" :class="{ 'open': isChatOpen }">
-      <div class="chat-header">
-        <div class="room-section">
-          <div class="room-info">
-            Room
-          </div>
-          <div class="room-dropdown">
-            <button class="dropdown-button">
-              <div>{{ getRoomName(getRoom()) }}</div>
-              <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 6.5L8 10.5L12 6.5" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </button>
-            <div class="dropdown-content">
-              <div v-for="availableRoom in getOptions()?.availableRooms" :key="availableRoom">
-                <button :class="availableRoom === getRoom() ? 'selected' : ''"
-                  @click="changeRoomDropdown(availableRoom)">
-                  {{ availableRoom }}
-                </button>
+  <div class="waku-chat-vue-plugin">
+    <div v-if="getStatus() === 'connected'">
+      <div v-if="isChatOpen" class="chat-container" :class="{ 'open': isChatOpen }">
+        <div class="chat-header">
+          <div class="room-section">
+            <div class="room-info">
+              Room
+            </div>
+            <div class="room-dropdown">
+              <button class="dropdown-button">
+                <div>{{ getRoomName(getRoom()) }}</div>
+                <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 6.5L8 10.5L12 6.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+              <div class="dropdown-content">
+                <div v-for="availableRoom in getOptions()?.availableRooms" :key="availableRoom">
+                  <button :class="availableRoom === getRoom() ? 'selected' : ''"
+                    @click="changeRoomDropdown(availableRoom)">
+                    {{ availableRoom }}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div class="settings-section">
-          <button @click="settingsMenu = !settingsMenu" class="settings-button">Settings</button>
-          <button @click="closeChat" class="minimize-button">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M11.5 0.5L0.5 11.5M0.5 0.5L11.5 11.5" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </button>
-        </div>
-      </div>
-      <div v-show="settingsMenu" class="chat-subHeader">
-        <div class="user-section">
-          <div v-if="getOptions()?.changeNickMode === 'user'" class="user-name-input">
-            <div v-if="!editMode">
-              <span>{{ getMyName() }}</span>
-              <svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg"
-                @click="enterEditMode">
-                <path
-                  d="M7 12.3333H13M10 1.33334C10.2652 1.06813 10.6249 0.919128 11 0.919128C11.1857 0.919128 11.3696 0.955708 11.5412 1.02678C11.7128 1.09785 11.8687 1.20202 12 1.33334C12.1313 1.46466 12.2355 1.62057 12.3066 1.79215C12.3776 1.96373 12.4142 2.14762 12.4142 2.33334C12.4142 2.51906 12.3776 2.70296 12.3066 2.87454C12.2355 3.04612 12.1313 3.20202 12 3.33334L3.66667 11.6667L1 12.3333L1.66667 9.66668L10 1.33334Z"
-                  stroke-linecap="round" stroke-linejoin="round" />
+          <div class="settings-section">
+            <button @click="settingsMenu = !settingsMenu" class="settings-button">Settings</button>
+            <button @click="closeChat" class="minimize-button">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11.5 0.5L0.5 11.5M0.5 0.5L11.5 11.5" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
+            </button>
+          </div>
+        </div>
+        <div v-show="settingsMenu" class="chat-subHeader">
+          <div class="user-section">
+            <div v-if="getOptions()?.changeNickMode === 'user'" class="user-name-input">
+              <div v-if="!editMode">
+                <span>{{ getMyName() }}</span>
+                <svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg"
+                  @click="enterEditMode">
+                  <path
+                    d="M7 12.3333H13M10 1.33334C10.2652 1.06813 10.6249 0.919128 11 0.919128C11.1857 0.919128 11.3696 0.955708 11.5412 1.02678C11.7128 1.09785 11.8687 1.20202 12 1.33334C12.1313 1.46466 12.2355 1.62057 12.3066 1.79215C12.3776 1.96373 12.4142 2.14762 12.4142 2.33334C12.4142 2.51906 12.3776 2.70296 12.3066 2.87454C12.2355 3.04612 12.1313 3.20202 12 3.33334L3.66667 11.6667L1 12.3333L1.66667 9.66668L10 1.33334Z"
+                    stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </div>
+              <div v-else>
+                <input v-model="editedUserName" @keypress.enter="saveEditedUserName" class="edit-user-input" />
+                <button class="change-name-btn" @click="saveEditedUserName">OK</button>
+                <button class="cancel-change-name-btn" @click="exitEditMode">Cancel</button>
+              </div>
             </div>
             <div v-else>
-              <input v-model="editedUserName" @keypress.enter="saveEditedUserName" class="edit-user-input" />
-              <button class="change-name-btn" @click="saveEditedUserName">OK</button>
-              <button class="cancel-change-name-btn" @click="exitEditMode">Cancel</button>
+              <span>{{ getMyName() }}</span>
             </div>
           </div>
-          <div v-else>
-            <span>{{ getMyName() }}</span>
-          </div>
         </div>
-      </div>
-      <div class="chat-body" ref="messageContainerRef">
-        <div v-for="(message, idx) in messageFiltered" :key="message.id"
-          :class="{ 'own-message': message.author.id === getMyID() }" class="message-container">
-          <span v-show="checkPreviousMsgName(idx)" class="user-name-baloon">
-            {{ message.author.name }}
-          </span>
-          <div class="message">
-            <div class="message-content">{{ message.data.text }}</div>
-          </div>
-          <div class="timestamp">
-            <span>
-              {{ (new Date(message.timestamp)).toLocaleTimeString() }}
+        <div class="chat-body" ref="messageContainerRef">
+          <div v-for="(message, idx) in messageFiltered" :key="message.id"
+            :class="{ 'own-message': message.author.id === getMyID() }" class="message-container">
+            <span v-show="checkPreviousMsgName(idx)" class="user-name-baloon">
+              {{ message.author.name }}
             </span>
+            <div class="message">
+              <div class="message-content">{{ message.data.text }}</div>
+            </div>
+            <div class="timestamp">
+              <span>
+                {{ (new Date(message.timestamp)).toLocaleTimeString() }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="chat-footer">
+          <div class="message-input">
+            <input v-model="messageInput" placeholder="Type your message..." @keypress.enter="handleSendMessage"
+              :disabled="loadingRoom" />
+            <button @click="handleSendMessage" class="send-button" :disabled="loadingRoom || !messageInput">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="current">
+                <path
+                  d="M20.3534 10.9267C21.2378 11.3689 21.2378 12.6311 20.3534 13.0733L4.61964 20.9402C3.59859 21.4507 2.50875 20.3816 2.99955 19.351L6.25432 12.5159C6.40974 12.1895 6.40974 11.8105 6.25432 11.4841L2.99955 4.64905C2.50875 3.61837 3.59859 2.54929 4.61964 3.05982L20.3534 10.9267Z" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
-      <div class="chat-footer">
-        <div class="message-input">
-          <input v-model="messageInput" placeholder="Type your message..." @keypress.enter="handleSendMessage"
-            :disabled="loadingRoom" />
-          <button @click="handleSendMessage" class="send-button" :disabled="loadingRoom || !messageInput">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="current">
-              <path
-                d="M20.3534 10.9267C21.2378 11.3689 21.2378 12.6311 20.3534 13.0733L4.61964 20.9402C3.59859 21.4507 2.50875 20.3816 2.99955 19.351L6.25432 12.5159C6.40974 12.1895 6.40974 11.8105 6.25432 11.4841L2.99955 4.64905C2.50875 3.61837 3.59859 2.54929 4.61964 3.05982L20.3534 10.9267Z" />
-            </svg>
-          </button>
-        </div>
-      </div>
+      <button v-else @click="openChat" class="open-button">
+        <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z"
+            stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
     </div>
-    <button v-else @click="openChat" class="open-button">
-      <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <div v-else-if="getStatus() === 'connecting'" class="spinner">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="10" stroke-opacity="0.4" stroke-width="4" />
         <path
-          d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z"
-          stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
-    </button>
-  </div>
-  <div v-else-if="getStatus() === 'connecting'" class="spinner">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="12" cy="12" r="10" stroke-opacity="0.4" stroke-width="4" />
-      <path
-        d="M12 22C10.6868 22 9.38642 21.7413 8.17317 21.2388C6.95991 20.7362 5.85752 19.9997 4.92893 19.0711C4.00035 18.1425 3.26375 17.0401 2.7612 15.8268C2.25866 14.6136 2 13.3132 2 12"
-        stroke-opacity="0.8" stroke-width="4" />
-      <path
-        d="M12 2C13.3132 2 14.6136 2.25866 15.8268 2.76121C17.0401 3.26375 18.1425 4.00035 19.0711 4.92894C19.9997 5.85752 20.7363 6.95992 21.2388 8.17317C21.7413 9.38643 22 10.6868 22 12"
-        stroke-opacity="0.8" stroke-width="4" />
-    </svg>
-
-  </div>
-  <div v-else>
-    <button @click="openChat" class="load-button">
-      <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          d="M12 22C10.6868 22 9.38642 21.7413 8.17317 21.2388C6.95991 20.7362 5.85752 19.9997 4.92893 19.0711C4.00035 18.1425 3.26375 17.0401 2.7612 15.8268C2.25866 14.6136 2 13.3132 2 12"
+          stroke-opacity="0.8" stroke-width="4" />
         <path
-          d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z"
-          stroke-linecap="round" stroke-linejoin="round" />
+          d="M12 2C13.3132 2 14.6136 2.25866 15.8268 2.76121C17.0401 3.26375 18.1425 4.00035 19.0711 4.92894C19.9997 5.85752 20.7363 6.95992 21.2388 8.17317C21.7413 9.38643 22 10.6868 22 12"
+          stroke-opacity="0.8" stroke-width="4" />
       </svg>
 
-    </button>
+    </div>
+    <div v-else>
+      <button @click="openChat" class="load-button">
+        <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z"
+            stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+
+      </button>
+    </div>
   </div>
 </template>
 
@@ -381,11 +388,27 @@ watchEffect(() => {
 }
 
 .change-name-btn {
+  cursor: pointer;
   margin-left: 8px;
+  color: v-bind('computedCss.colors.subHeader.text');
+  background: transparent;
+  border: none;
+}
+
+.change-name-btn:hover {
+  color: v-bind('computedCss.colors.subHeader.textHover');
 }
 
 .cancel-change-name-btn {
+  cursor: pointer;
   margin-left: auto;
+  color: v-bind('computedCss.colors.subHeader.text');
+  background: transparent;
+  border: none;
+}
+
+.cancel-change-name-btn:hover {
+  color: v-bind('computedCss.colors.subHeader.textHover');
 }
 
 .room-dropdown {
@@ -467,6 +490,7 @@ watchEffect(() => {
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease-in-out;
+  box-shadow: 0px 10px 25px -5px rgba(0, 0, 0, v-bind('computedCss.shadows.openedComponent'));
 }
 
 .chat-container.open {
@@ -489,9 +513,16 @@ watchEffect(() => {
   align-items: center;
 }
 
+.settings-button {
+  color: v-bind('computedCss.colors.header.text');
+  background: transparent;
+  border: none;
+}
+
 .settings-button:hover {
   color: v-bind('computedCss.colors.header.textHover');
   text-decoration: underline;
+  cursor: pointer;
 }
 
 .user-section {
@@ -511,8 +542,7 @@ watchEffect(() => {
   display: flex;
   align-items: center;
   padding: 16px;
-  width: 100%;
-  min-height: 78px;
+  min-height: 48px;
   background-color: v-bind('computedCss.colors.subHeader.main');
   color: v-bind('computedCss.colors.subHeader.text');
 }
@@ -522,6 +552,7 @@ watchEffect(() => {
 }
 
 .edit-user-input {
+  border: none;
   font-size: 14px;
   border-radius: 8px;
   margin: 4px 0px;
@@ -561,6 +592,7 @@ watchEffect(() => {
 .message-input input {
   width: 100%;
   outline: none;
+  border: none;
   font-size: 14px;
   color: v-bind('computedCss.colors.input.text');
   background-color: v-bind('computedCss.colors.input.main');
@@ -631,10 +663,19 @@ watchEffect(() => {
 .minimize-button {
   margin-left: 32px;
   stroke: v-bind('computedCss.colors.minimizeBtn.main');
+  background: transparent;
+}
+
+.minimize-button svg{
+  vertical-align: middle;
 }
 
 .minimize-button:hover {
   stroke: v-bind('computedCss.colors.minimizeBtn.hover');
+}
+
+.send-button {
+  background: transparent;
 }
 
 .send-button svg {
@@ -661,7 +702,7 @@ watchEffect(() => {
 }
 
 .own-message .user-name-baloon {
-  color: v-bind('computedCss.colors.chat.myMessage.main');
+  color: v-bind('computedCss.colors.chat.myMessage.user');
 }
 
 .own-message div {
@@ -675,7 +716,6 @@ watchEffect(() => {
 }
 
 .own-message .timestamp {
-  margin: 4px 0px 8px 0px;
   align-self: end;
 }
 
@@ -686,7 +726,7 @@ watchEffect(() => {
 .user-name-baloon {
   font-size: 10px;
   margin-bottom: 4px;
-  color: v-bind('computedCss.colors.chat.otherMessage.main');
+  color: v-bind('computedCss.colors.chat.otherMessage.user');
 }
 
 .message-container {
@@ -710,6 +750,7 @@ watchEffect(() => {
 
 .timestamp {
   font-size: 9px;
+  margin: 4px 0px 8px 0px;
   color: v-bind('computedCss.colors.chat.timestamp');
 }
 
@@ -725,5 +766,9 @@ watchEffect(() => {
   100% {
     transform: rotate(360deg);
   }
+}
+
+.waku-chat-vue-plugin {
+  font-family: 'IBM Plex Sans Var';
 }
 </style>

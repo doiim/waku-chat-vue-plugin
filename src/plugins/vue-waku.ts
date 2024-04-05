@@ -1,14 +1,19 @@
+
+import { bootstrap } from "@libp2p/bootstrap"
+import { Type, Field } from "protobufjs"
+import {
+  createDecoder,
+  createEncoder,
+  createLightNode,
+  waitForRemotePeer,
+  Protocols,
+} from "@waku/sdk"
+
 const plugin = {
   install: async (app: any, ChatOptions: any) => {
 
     loadPlugin = async () => {
-      const { bootstrap } = await import("@libp2p/bootstrap")
-      const { Type, Field } = await import("protobufjs")
-      const {
-        createLightNode,
-        waitForRemotePeer,
-        Protocols,
-      } = await import("@waku/sdk")
+
 
       const startWaku = async function () {
         let libp2p = undefined
@@ -65,10 +70,7 @@ export default plugin
 export let loadPlugin: () => any = async () => { }
 
 export const changeTopic = async (_channel: string, _topic: string) => {
-  const {
-    createDecoder,
-    createEncoder,
-  } = await import("@waku/sdk")
+
   const topic = _topic.toLowerCase().replace(/\s/g, '');
   const channel = _channel.toLowerCase().replace(/\s/g, '');
 

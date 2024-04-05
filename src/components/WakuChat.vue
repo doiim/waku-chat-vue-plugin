@@ -32,12 +32,12 @@ const computedCss = ref<WakuChatConfigCss>({
   colors: {
     header: {
       main: 'rgba(219, 234, 254, 1)',
-      text: 'rgba(107, 114, 128, 1)',
-      textHover: 'rgba(37, 99, 235, 1)',
+      text: 'rgba(37, 99, 235, 1)',
+      textHover: 'rgba(30, 64, 175, 1)',
     },
     room: {
       btn: {
-        text: 'rgba(31, 41, 55, 1)',
+        text: 'rgba(37, 99, 235, 1)',
         textHover: 'rgba(37, 99, 235, 1)',
       },
       dropdown: {
@@ -50,7 +50,7 @@ const computedCss = ref<WakuChatConfigCss>({
     subHeader: {
       main: 'rgba(239, 246, 255, 1)',
       text: 'rgba(37, 99, 235, 1)',
-      textHover: 'rgba(37, 99, 235, 1)',
+      textHover: 'rgba(30, 64, 175, 1)',
       editName: {
         main: 'rgba(229, 231, 235, 1)',
         placeholder: 'rgba(156, 163, 175, 1)',
@@ -60,9 +60,9 @@ const computedCss = ref<WakuChatConfigCss>({
     },
     loadBtn: {
       main: 'rgba(37, 99, 235, 1)',
-      hover: 'rgba(59, 130, 246,1)',
+      hover: 'rgba(30, 64, 175, 1)',
       text: 'rgba(249, 250, 251, 1)',
-      textHover: 'rgba(37, 99, 235, 1)',
+      textHover: 'rgba(249, 250, 251, 1)',
     },
     loadingBtn: {
       main: 'rgba(37, 99, 235, 1)',
@@ -70,15 +70,15 @@ const computedCss = ref<WakuChatConfigCss>({
     },
     openBtn: {
       main: 'rgba(37, 99, 235, 1)',
-      hover: 'rgba(59, 130, 246,1)',
+      hover: 'rgba(30, 64, 175, 1)',
       text: 'rgba(249, 250, 251, 1)',
-      textHover: 'rgba(37, 99, 235, 1)',
+      textHover: 'rgba(249, 250, 251, 1)',
     },
     sendBtn: {
       main: 'rgba(37, 99, 235, 1)',
-      hover: 'rgba(59, 130, 246,1)',
+      hover: 'rgba(30, 64, 175, 1)',
       text: 'rgba(249, 250, 251, 1)',
-      textHover: 'rgba(37, 99, 235, 1)',
+      textHover: 'rgba(249, 250, 251, 1)',
       disabled: 'rgba(75, 85, 99, 1)',
     },
     input: {
@@ -89,7 +89,7 @@ const computedCss = ref<WakuChatConfigCss>({
     },
     minimizeBtn: {
       main: 'rgba(107, 114, 128, 1)',
-      hover: 'rgba(37, 99, 235, 1)',
+      hover: 'rgba(30, 64, 175, 1)',
     },
     chat: {
       myMessage: {
@@ -278,8 +278,7 @@ watchEffect(() => {
               </svg>
             </div>
             <div v-else>
-              <input v-model="editedUserName" @keypress.enter="saveEditedUserName"
-                class="edit-user-input" />
+              <input v-model="editedUserName" @keypress.enter="saveEditedUserName" class="edit-user-input" />
               <button class="change-name-btn" @click="saveEditedUserName">OK</button>
               <button class="cancel-change-name-btn" @click="exitEditMode">Cancel</button>
             </div>
@@ -356,13 +355,18 @@ watchEffect(() => {
 }
 
 .user-name-input input {
-  width: fit-content;
-  max-width: 50%;
+  width: 50%;
   outline: none;
   font-size: 14px;
   padding-left: 8px;
   color: v-bind('computedCss.colors.subHeader.editName.text');
   background-color: v-bind('computedCss.colors.subHeader.editName.main');
+}
+
+.user-name-input div span {
+  max-width: 50%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .user-name-input svg {
@@ -448,6 +452,7 @@ watchEffect(() => {
 .dropdown-button:hover {
   color: v-bind('computedCss.colors.room.btn.textHover');
   stroke: v-bind('computedCss.colors.room.btn.textHover');
+  text-decoration: underline;
 }
 
 .chat-container {
@@ -486,6 +491,7 @@ watchEffect(() => {
 
 .settings-button:hover {
   color: v-bind('computedCss.colors.header.textHover');
+  text-decoration: underline;
 }
 
 .user-section {
@@ -506,6 +512,7 @@ watchEffect(() => {
   align-items: center;
   padding: 16px;
   width: 100%;
+  min-height: 78px;
   background-color: v-bind('computedCss.colors.subHeader.main');
   color: v-bind('computedCss.colors.subHeader.text');
 }
@@ -580,6 +587,7 @@ watchEffect(() => {
 .minimize-button,
 .send-button {
   cursor: pointer;
+  border-width: 0px;
 }
 
 .open-button,

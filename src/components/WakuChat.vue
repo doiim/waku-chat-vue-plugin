@@ -374,6 +374,7 @@ watchEffect(() => {
   max-width: 50%;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 12px;
 }
 
 .user-name-input svg {
@@ -534,7 +535,6 @@ watchEffect(() => {
 
 .room-section {
   display: flex;
-  align-items: center;
   width: 100%;
 }
 
@@ -562,6 +562,7 @@ watchEffect(() => {
 
 .room-info {
   margin-right: 10px;
+  font-size: 12px;
 }
 
 .room-name {
@@ -666,7 +667,7 @@ watchEffect(() => {
   background: transparent;
 }
 
-.minimize-button svg{
+.minimize-button svg {
   vertical-align: middle;
 }
 
@@ -701,10 +702,6 @@ watchEffect(() => {
   animation: spin 1s linear infinite;
 }
 
-.own-message .user-name-baloon {
-  color: v-bind('computedCss.colors.chat.myMessage.user');
-}
-
 .own-message div {
   align-self: end;
 }
@@ -721,10 +718,11 @@ watchEffect(() => {
 
 .own-message .user-name-baloon {
   align-self: end;
+  color: v-bind('computedCss.colors.chat.myMessage.user');
 }
 
 .user-name-baloon {
-  font-size: 10px;
+  font-size: 10px !important;
   margin-bottom: 4px;
   color: v-bind('computedCss.colors.chat.otherMessage.user');
 }
@@ -749,9 +747,12 @@ watchEffect(() => {
 }
 
 .timestamp {
-  font-size: 9px;
   margin: 4px 0px 8px 0px;
   color: v-bind('computedCss.colors.chat.timestamp');
+}
+
+.timestamp span {
+  font-size: 9px !important;
 }
 
 .message-content {
@@ -768,7 +769,11 @@ watchEffect(() => {
   }
 }
 
-.waku-chat-vue-plugin {
-  font-family: 'IBM Plex Sans Var';
+.waku-chat-vue-plugin div,
+.waku-chat-vue-plugin button,
+.waku-chat-vue-plugin span,
+.waku-chat-vue-plugin input {
+  font-family: IBM Plex Sans Var;
+  font-size: 14px;
 }
 </style>

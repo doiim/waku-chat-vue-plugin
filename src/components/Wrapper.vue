@@ -26,8 +26,9 @@ onMounted(() => {
 
 <template>
     <shadow-root>
-        <head ref="shadowRootHeadRef">
-        </head>
+
+        <head ref="shadowRootHeadRef"> </head>
+
         <body>
             <WakuChat :externalUserId="props.externalUserId" />
         </body>

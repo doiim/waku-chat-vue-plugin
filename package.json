@@ -1,9 +1,8 @@
 {
-  "name": "waku-chat-vue-plugin",
+  "name": "@doiim/waku-chat-vue-plugin",
   "type": "module",
   "homepage": "https://doiim.github.io/waku-chat-vue-plugin/",
-  "version": "0.0.1",
-  "private": true,
+  "version": "0.8.0",
   "main": "./dist/waku-chat-vue-plugin.umd.cjs",
   "module": "./dist/waku-chat-vue-plugin.js",
   "keywords": [

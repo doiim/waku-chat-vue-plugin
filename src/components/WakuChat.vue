@@ -773,7 +773,7 @@ watchEffect(() => {
 .waku-chat-vue-plugin button,
 .waku-chat-vue-plugin span,
 .waku-chat-vue-plugin input {
-  font-family: IBM Plex Sans Var;
+  font-family: "IBM Plex Sans";
   font-size: 14px;
 }
 </style>

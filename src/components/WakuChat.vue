@@ -268,7 +268,7 @@ watchEffect(() => {
       maxWidth: '50%',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
-      fontSize: '12px'
+      fontSize: '12px !important'
     },
     '.user-name-input svg': {
       cursor: 'pointer',
@@ -396,7 +396,7 @@ watchEffect(() => {
     },
     '.user-section': {
       display: 'flex',
-      fontSize: '12px',
+      fontSize: '12px !important',
       width: '100%',
       justifyContent: 'space-between'
     },

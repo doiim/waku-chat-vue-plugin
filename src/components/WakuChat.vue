@@ -27,6 +27,7 @@ const loadingRoom = ref<boolean>(false);
 
 const messageFiltered = ref<Message[]>([]);
 const messageInput = ref<string>('');
+const showSettings = ref<boolean>(false);
 
 const computedCss = ref<WakuChatConfigCss>({
   colors: {
@@ -137,6 +138,8 @@ onMounted(() => {
   };
   //document.dispatchEvent(new CustomEvent('changeNickName', { detail: 'newNick' }));
   document.addEventListener('changeNickName', handleNickNameChange);
+
+  showSettings.value = !!getOptions()?.showSettings;
 
   onBeforeUnmount(() => {
     document.removeEventListener('changeNickName', handleNickNameChange);
@@ -434,12 +437,20 @@ watchEffect(() => {
     '.chat-body': {
       flex: '1',
       overflowY: 'auto',
-      padding: '10px'
+      padding: '16px 1px 0px 16px',
+      marginRight: '15px'
+    },
+    '.chat-body::-webkit-scrollbar': {
+      width: '5px'
+    },
+    '.chat-body::-webkit-scrollbar-thumb': {
+      backgroundColor: computedCss.value.colors.border,
+      borderRadius: '5px',
     },
     '.chat-footer': {
       display: 'flex',
       alignItems: 'center',
-      padding: '24px'
+      padding: '16px 16px 24px 16px'
     },
     '.message-input': {
       display: 'flex',
@@ -558,7 +569,7 @@ watchEffect(() => {
     },
     '.user-name-baloon': {
       fontSize: '10px !important',
-      marginBottom: '8px',
+      marginBottom: '4px',
       color: computedCss.value.colors.chat.otherMessage.user
     },
     '.message-container': {
@@ -578,10 +589,8 @@ watchEffect(() => {
       color: computedCss.value.colors.chat.otherMessage.text
     },
     '.timestamp': {
+      color: computedCss.value.colors.chat.timestamp,
       margin: '8px 0px 8px 0px',
-      color: computedCss.value.colors.chat.timestamp
-    },
-    '.timestamp span': {
       fontSize: '9px !important'
     },
     '.message-content': {
@@ -632,14 +641,14 @@ watchEffect(() => {
               </div>
             </div>
           </div>
-          <div class="settings-section">
+          <div v-if="showSettings" class="settings-section">
             <button @click="settingsMenu = !settingsMenu" class="settings-button">Settings</button>
-            <button @click="closeChat" class="minimize-button">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M11.5 0.5L0.5 11.5M0.5 0.5L11.5 11.5" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </button>
           </div>
+          <button @click="closeChat" class="minimize-button">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M11.5 0.5L0.5 11.5M0.5 0.5L11.5 11.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
         </div>
         <div v-show="settingsMenu" class="chat-subHeader">
           <div class="user-section">
@@ -674,9 +683,7 @@ watchEffect(() => {
               <div class="message-content">{{ message.data.text }}</div>
             </div>
             <div class="timestamp">
-              <span>
-                {{ (new Date(message.timestamp)).toLocaleTimeString() }}
-              </span>
+              {{ (new Date(message.timestamp)).toLocaleTimeString() }}
             </div>
           </div>
         </div>

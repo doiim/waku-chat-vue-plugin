@@ -16,7 +16,8 @@ export interface WakuChatVuePluginOptions {
     availableRooms: string[],
     changeNickMode: 'application' | 'user' | 'none',
     allowPrivateChat: boolean,
-    cssConfig?: WakuChatConfigCss
+    cssConfig?: WakuChatConfigCss,
+    showSettings?: boolean
 }
 
 export interface WakuChatConfigCss {

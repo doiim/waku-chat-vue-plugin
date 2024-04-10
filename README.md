@@ -156,6 +156,14 @@ Here are the available configuration options:
 
   To change user’s nickname.
 
+  TIP: If you change id during the application run (because of login or logout) and you want your names derived of the id, you need to notice that the user name will persist, so you need to reset it:
+
+  ```js
+  document.dispatchEvent(new CustomEvent('changeNickName', { detail: '' }));
+  ```
+
+  So, when you change the id, a new name will be generated, or you can set another name on the message and no need to generate another.
+
 - `cssConfig`:(Object) (optional) - Allow you to change css. ALl of them are optional, if you don’t set any of them, a default value will be applied. They are:
   - colors:(Object) - Allow you to change colors of components.
     - header: (Object) - Allow you to change colors from header.

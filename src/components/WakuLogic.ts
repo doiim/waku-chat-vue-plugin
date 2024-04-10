@@ -2,6 +2,7 @@ import { Message, Participant } from "../types/ChatTypes";
 import { ref, inject } from "vue";
 import { changeTopic, loadPlugin } from "../plugins/vue-waku";
 import { WakuChatVuePluginOptions } from "../types/ChatTypes";
+import { generate } from "random-words";
 
 type WakuData = {
     startWaku?: () => Promise<any>,
@@ -107,7 +108,7 @@ export const setMyID = (_newID: string) => {
     myInfo.value.id = _newID
     localStorage.setItem('myWakuChatId', _newID);
     if (!getMyName()) {
-        setMyName(`User ${getMyID().substring(0, 10)}`)
+        setMyName(generate({ exactly: 3, minLength: 4,join:'-', seed: myInfo.value.id }))
     }
 }
 

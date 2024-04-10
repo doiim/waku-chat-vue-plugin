@@ -32,8 +32,9 @@ const computedCss = ref<WakuChatConfigCss>({
   colors: {
     header: {
       main: 'rgba(219, 234, 254, 1)',
-      text: 'rgba(37, 99, 235, 1)',
-      textHover: 'rgba(30, 64, 175, 1)',
+      text: 'rgba(107, 114, 128, 1)',
+      btn: 'rgba(37, 99, 235, 1)',
+      btnHover: 'rgba(30, 64, 175, 1)',
     },
     room: {
       btn: {
@@ -108,7 +109,10 @@ const computedCss = ref<WakuChatConfigCss>({
     border: 'rgba(37, 99, 235, 1)',
   },
   shadows: {
-    openedComponent: 0.8
+    openedComponent: 0.1
+  },
+  border: {
+    size: '1px'
   }
 });
 
@@ -116,6 +120,12 @@ const editMode = ref(false);
 const editedUserName = ref('');
 
 const messageContainerRef = ref<HTMLElement | null>(null);
+
+const roomDropdownOpened = ref<boolean>(false);
+
+const handleToggleRoomDropdown = () => {
+  roomDropdownOpened.value = !roomDropdownOpened.value
+}
 
 onMounted(() => {
   const handleNickNameChange = (event: Event) => {
@@ -155,6 +165,7 @@ const getRoomName = (room: string) => {
 };
 
 const changeRoomDropdown = async (selectedRoom: string) => {
+  handleToggleRoomDropdown()
   loadingRoom.value = true
   await setRoom(selectedRoom);
   loadingRoom.value = false
@@ -249,7 +260,6 @@ watchEffect(() => {
     '.user-name-input input': {
       width: '50%',
       outline: 'none',
-      fontSize: '14px',
       paddingLeft: '8px',
       color: computedCss.value.colors.subHeader.editName.text,
       backgroundColor: computedCss.value.colors.subHeader.editName.main
@@ -293,11 +303,8 @@ watchEffect(() => {
       position: 'relative',
       display: 'inline-block'
     },
-    '.room-dropdown:hover .dropdown-content': {
-      display: 'block'
-    },
     '.dropdown-content': {
-      display: 'none',
+      display: 'block',
       left: '-62px',
       position: 'absolute',
       backgroundColor: computedCss.value.colors.room.dropdown.main,
@@ -335,7 +342,6 @@ watchEffect(() => {
       border: 'none',
       cursor: 'pointer',
       fontWeight: '600',
-      fontSize: '14px',
       color: computedCss.value.colors.room.btn.text,
       stroke: computedCss.value.colors.room.btn.text
     },
@@ -354,7 +360,7 @@ watchEffect(() => {
       bottom: '16px',
       right: '16px',
       backgroundColor: computedCss.value.colors.background,
-      border: '2px solid ' + computedCss.value.colors.border,
+      border: computedCss.value.border.size + ' solid ' + computedCss.value.colors.border,
       borderRadius: '8px',
       display: 'flex',
       flexDirection: 'column',
@@ -379,12 +385,12 @@ watchEffect(() => {
       alignItems: 'center'
     },
     '.settings-button': {
-      color: computedCss.value.colors.header.text,
+      color: computedCss.value.colors.header.btn,
       background: 'transparent',
       border: 'none'
     },
     '.settings-button:hover': {
-      color: computedCss.value.colors.header.textHover,
+      color: computedCss.value.colors.header.btnHover,
       textDecoration: 'underline',
       cursor: 'pointer'
     },
@@ -396,7 +402,8 @@ watchEffect(() => {
     },
     '.room-section': {
       display: 'flex',
-      width: '100%'
+      width: '100%',
+      alignItems: 'center'
     },
     '.chat-subHeader': {
       display: 'flex',
@@ -411,7 +418,6 @@ watchEffect(() => {
     },
     '.edit-user-input': {
       border: 'none',
-      fontSize: '14px',
       borderRadius: '8px',
       margin: '4px 0px',
       height: '38px',
@@ -419,10 +425,10 @@ watchEffect(() => {
     },
     '.room-info': {
       marginRight: '10px',
-      fontSize: '12px'
+      fontSize: '12px !important',
+      color: computedCss.value.colors.header.text
     },
     '.room-name': {
-      fontSize: '14px',
       fontWeight: 'bold'
     },
     '.chat-body': {
@@ -438,7 +444,8 @@ watchEffect(() => {
     '.message-input': {
       display: 'flex',
       width: '100%',
-      padding: '12px',
+      height: '48px',
+      padding: '0px 12px',
       borderRadius: '8px',
       backgroundColor: computedCss.value.colors.input.main
     },
@@ -446,9 +453,15 @@ watchEffect(() => {
       width: '100%',
       outline: 'none',
       border: 'none',
-      fontSize: '14px',
       color: computedCss.value.colors.input.text,
       backgroundColor: computedCss.value.colors.input.main
+    },
+    '.message-input input::placeholder': {
+      color: computedCss.value.colors.input.placeholder,
+      opacity: "1",
+    },
+    '.message-input input::-ms-input-placeholder': {
+      color: computedCss.value.colors.input.placeholder,
     },
     '.message-input button': {
       marginLeft: 'auto'
@@ -507,6 +520,7 @@ watchEffect(() => {
     },
     '.send-button': {
       background: 'transparent',
+      marginTop: '4px'
     },
     '.send-button svg': {
       fill: computedCss.value.colors.sendBtn.main,
@@ -531,6 +545,7 @@ watchEffect(() => {
     },
     '.own-message .message': {
       backgroundColor: computedCss.value.colors.chat.myMessage.main,
+      fontWeight: '400',
       color: computedCss.value.colors.chat.myMessage.text,
       alignSelf: 'end'
     },
@@ -543,7 +558,7 @@ watchEffect(() => {
     },
     '.user-name-baloon': {
       fontSize: '10px !important',
-      marginBottom: '4px',
+      marginBottom: '8px',
       color: computedCss.value.colors.chat.otherMessage.user
     },
     '.message-container': {
@@ -563,7 +578,7 @@ watchEffect(() => {
       color: computedCss.value.colors.chat.otherMessage.text
     },
     '.timestamp': {
-      margin: '4px 0px 8px 0px',
+      margin: '8px 0px 8px 0px',
       color: computedCss.value.colors.chat.timestamp
     },
     '.timestamp span': {
@@ -601,13 +616,13 @@ watchEffect(() => {
               Room
             </div>
             <div class="room-dropdown">
-              <button class="dropdown-button">
+              <button class="dropdown-button" @click="handleToggleRoomDropdown">
                 <div>{{ getRoomName(getRoom()) }}</div>
                 <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M4 6.5L8 10.5L12 6.5" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </button>
-              <div class="dropdown-content">
+              <div v-if="roomDropdownOpened" class="dropdown-content">
                 <div v-for="availableRoom in getOptions()?.availableRooms" :key="availableRoom">
                   <button :class="availableRoom === getRoom() ? 'selected' : ''"
                     @click="changeRoomDropdown(availableRoom)">

@@ -49,71 +49,88 @@ Follow these steps to install and use the package in your project:
         cssConfig: {
           colors: {
             header: {
-              main: "rgba(219, 234, 254, 1)",
-              text: "rgba(107, 114, 128, 1)",
-              textHover: "rgba(37, 99, 235, 1)",
+              main: 'rgba(219, 234, 254, 1)',
+              text: 'rgba(107, 114, 128, 1)',
+              btn: 'rgba(37, 99, 235, 1)',
+              btnHover: 'rgba(30, 64, 175, 1)',
             },
             room: {
               btn: {
-                text: "rgba(31, 41, 55, 1)",
-                textHover: "rgba(37, 99, 235, 1)",
+                text: 'rgba(37, 99, 235, 1)',
+                textHover: 'rgba(30, 64, 175, 1)',
               },
               dropdown: {
-                main: "rgba(255, 255, 255, 1)",
-                text: "rgba(31, 41, 55, 1)",
-                hover: "rgba(243, 244, 246, 1)",
-                selected: "rgba(29, 78, 216, 1)",
-              },
+                main: 'rgba(255, 255, 255, 1)',
+                text: 'rgba(31, 41, 55, 1)',
+                hover: 'rgba(243, 244, 246, 1)',
+                selected: 'rgba(29, 78, 216, 1)'
+              }
             },
             subHeader: {
-              main: "rgba(239, 246, 255, 1)",
-              text: "rgba(37, 99, 235, 1)",
-              textHover: "rgba(37, 99, 235, 1)",
+              main: 'rgba(239, 246, 255, 1)',
+              text: 'rgba(37, 99, 235, 1)',
+              textHover: 'rgba(30, 64, 175, 1)',
+              editName: {
+                main: 'rgba(229, 231, 235, 1)',
+                placeholder: 'rgba(156, 163, 175, 1)',
+                text: 'rgba(31, 41, 55, 1)',
+                disabled: 'rgba(229, 231, 235, 1)',
+              }
             },
             loadBtn: {
-              main: "rgba(37, 99, 235, 1)",
-              hover: "rgba(59, 130, 246,1)",
-              text: "rgba(249, 250, 251, 1)",
-              textHover: "rgba(37, 99, 235, 1)",
+              main: 'rgba(37, 99, 235, 1)',
+              hover: 'rgba(30, 64, 175, 1)',
+              text: 'rgba(249, 250, 251, 1)',
+              textHover: 'rgba(249, 250, 251, 1)',
             },
             loadingBtn: {
-              main: "rgba(37, 99, 235, 1)",
-              text: "rgba(249, 250, 251, 1)",
+              main: 'rgba(37, 99, 235, 1)',
+              text: 'rgba(249, 250, 251, 1)',
             },
             openBtn: {
-              main: "rgba(37, 99, 235, 1)",
-              hover: "rgba(59, 130, 246,1)",
-              text: "rgba(249, 250, 251, 1)",
-              textHover: "rgba(37, 99, 235, 1)",
+              main: 'rgba(37, 99, 235, 1)',
+              hover: 'rgba(30, 64, 175, 1)',
+              text: 'rgba(249, 250, 251, 1)',
+              textHover: 'rgba(249, 250, 251, 1)',
             },
             sendBtn: {
-              main: "rgba(37, 99, 235, 1)",
-              hover: "rgba(59, 130, 246,1)",
-              text: "rgba(249, 250, 251, 1)",
-              textHover: "rgba(37, 99, 235, 1)",
+              main: 'rgba(37, 99, 235, 1)',
+              hover: 'rgba(30, 64, 175, 1)',
+              text: 'rgba(249, 250, 251, 1)',
+              textHover: 'rgba(249, 250, 251, 1)',
+              disabled: 'rgba(75, 85, 99, 1)',
             },
             input: {
-              main: "rgba(229, 231, 235, 1)",
-              placeholder: "rgba(156, 163, 175, 1)",
-              text: "rgba(31, 41, 55, 1)",
+              main: 'rgba(229, 231, 235, 1)',
+              placeholder: 'rgba(156, 163, 175, 1)',
+              text: 'rgba(31, 41, 55, 1)',
+              disabled: 'rgba(229, 231, 235, 1)',
             },
             minimizeBtn: {
-              main: "rgba(107, 114, 128, 1)",
-              hover: "rgba(37, 99, 235, 1)",
+              main: 'rgba(107, 114, 128, 1)',
+              hover: 'rgba(30, 64, 175, 1)',
             },
             chat: {
               myMessage: {
-                main: "rgba(37, 99, 235, 1)",
-                text: "rgba(249, 250, 251, 1)",
+                main: 'rgba(37, 99, 235, 1)',
+                user: 'rgba(37, 99, 235, 1)',
+                text: 'rgba(249, 250, 251, 1)',
               },
               otherMessage: {
-                main: "rgba(229, 231, 235, 1)",
-                text: "rgba(31, 41, 55, 1)",
+                main: 'rgba(229, 231, 235, 1)',
+                user: 'rgba(156, 163, 175, 1)',
+                text: 'rgba(31, 41, 55, 1)',
               },
-              timestamp: "rgba(156, 163, 175, 1)",
+              timestamp: 'rgba(156, 163, 175, 1)',
             },
-            background: "rgba(249, 250, 251, 1)",
-            border: "rgba(37, 99, 235, 1)",
+            background: 'rgba(249, 250, 251, 1)',
+            border: 'rgba(37, 99, 235, 1)',
+          },
+          shadows: {
+            openedComponent: 0.1
+          },
+          border: {
+            size: '1px'
           },
         },
       })
@@ -144,7 +161,8 @@ Here are the available configuration options:
     - header: (Object) - Allow you to change colors from header.
       - main: (string) - main color.
       - text: (string) - text color
-      - textHover: (string) - text hover color.
+      - btn: (string) - buttons color
+      - btnHover: (string) - buttons hover color.
     - room: (Object) - Allow you to change colors from room components.
       - btn: (Object) - Allow you to change colors from room button.
         - text: (string) - text color.
@@ -158,6 +176,11 @@ Here are the available configuration options:
       - main: (string) - main color.
       - text: (string) - text color.
       - textHover: (string) - text hover color.
+      - editName - Change color for change name input
+          - main - main color
+          - placeholder - placeholder text color
+          - text - text color
+          - disabled - disabled color
     - loadBtn: (Object) - Allow you to change colors from load button.
       - main: (string) - main color.
       - hover: (string) - hover color.
@@ -188,13 +211,19 @@ Here are the available configuration options:
     - chat: (Object) - Allow you to change colors from chat content.
       - myMessage: (Object) - Allow you to change colors from use messages.
         - main: (string) - main color.
+        - user: (string) - user name color.
         - text: (string) - text color.
       - otherMessage: (Object) - Allow you to change colors from others messages.
         - main: (string) - main color.
+        - user: (string) - user name color.
         - text: (string) - text color.
       - timestamp: (string) - timestamp text color.
     - background: (string) - Allow you to change background color.
     - border: (string) - Allow you to change border color.
+  - shadows: allow you change shadows from component
+    - openedComponent: (number) - shadow from the hole chat
+  - border: allow you change borders from component
+    - size: (string) - border size (specify your unit) of the chat component
 
 ## Examples
 

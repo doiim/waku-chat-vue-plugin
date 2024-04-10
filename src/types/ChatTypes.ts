@@ -24,7 +24,8 @@ export interface WakuChatConfigCss {
         header: {
             main: string,
             text: string,
-            textHover: string,
+            btn: string,
+            btnHover: string,
         },
         room: {
             btn: {
@@ -100,5 +101,8 @@ export interface WakuChatConfigCss {
     },
     shadows: {
         openedComponent: number
+    },
+    border: {
+        size: string
     }
 }

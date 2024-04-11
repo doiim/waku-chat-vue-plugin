@@ -101,7 +101,8 @@ export interface WakuChatConfigCss {
         border: string,
     },
     shadows: {
-        openedComponent: number
+        openedComponent: number,
+        messageBalloon: number
     },
     border: {
         size: string

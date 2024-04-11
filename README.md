@@ -230,6 +230,7 @@ Here are the available configuration options:
     - border: (string) - Allow you to change border color.
   - shadows: allow you change shadows from component
     - openedComponent: (number) - shadow from the hole chat
+    - messageBalloon: (number) - shadow from the message balloon
   - border: allow you change borders from component
     - size: (string) - border size (specify your unit) of the chat component
 

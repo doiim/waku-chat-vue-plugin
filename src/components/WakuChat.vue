@@ -110,7 +110,8 @@ const computedCss = ref<WakuChatConfigCss>({
     border: 'rgba(37, 99, 235, 1)',
   },
   shadows: {
-    openedComponent: 0.1
+    openedComponent: 0.1,
+    messageBalloon: 0.1
   },
   border: {
     size: '1px'
@@ -261,6 +262,7 @@ watchEffect(() => {
       width: '100%'
     },
     '.user-name-input input': {
+      lineHeight: '16px',
       width: '50%',
       outline: 'none',
       paddingLeft: '8px',
@@ -345,6 +347,7 @@ watchEffect(() => {
       border: 'none',
       cursor: 'pointer',
       fontWeight: '600',
+      lineHeight: '14px',
       color: computedCss.value.colors.room.btn.text,
       stroke: computedCss.value.colors.room.btn.text
     },
@@ -390,6 +393,7 @@ watchEffect(() => {
     '.settings-button': {
       color: computedCss.value.colors.header.btn,
       background: 'transparent',
+      lineHeight: '14px',
       border: 'none'
     },
     '.settings-button:hover': {
@@ -428,6 +432,7 @@ watchEffect(() => {
     },
     '.room-info': {
       marginRight: '10px',
+      lineHeight: '16px',
       fontSize: '12px !important',
       color: computedCss.value.colors.header.text
     },
@@ -457,6 +462,7 @@ watchEffect(() => {
       width: '100%',
       height: '48px',
       padding: '0px 12px',
+      lineHeight: '16px',
       borderRadius: '8px',
       backgroundColor: computedCss.value.colors.input.main
     },
@@ -569,6 +575,7 @@ watchEffect(() => {
     },
     '.user-name-baloon': {
       fontSize: '10px !important',
+      lineHeight: '12px',
       marginBottom: '4px',
       color: computedCss.value.colors.chat.otherMessage.user
     },
@@ -581,17 +588,20 @@ watchEffect(() => {
       alignSelf: 'start'
     },
     '.message': {
+      lineHeight: '16px',
       minWidth: '96px',
       maxWidth: '67%',
-      padding: '16px',
+      padding: '12px',
       borderRadius: '8px',
       backgroundColor: computedCss.value.colors.chat.otherMessage.main,
-      color: computedCss.value.colors.chat.otherMessage.text
+      color: computedCss.value.colors.chat.otherMessage.text,
+      boxShadow: `0px 1px 3px 0px rgba(0, 0, 0, ${computedCss.value.shadows.messageBalloon})`
     },
     '.timestamp': {
       color: computedCss.value.colors.chat.timestamp,
       margin: '8px 0px 8px 0px',
-      fontSize: '9px !important'
+      fontSize: '9px !important',
+      lineHeight: '9px',
     },
     '.message-content': {
       wordWrap: 'break-word'

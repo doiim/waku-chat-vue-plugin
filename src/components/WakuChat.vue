@@ -14,7 +14,8 @@ import {
   setMyID,
   getMyID,
   getOptions,
-  onDestroyWaku
+  onDestroyWaku,
+  disconnectChat
 } from "../components/WakuLogic"
 
 const props = defineProps<{
@@ -25,7 +26,7 @@ const isChatOpen = ref<boolean>(false);
 const settingsMenu = ref<boolean>(false);
 const loadingRoom = ref<boolean>(false);
 
-const messageFiltered = ref<Message[]>([]);
+const messageProcessed = ref<Message[]>([]);
 const messageInput = ref<string>('');
 const showSettings = ref<boolean>(false);
 
@@ -175,7 +176,11 @@ const changeRoomDropdown = async (selectedRoom: string) => {
   loadingRoom.value = false
 };
 
+const idleTimeout = ref<NodeJS.Timeout>()
+
+
 const openChat = async () => {
+  clearTimeout(idleTimeout.value)
   if (getStatus() !== "connected") {
     await loadChat()
     if (props.externalUserId) {
@@ -187,6 +192,8 @@ const openChat = async () => {
 
 const closeChat = () => {
   isChatOpen.value = false
+  const disconnectDelay = getOptions()?.disconnectDelay
+  idleTimeout.value = setTimeout(disconnectChat, disconnectDelay ? disconnectDelay : 30000)
 }
 
 const handleSendMessage = () => {
@@ -215,10 +222,10 @@ watchEffect(() => {
 });
 
 watchEffect(() => {
-  messageFiltered.value = getMessageList().filter(message => {
-    return message.room === getRoom();
+  messageProcessed.value = getMessageList().filter(message => {
+    return message.room === getRoom() && message.type === 'text';
   })
-  if (messageFiltered.value.length > 0)
+  if (messageProcessed.value.length > 0)
     scrollToBottom();
 });
 
@@ -236,8 +243,8 @@ const mergeObjects = (target: any, source: any) => {
 }
 
 const checkPreviousMsgName = (idx: number) => {
-  return !(idx > 0 && messageFiltered.value[idx].author.id === messageFiltered.value[idx - 1].author.id &&
-    messageFiltered.value[idx].author.name === messageFiltered.value[idx - 1].author.name)
+  return !(idx > 0 && messageProcessed.value[idx].author.id === messageProcessed.value[idx - 1].author.id &&
+    messageProcessed.value[idx].author.name === messageProcessed.value[idx - 1].author.name)
 }
 
 watchEffect(() => {
@@ -684,7 +691,7 @@ watchEffect(() => {
           </div>
         </div>
         <div class="chat-body" ref="messageContainerRef">
-          <div v-for="(message, idx) in messageFiltered" :key="message.id"
+          <div v-for="(message, idx) in messageProcessed" :key="message.id"
             :class="{ 'own-message': message.author.id === getMyID() }" class="message-container">
             <span v-show="checkPreviousMsgName(idx)" class="user-name-baloon">
               {{ message.author.name }}

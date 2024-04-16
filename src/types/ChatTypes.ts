@@ -18,6 +18,8 @@ export interface WakuChatVuePluginOptions {
     allowPrivateChat: boolean,
     cssConfig?: WakuChatConfigCss,
     showSettings?: boolean
+    disconnectDelay?: number
+    groupMessagesTime?: number
 }
 
 export interface WakuChatConfigCss {

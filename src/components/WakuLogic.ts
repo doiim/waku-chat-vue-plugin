@@ -5,7 +5,8 @@ import { WakuChatVuePluginOptions } from "../types/ChatTypes";
 import { generate } from "random-words";
 
 type WakuData = {
-    startWaku?: () => Promise<any>,
+    startWaku?: (stoppedNode: any) => Promise<any>,
+    stopWaku?: (node: any) => Promise<any>,
     ChatInterface?: any,
     ChatEncoder?: any,
     ChatDecoder?: any,
@@ -108,7 +109,7 @@ export const setMyID = (_newID: string) => {
     myInfo.value.id = _newID
     localStorage.setItem('myWakuChatId', _newID);
     if (!getMyName()) {
-        setMyName(generate({ exactly: 3, minLength: 4,join:'-', seed: myInfo.value.id }))
+        setMyName(generate({ exactly: 3, minLength: 4, join: '-', seed: myInfo.value.id }))
     }
 }
 
@@ -150,12 +151,14 @@ const loadOptions = () => {
 
 export const loadChat = (async () => {
     chatState.value.status = "connecting"
-    wakuData = await loadPlugin()
+    if (!wakuData.startWaku)
+        wakuData = await loadPlugin()
+
     if (!wakuData.startWaku) return
     const options = getOptions()
     if (!options) return
 
-    wakuData.lightNode = await wakuData.startWaku();
+    wakuData.lightNode = await wakuData.startWaku(wakuData.lightNode);
 
     if (!getMyID()) {
         setMyID(wakuData.lightNode.libp2p.peerId.toString());
@@ -177,6 +180,15 @@ export const loadChat = (async () => {
 
     chatState.value.status = "connected";
 });
+
+export const disconnectChat = async () => {
+    if (wakuData.stopWaku) {
+        clearInterval(wakuData.pingInterval)
+        await wakuData.subscription.unsubscribeAll();
+        await wakuData.stopWaku(wakuData.lightNode)
+        chatState.value.status = 'disconnected'
+    }
+}
 
 export const sendMessage = (msgData: { text?: string, emoji?: string }, msgType: string) => {
     const timestamp = Date.now()

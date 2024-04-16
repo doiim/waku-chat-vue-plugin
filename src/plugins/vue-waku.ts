@@ -7,31 +7,40 @@ import {
   createLightNode,
   waitForRemotePeer,
   Protocols,
+  LightNode,
 } from "@waku/sdk"
 
 const plugin = {
   install: async (app: any, ChatOptions: any) => {
 
     loadPlugin = async () => {
-
-
-      const startWaku = async function () {
-        let libp2p = undefined
-        if (ChatOptions.wakuPeers && ChatOptions.wakuPeers.length > 0) {
-          libp2p = {
-            peerDiscovery: [
-              bootstrap({ list: ChatOptions.wakuPeers }) as any,
-            ],
+      const startWaku = async function (stoppedNode?: LightNode) {
+        let node = undefined
+        if (stoppedNode) {
+          node = stoppedNode
+        } else {
+          let libp2p = undefined
+          if (ChatOptions.wakuPeers && ChatOptions.wakuPeers.length > 0) {
+            libp2p = {
+              peerDiscovery: [
+                bootstrap({ list: ChatOptions.wakuPeers }) as any,
+              ],
+            }
           }
-        }
 
-        const node = await createLightNode({
-          defaultBootstrap: !ChatOptions.wakuPeers || ChatOptions.wakuPeers.length <= 0,
-          libp2p,
-        });
+          node = await createLightNode({
+            defaultBootstrap: !ChatOptions.wakuPeers || ChatOptions.wakuPeers.length <= 0,
+            libp2p,
+          });
+        }
         await node.start();
 
         await waitForRemotePeer(node, [Protocols.Store]);
+        return node
+      }
+
+      const stopWaku = async function (node: LightNode) {
+        await node.stop();
         return node
       }
 
@@ -56,14 +65,12 @@ const plugin = {
       ChatInterface.add(ParticipantInterface)
       ChatInterface.add(MsgDataInterface)
 
-      return { startWaku, ChatInterface, ChatOptions }
+      return { startWaku, stopWaku, ChatInterface, ChatOptions }
     }
     app.provide('ChatOptions', ChatOptions)
 
   },
-
 }
-
 
 export default plugin
 
@@ -74,9 +81,7 @@ export const changeTopic = async (_channel: string, _topic: string) => {
   const topic = _topic.toLowerCase().replace(/\s/g, '');
   const channel = _channel.toLowerCase().replace(/\s/g, '');
 
-  // Choose a content topic
   const contentTopic = `/${channel}/1/${topic}/proto`;
-  // Create a message encoder and decoder
   const encoder = createEncoder({
     contentTopic
   });

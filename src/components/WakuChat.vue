@@ -192,7 +192,7 @@ const openChat = async () => {
 const closeChat = () => {
   isChatOpen.value = false
   const disconnectDelay = getOptions()?.disconnectDelay
-  idleTimeout.value = setTimeout(disconnectChat, disconnectDelay ? disconnectDelay : 30000)
+  idleTimeout.value = setTimeout(disconnectChat, disconnectDelay ? disconnectDelay : 5 * 60 * 1000)
 }
 
 const handleSendMessage = () => {
@@ -227,7 +227,7 @@ watchEffect(() => {
 
 const groupedMessages = computed(() => {
   let groupMessagesTime = getOptions()?.groupMessagesTime
-  groupMessagesTime = groupMessagesTime ? groupMessagesTime : 10000
+  groupMessagesTime = groupMessagesTime ? groupMessagesTime : 1 * 60 * 1000
 
   const filteredMessages = getMessageList().filter(message => {
     return message.room === getRoom() && message.type === 'text';
@@ -291,6 +291,25 @@ const emit = defineEmits<{
 
 
 const computedStyles = ref<any>({});
+
+const formatTimestamp = (timestamp: number) => {
+  const now = new Date();
+  const messageDate = new Date(timestamp);
+
+  if (now.toDateString() === messageDate.toDateString()) return (new Date(timestamp)).toLocaleTimeString();
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (yesterday.toDateString() === messageDate.toDateString()) return 'Yesterday';
+
+  const seconds = Math.floor((now.getTime() - timestamp) / 1000);
+
+  if (seconds < (86400 * 7)) return `${Math.floor(seconds / 86400)} day${seconds < 86400 * 2 ? '' : 's'} ago`;
+  if (seconds < (86400 * 30)) return `${Math.floor(seconds / (86400 * 7))} week${seconds < (86400 * 7) * 2 ? '' : 's'} ago`;
+  if (seconds < (86400 * 365)) return `${Math.floor(seconds / (86400 * 30))} month${seconds < (86400 * 30) * 2 ? '' : 's'} ago`;
+
+  return `${Math.floor(seconds / (86400 * 365))} year${seconds < (86400 * 365) * 2 ? '' : 's'} ago`;
+}
 
 watchEffect(() => {
   computedStyles.value = {
@@ -730,7 +749,7 @@ watchEffect(() => {
               </div>
             </div>
             <div class="timestamp">
-              {{ (new Date(groupedMsgs[groupedMsgs.length - 1].timestamp)).toLocaleTimeString() }}
+              {{ formatTimestamp(groupedMsgs[groupedMsgs.length - 1].timestamp) }}
             </div>
           </div>
         </div>

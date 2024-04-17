@@ -228,10 +228,12 @@ watchEffect(() => {
 const groupedMessages = computed(() => {
   let groupMessagesTime = getOptions()?.groupMessagesTime
   groupMessagesTime = groupMessagesTime ? groupMessagesTime : 10000
-  
+
   const filteredMessages = getMessageList().filter(message => {
     return message.room === getRoom() && message.type === 'text';
   })
+
+  if (!filteredMessages[0]) return []
 
   const groupedMsgs = [];
   let currentGroup = [filteredMessages[0]];

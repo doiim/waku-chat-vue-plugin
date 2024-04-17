@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, watchEffect, onBeforeUnmount, defineProps } from "vue";
-import { Message, WakuChatConfigCss } from "../types/ChatTypes";
+import { ref, onMounted, watchEffect, onBeforeUnmount, defineProps, computed } from "vue";
+import { WakuChatConfigCss } from "../types/ChatTypes";
 import {
   sendMessage,
   loadChat,
@@ -26,7 +26,6 @@ const isChatOpen = ref<boolean>(false);
 const settingsMenu = ref<boolean>(false);
 const loadingRoom = ref<boolean>(false);
 
-const messageProcessed = ref<Message[]>([]);
 const messageInput = ref<string>('');
 const showSettings = ref<boolean>(false);
 
@@ -222,11 +221,39 @@ watchEffect(() => {
 });
 
 watchEffect(() => {
-  messageProcessed.value = getMessageList().filter(message => {
+  if (getStatus() === "connected" && groupedMessages.value.length > 0)
+    scrollToBottom();
+});
+
+const groupedMessages = computed(() => {
+  let groupMessagesTime = getOptions()?.groupMessagesTime
+  groupMessagesTime = groupMessagesTime ? groupMessagesTime : 10000
+  
+  const filteredMessages = getMessageList().filter(message => {
     return message.room === getRoom() && message.type === 'text';
   })
-  if (messageProcessed.value.length > 0)
-    scrollToBottom();
+
+  const groupedMsgs = [];
+  let currentGroup = [filteredMessages[0]];
+
+  for (let i = 1; i < filteredMessages.length; i++) {
+    const currentMsg = filteredMessages[i];
+    const previousMsg = filteredMessages[i - 1];
+
+    if (
+      currentMsg.author.id === previousMsg.author.id &&
+      currentMsg.author.name === previousMsg.author.name &&
+      Math.abs(previousMsg.timestamp - currentMsg.timestamp) <= groupMessagesTime
+    ) {
+      currentGroup.push(currentMsg);
+    } else {
+      groupedMsgs.push(currentGroup);
+      currentGroup = [currentMsg];
+    }
+  }
+  groupedMsgs.push(currentGroup);
+
+  return groupedMsgs;
 });
 
 const mergeObjects = (target: any, source: any) => {
@@ -243,8 +270,8 @@ const mergeObjects = (target: any, source: any) => {
 }
 
 const checkPreviousMsgName = (idx: number) => {
-  return !(idx > 0 && messageProcessed.value[idx].author.id === messageProcessed.value[idx - 1].author.id &&
-    messageProcessed.value[idx].author.name === messageProcessed.value[idx - 1].author.name)
+  return !(idx > 0 && groupedMessages.value[idx][0].author.id === groupedMessages.value[idx - 1][0].author.id &&
+    groupedMessages.value[idx][0].author.name === groupedMessages.value[idx - 1][0].author.name)
 }
 
 watchEffect(() => {
@@ -691,16 +718,17 @@ watchEffect(() => {
           </div>
         </div>
         <div class="chat-body" ref="messageContainerRef">
-          <div v-for="(message, idx) in messageProcessed" :key="message.id"
-            :class="{ 'own-message': message.author.id === getMyID() }" class="message-container">
-            <span v-show="checkPreviousMsgName(idx)" class="user-name-baloon">
-              {{ message.author.name }}
+          <div v-for="(groupedMsgs, idGroup) in groupedMessages" :key="groupedMsgs[0].id"
+            :class="{ 'own-message': groupedMsgs[0].author.id === getMyID() }" class="message-container">
+            <span v-show="checkPreviousMsgName(idGroup)" class="user-name-baloon">
+              {{ groupedMsgs[0].author.name }}
             </span>
             <div class="message">
-              <div class="message-content">{{ message.data.text }}</div>
+              <div v-for="(message, idMsg) in groupedMsgs" class="message-content" :key="idMsg">{{ message.data.text }}
+              </div>
             </div>
             <div class="timestamp">
-              {{ (new Date(message.timestamp)).toLocaleTimeString() }}
+              {{ (new Date(groupedMsgs[groupedMsgs.length - 1].timestamp)).toLocaleTimeString() }}
             </div>
           </div>
         </div>

@@ -146,7 +146,7 @@ Here are the available configuration options:
 - `wakuPeers`: (string[]) (optional) - Waku peers to connect by default. If you don't set this, Waku will use automatic peers. Use this to set your own peers.
 - `disconnectDelay`: (number) - Time in milisseconds which chat can be minimized before being disconnected. 5 minutes if not set.
 - `groupMessagesTime`: (number) - Time in milisseconds which messages from the same sender can be grouped. 1 minute if not set.
-- `messagesToDownload`: (number) - Max number of messages to retrieve when user connects to chat. Default no limit.
+- `messagesToDownload`: (number) - Max number of messages to retrieve when user connects to chat. Default 100 messages.
 - `messageAgeToDownload`: (number) - Max age of messages in milisseconds which messages would be downloaded when user connects to chat. Default 24h.
 - `changeNickMode`: ('application' | 'user') (optional) - 'application' allows your app to change nicknames via a dispatch event, 'interface' allows users to directly change their nicknames and allows the same method as 'application'. Any other value won't allow change nicknames.
 

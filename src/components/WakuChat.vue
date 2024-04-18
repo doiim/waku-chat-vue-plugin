@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watchEffect, onBeforeUnmount, defineProps, computed } from "vue";
+import { ref, onMounted, watchEffect, onBeforeUnmount, defineProps, computed, TransitionGroup } from "vue";
 import { WakuChatConfigCss } from "../types/ChatTypes";
 import {
   sendMessage,
@@ -170,6 +170,7 @@ const getRoomName = (room: string) => {
 
 const changeRoomDropdown = async (selectedRoom: string) => {
   handleToggleRoomDropdown()
+  if (selectedRoom === getRoom()) return
   loadingRoom.value = true
   await setRoom(selectedRoom);
   loadingRoom.value = false
@@ -202,11 +203,19 @@ const handleSendMessage = () => {
 }
 
 const scrollToBottom = () => {
-  if (messageContainerRef.value) {
-    const container = messageContainerRef.value
-    setTimeout(() => {
-      container.scrollTop = container.scrollHeight;
-    }, 100);
+  const container = messageContainerRef.value;
+  if (container) {
+    const scrollHeight = container.scrollHeight;
+    const scrollTop = container.scrollTop;
+    let count = 0;
+
+    const scrollInterval = setInterval(() => {
+      if (count < 100) {
+        container.scrollTop = scrollTop + (scrollHeight - scrollTop) * 0.5 * (1 - Math.cos(++count * (Math.PI / 100)));
+      } else {
+        clearInterval(scrollInterval);
+      }
+    }, 5);
   }
 };
 
@@ -431,6 +440,22 @@ watchEffect(() => {
     },
     '.chat-container.open': {
       transform: 'translateY(0)'
+    },
+    '.change-room-overlay': {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      borderRadius: '8px',
+      backgroundColor: 'rgba(0, 0, 0, 0.2)',
+      stroke: computedCss.value.colors.border,
+      textAlign: 'center',
+      alignContent: 'center',
+      zIndex: 1000,
+    },
+    '.change-room-overlay svg': {
+      animation: 'spin 1s linear infinite'
     },
     '.chat-header': {
       backgroundColor: computedCss.value.colors.header.main,
@@ -673,6 +698,51 @@ watchEffect(() => {
     '.waku-chat-vue-plugin div, .waku-chat-vue-plugin button, .waku-chat-vue-plugin span, .waku-chat-vue-plugin input': {
       fontFamily: 'IBM Plex Sans',
       fontSize: '14px'
+    },
+    '.slide-enter-active': {
+      animation: 'translate-out .5s reverse',
+    },
+    '.slide-leave-active': {
+      animation: 'translate-out .5s',
+    },
+    '@keyframes translate-out': {
+      '0%': {
+        transform: 'translateY(0%)',
+      },
+      '100%': {
+        transform: 'translateY(110%)',
+      }
+    },
+    '.fade-enter-active': {
+      animation: 'fade-in .5s',
+    },
+    '.fade-leave-active': {
+      animation: 'fade-in .5s reverse',
+    },
+    '@keyframes fade-in': {
+      '0%': {
+        opacity: '0',
+      },
+      '100%': {
+        opacity: '1',
+      }
+    },
+    '.fastFade-enter-active': {
+      animation: 'fastFade-in .5s',
+    },
+    '.fastFade-leave-active': {
+      animation: 'fastFade-in .5s reverse',
+    },
+    '@keyframes fastFade-in': {
+      '0%': {
+        opacity: '0',
+      },
+      '60%': {
+        opacity: '0',
+      },
+      '100%': {
+        opacity: '1',
+      }
     }
   }
 
@@ -683,99 +753,122 @@ watchEffect(() => {
 
 <template>
   <div class="waku-chat-vue-plugin">
-    <div v-if="getStatus() === 'connected'">
-      <div v-if="isChatOpen" class="chat-container" :class="{ 'open': isChatOpen }">
-        <div class="chat-header">
-          <div class="room-section">
-            <div class="room-info">
-              Room
+    <div v-if="getStatus() === 'connected'" key="connected">
+      <Transition name="slide" mode="out-in">
+        <div v-if="isChatOpen" class="chat-container">
+          <Transition name="fade" mode="out-in">
+            <div v-if="loadingRoom" class="change-room-overlay">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke-opacity="0.4" stroke-width="4" />
+                <path
+                  d="M12 22C10.6868 22 9.38642 21.7413 8.17317 21.2388C6.95991 20.7362 5.85752 19.9997 4.92893 19.0711C4.00035 18.1425 3.26375 17.0401 2.7612 15.8268C2.25866 14.6136 2 13.3132 2 12"
+                  stroke-opacity="0.8" stroke-width="4" />
+                <path
+                  d="M12 2C13.3132 2 14.6136 2.25866 15.8268 2.76121C17.0401 3.26375 18.1425 4.00035 19.0711 4.92894C19.9997 5.85752 20.7363 6.95992 21.2388 8.17317C21.7413 9.38643 22 10.6868 22 12"
+                  stroke-opacity="0.8" stroke-width="4" />
+              </svg>
             </div>
-            <div class="room-dropdown">
-              <button class="dropdown-button" @click="handleToggleRoomDropdown">
-                <div>{{ getRoomName(getRoom()) }}</div>
-                <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M4 6.5L8 10.5L12 6.5" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </button>
-              <div v-if="roomDropdownOpened" class="dropdown-content">
-                <div v-for="availableRoom in getOptions()?.availableRooms" :key="availableRoom">
-                  <button :class="availableRoom === getRoom() ? 'selected' : ''"
-                    @click="changeRoomDropdown(availableRoom)">
-                    {{ availableRoom }}
-                  </button>
+          </Transition>
+          <div class="chat-header">
+            <div class="room-section">
+              <div class="room-info">
+                Room
+              </div>
+              <div class="room-dropdown">
+                <button class="dropdown-button" @click="handleToggleRoomDropdown">
+                  <div>{{ getRoomName(getRoom()) }}</div>
+                  <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 6.5L8 10.5L12 6.5" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+                <div v-if="roomDropdownOpened" class="dropdown-content">
+                  <div v-for="availableRoom in getOptions()?.availableRooms" :key="availableRoom">
+                    <button :class="availableRoom === getRoom() ? 'selected' : ''"
+                      @click="changeRoomDropdown(availableRoom)">
+                      {{ availableRoom }}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div v-if="showSettings" class="settings-section">
-            <button @click="settingsMenu = !settingsMenu" class="settings-button">Settings</button>
-          </div>
-          <button @click="closeChat" class="minimize-button">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M11.5 0.5L0.5 11.5M0.5 0.5L11.5 11.5" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </button>
-        </div>
-        <div v-show="settingsMenu" class="chat-subHeader">
-          <div class="user-section">
-            <div v-if="getOptions()?.changeNickMode === 'user'" class="user-name-input">
-              <div v-if="!editMode">
-                <span>{{ getMyName() }}</span>
-                <svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg"
-                  @click="enterEditMode">
-                  <path
-                    d="M7 12.3333H13M10 1.33334C10.2652 1.06813 10.6249 0.919128 11 0.919128C11.1857 0.919128 11.3696 0.955708 11.5412 1.02678C11.7128 1.09785 11.8687 1.20202 12 1.33334C12.1313 1.46466 12.2355 1.62057 12.3066 1.79215C12.3776 1.96373 12.4142 2.14762 12.4142 2.33334C12.4142 2.51906 12.3776 2.70296 12.3066 2.87454C12.2355 3.04612 12.1313 3.20202 12 3.33334L3.66667 11.6667L1 12.3333L1.66667 9.66668L10 1.33334Z"
-                    stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </div>
-              <div v-else>
-                <input v-model="editedUserName" @keypress.enter="saveEditedUserName" class="edit-user-input" />
-                <button class="change-name-btn" @click="saveEditedUserName">OK</button>
-                <button class="cancel-change-name-btn" @click="exitEditMode">Cancel</button>
-              </div>
+            <div v-if="showSettings" class="settings-section">
+              <button @click="settingsMenu = !settingsMenu" class="settings-button">Settings</button>
             </div>
-            <div v-else>
-              <span>{{ getMyName() }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="chat-body" ref="messageContainerRef">
-          <div v-for="(groupedMsgs, idGroup) in groupedMessages" :key="groupedMsgs[0].id"
-            :class="{ 'own-message': groupedMsgs[0].author.id === getMyID() }" class="message-container">
-            <span v-show="checkPreviousMsgName(idGroup)" class="user-name-baloon">
-              {{ groupedMsgs[0].author.name }}
-            </span>
-            <div class="message">
-              <div v-for="(message, idMsg) in groupedMsgs" class="message-content" :key="idMsg">{{ message.data.text }}
-              </div>
-            </div>
-            <div class="timestamp">
-              {{ formatTimestamp(groupedMsgs[groupedMsgs.length - 1].timestamp) }}
-            </div>
-          </div>
-        </div>
-        <div class="chat-footer">
-          <div class="message-input">
-            <input v-model="messageInput" placeholder="Type your message..." @keypress.enter="handleSendMessage"
-              :disabled="loadingRoom" />
-            <button @click="handleSendMessage" class="send-button" :disabled="loadingRoom || !messageInput">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="current">
-                <path
-                  d="M20.3534 10.9267C21.2378 11.3689 21.2378 12.6311 20.3534 13.0733L4.61964 20.9402C3.59859 21.4507 2.50875 20.3816 2.99955 19.351L6.25432 12.5159C6.40974 12.1895 6.40974 11.8105 6.25432 11.4841L2.99955 4.64905C2.50875 3.61837 3.59859 2.54929 4.61964 3.05982L20.3534 10.9267Z" />
+            <button @click="closeChat" class="minimize-button">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11.5 0.5L0.5 11.5M0.5 0.5L11.5 11.5" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </button>
           </div>
+          <div v-show="settingsMenu" class="chat-subHeader">
+            <div class="user-section">
+              <div v-if="getOptions()?.changeNickMode === 'user'" class="user-name-input">
+                <div v-if="!editMode">
+                  <span>{{ getMyName() }}</span>
+                  <svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    @click="enterEditMode">
+                    <path
+                      d="M7 12.3333H13M10 1.33334C10.2652 1.06813 10.6249 0.919128 11 0.919128C11.1857 0.919128 11.3696 0.955708 11.5412 1.02678C11.7128 1.09785 11.8687 1.20202 12 1.33334C12.1313 1.46466 12.2355 1.62057 12.3066 1.79215C12.3776 1.96373 12.4142 2.14762 12.4142 2.33334C12.4142 2.51906 12.3776 2.70296 12.3066 2.87454C12.2355 3.04612 12.1313 3.20202 12 3.33334L3.66667 11.6667L1 12.3333L1.66667 9.66668L10 1.33334Z"
+                      stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </div>
+                <div v-else>
+                  <input v-model="editedUserName" @keypress.enter="saveEditedUserName" class="edit-user-input" />
+                  <button class="change-name-btn" @click="saveEditedUserName">OK</button>
+                  <button class="cancel-change-name-btn" @click="exitEditMode">Cancel</button>
+                </div>
+              </div>
+              <div v-else>
+                <span>{{ getMyName() }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="chat-body" ref="messageContainerRef">
+            <TransitionGroup name="fade">
+              <div v-for="(groupedMsgs, idGroup) in groupedMessages" :key="groupedMsgs[0].id"
+                :class="{ 'own-message': groupedMsgs[0].author.id === getMyID() }" class="message-container">
+                <span v-show="checkPreviousMsgName(idGroup)" class="user-name-baloon">
+                  {{ groupedMsgs[0].author.name }}
+                </span>
+                <div class="message">
+                  <TransitionGroup name="fade">
+                    <div v-for="(message, idMsg) in groupedMsgs" class="message-content" :key="idMsg">{{
+                      message.data.text
+                    }}
+                    </div>
+                  </TransitionGroup>
+                </div>
+                <div class="timestamp">
+                  {{ formatTimestamp(groupedMsgs[groupedMsgs.length - 1].timestamp) }}
+                </div>
+              </div>
+            </TransitionGroup>
+          </div>
+          <div class="chat-footer">
+            <div class="message-input">
+              <input v-model="messageInput" placeholder="Type your message..." @keypress.enter="handleSendMessage"
+                :disabled="loadingRoom" />
+              <button @click="handleSendMessage" class="send-button" :disabled="loadingRoom || !messageInput">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="current">
+                  <path
+                    d="M20.3534 10.9267C21.2378 11.3689 21.2378 12.6311 20.3534 13.0733L4.61964 20.9402C3.59859 21.4507 2.50875 20.3816 2.99955 19.351L6.25432 12.5159C6.40974 12.1895 6.40974 11.8105 6.25432 11.4841L2.99955 4.64905C2.50875 3.61837 3.59859 2.54929 4.61964 3.05982L20.3534 10.9267Z" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-      <button v-else @click="openChat" class="open-button">
-        <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z"
-            stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </button>
+      </Transition>
+      <Transition name="fastFade" mode="out-in">
+        <button v-if="!isChatOpen" @click="openChat" class="open-button">
+          <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z"
+              stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+      </Transition>
     </div>
-    <div v-else-if="getStatus() === 'connecting'" class="spinner">
+    <div v-else-if="getStatus() === 'connecting'" class="spinner" key="conecting">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="12" r="10" stroke-opacity="0.4" stroke-width="4" />
         <path
@@ -785,16 +878,14 @@ watchEffect(() => {
           d="M12 2C13.3132 2 14.6136 2.25866 15.8268 2.76121C17.0401 3.26375 18.1425 4.00035 19.0711 4.92894C19.9997 5.85752 20.7363 6.95992 21.2388 8.17317C21.7413 9.38643 22 10.6868 22 12"
           stroke-opacity="0.8" stroke-width="4" />
       </svg>
-
     </div>
-    <div v-else>
+    <div v-else key="disconnected">
       <button @click="openChat" class="load-button">
         <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z"
             stroke-linecap="round" stroke-linejoin="round" />
         </svg>
-
       </button>
     </div>
   </div>

@@ -61,6 +61,8 @@ const retrieveMessages = async (_channel: string, _topic: string, callback: (msg
     };
     if(getOptions()?.messagesToDownload){
         queryOptions.pageSize = getOptions()?.messagesToDownload
+    }else{
+        queryOptions.pageSize = 100
     }
 
     await wakuData.lightNode.store.queryWithOrderedCallback([wakuData.ChatDecoder], callback, queryOptions);

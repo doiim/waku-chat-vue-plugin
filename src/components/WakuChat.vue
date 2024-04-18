@@ -403,6 +403,7 @@ watchEffect(() => {
       cursor: 'pointer',
       fontWeight: '600',
       lineHeight: '14px',
+      alignItems: "center",
       color: computedCss.value.colors.room.btn.text,
       stroke: computedCss.value.colors.room.btn.text
     },

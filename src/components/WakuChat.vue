@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watchEffect, onBeforeUnmount, defineProps, computed, TransitionGroup } from "vue";
+import { ref, onMounted, watchEffect, onBeforeUnmount, defineProps, computed, TransitionGroup, watch } from "vue";
 import { WakuChatConfigCss } from "../types/ChatTypes";
 import {
   sendMessage,
@@ -28,6 +28,8 @@ const loadingRoom = ref<boolean>(false);
 
 const messageInput = ref<string>('');
 const showSettings = ref<boolean>(false);
+const showSystemMessages = ref<boolean>(false);
+const userShowSystemMessages = ref<boolean>(false);
 
 const computedCss = ref<WakuChatConfigCss>({
   colors: {
@@ -104,6 +106,10 @@ const computedCss = ref<WakuChatConfigCss>({
         user: 'rgba(156, 163, 175, 1)',
         text: 'rgba(31, 41, 55, 1)',
       },
+      systemMessage: {
+        main: 'rgba(229, 231, 235, 1)',
+        text: 'rgba(37, 99, 235, 1)',
+      },
       timestamp: 'rgba(156, 163, 175, 1)',
     },
     background: 'rgba(249, 250, 251, 1)',
@@ -134,13 +140,16 @@ onMounted(() => {
     const newNick = (event as CustomEvent).detail;
 
     if (getOptions()?.changeNickMode === 'application' || getOptions()?.changeNickMode === 'user') {
+      const myName = getMyName()
       setMyName(newNick);
+      sendMessage('changeName:' + myName, 'system')
     }
   };
   //document.dispatchEvent(new CustomEvent('changeNickName', { detail: 'newNick' }));
   document.addEventListener('changeNickName', handleNickNameChange);
 
   showSettings.value = !!getOptions()?.showSettings;
+  showSystemMessages.value = !!getOptions()?.showSystemMessages;
 
   onBeforeUnmount(() => {
     document.removeEventListener('changeNickName', handleNickNameChange);
@@ -156,7 +165,9 @@ const exitEditMode = () => {
 };
 
 const saveEditedUserName = () => {
+  const myName = getMyName()
   setMyName(editedUserName.value);
+  sendMessage('changeName:' + myName, 'system')
   exitEditMode()
 };
 
@@ -198,29 +209,35 @@ const closeChat = () => {
 
 const handleSendMessage = () => {
   if (messageInput.value)
-    sendMessage({ text: messageInput.value }, 'text')
+    sendMessage(messageInput.value, 'text')
   messageInput.value = ''
 }
 
 const scrollToBottom = () => {
-  const container = messageContainerRef.value;
-  if (container) {
-    const scrollHeight = container.scrollHeight;
-    const scrollTop = container.scrollTop;
-    let count = 0;
+  setTimeout(() => {
+    const container = messageContainerRef.value;
+    if (container) {
+      const scrollHeight = container.scrollHeight;
+      const scrollTop = container.scrollTop;
+      let count = 0;
 
-    const scrollInterval = setInterval(() => {
-      if (count < 100) {
-        container.scrollTop = scrollTop + (scrollHeight - scrollTop) * 0.5 * (1 - Math.cos(++count * (Math.PI / 100)));
-      } else {
-        clearInterval(scrollInterval);
-      }
-    }, 5);
-  }
+      const scrollInterval = setInterval(() => {
+        if (count < 100) {
+          container.scrollTop = scrollTop + (scrollHeight - scrollTop) * 0.5 * (1 - Math.cos(++count * (Math.PI / 100)));
+        } else {
+          clearInterval(scrollInterval);
+        }
+      }, 5);
+    }
+  }, 300);
 };
 
 watchEffect(() => {
   editedUserName.value = getMyName()
+});
+
+watch([showSystemMessages, userShowSystemMessages], () => {
+  scrollToBottom();
 });
 
 watchEffect(() => {
@@ -239,7 +256,7 @@ const groupedMessages = computed(() => {
   groupMessagesTime = groupMessagesTime ? groupMessagesTime : 1 * 60 * 1000
 
   const filteredMessages = getMessageList().filter(message => {
-    return message.room === getRoom() && message.type === 'text';
+    return message.room === getRoom();
   })
 
   if (!filteredMessages[0]) return []
@@ -254,6 +271,8 @@ const groupedMessages = computed(() => {
     if (
       currentMsg.author.id === previousMsg.author.id &&
       currentMsg.author.name === previousMsg.author.name &&
+      currentMsg.type === 'text' &&
+      previousMsg.type === 'text' &&
       Math.abs(previousMsg.timestamp - currentMsg.timestamp) <= groupMessagesTime
     ) {
       currentGroup.push(currentMsg);
@@ -281,8 +300,9 @@ const mergeObjects = (target: any, source: any) => {
 }
 
 const checkPreviousMsgName = (idx: number) => {
-  return !(idx > 0 && groupedMessages.value[idx][0].author.id === groupedMessages.value[idx - 1][0].author.id &&
-    groupedMessages.value[idx][0].author.name === groupedMessages.value[idx - 1][0].author.name)
+  return !(idx > 0
+    && groupedMessages.value[idx][0].author.id === groupedMessages.value[idx - 1][0].author.id
+    && groupedMessages.value[idx][0].author.name === groupedMessages.value[idx - 1][0].author.name)
 }
 
 watchEffect(() => {
@@ -318,6 +338,17 @@ const formatTimestamp = (timestamp: number) => {
   if (seconds < (86400 * 365)) return `${Math.floor(seconds / (86400 * 30))} month${seconds < (86400 * 30) * 2 ? '' : 's'} ago`;
 
   return `${Math.floor(seconds / (86400 * 365))} year${seconds < (86400 * 365) * 2 ? '' : 's'} ago`;
+}
+
+const printSystemMessage = (msg: any) => {
+  if (msg.data === 'enter') {
+    return `${msg.author.name} just entered the room`
+  } else if (msg.data === 'leave') {
+    return `${msg.author.name} just left the room`
+  } else if (msg.data.indexOf('changeName:') !== -1) {
+    return `${msg.data.split('changeName:')[1]} changed its name to ${msg.author.name}`
+  }
+  return ''
 }
 
 watchEffect(() => {
@@ -488,6 +519,19 @@ watchEffect(() => {
       width: '100%',
       justifyContent: 'space-between'
     },
+    '.system-message-section': {
+      display: 'flex',
+      fontSize: '12px !important',
+      width: '100%',
+    },
+    '.system-message-section input': {
+      margin: '0px',
+      cursor: 'pointer'
+    },
+    '.system-message-section label': {
+      marginLeft: '8px',
+      cursor: 'pointer'
+    },
     '.room-section': {
       display: 'flex',
       width: '100%',
@@ -495,9 +539,12 @@ watchEffect(() => {
     },
     '.chat-subHeader': {
       display: 'flex',
-      alignItems: 'center',
+      flexDirection: 'column',
+      alignItems: 'normal',
       padding: '16px',
       minHeight: '48px',
+      fontSize: '12px !important',
+      gap: '8px',
       backgroundColor: computedCss.value.colors.subHeader.main,
       color: computedCss.value.colors.subHeader.text
     },
@@ -678,6 +725,19 @@ watchEffect(() => {
       color: computedCss.value.colors.chat.otherMessage.text,
       boxShadow: `0px 1px 3px 0px rgba(0, 0, 0, ${computedCss.value.shadows.messageBalloon})`
     },
+    '.system-message': {
+      lineHeight: '16px',
+      minWidth: '96px',
+      width: '80%',
+      padding: '2px, 8px, 2px, 8px',
+      margin: '8px',
+      borderRadius: '4px',
+      alignSelf: 'center !important',
+      textAlign: 'center',
+      backgroundColor: computedCss.value.colors.chat.systemMessage.main,
+      color: computedCss.value.colors.chat.systemMessage.text,
+      boxShadow: `0px 1px 3px 0px rgba(0, 0, 0, ${computedCss.value.shadows.messageBalloon})`
+    },
     '.timestamp': {
       color: computedCss.value.colors.chat.timestamp,
       margin: '8px 0px 8px 0px',
@@ -800,47 +860,68 @@ watchEffect(() => {
               </svg>
             </button>
           </div>
-          <div v-show="settingsMenu" class="chat-subHeader">
-            <div class="user-section">
-              <div v-if="getOptions()?.changeNickMode === 'user'" class="user-name-input">
-                <div v-if="!editMode">
-                  <span>{{ getMyName() }}</span>
-                  <svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg"
-                    @click="enterEditMode">
-                    <path
-                      d="M7 12.3333H13M10 1.33334C10.2652 1.06813 10.6249 0.919128 11 0.919128C11.1857 0.919128 11.3696 0.955708 11.5412 1.02678C11.7128 1.09785 11.8687 1.20202 12 1.33334C12.1313 1.46466 12.2355 1.62057 12.3066 1.79215C12.3776 1.96373 12.4142 2.14762 12.4142 2.33334C12.4142 2.51906 12.3776 2.70296 12.3066 2.87454C12.2355 3.04612 12.1313 3.20202 12 3.33334L3.66667 11.6667L1 12.3333L1.66667 9.66668L10 1.33334Z"
-                      stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
+          <Transition name="fade">
+            <div v-if="settingsMenu" class="chat-subHeader">
+              <div class="user-section">
+                <div v-if="getOptions()?.changeNickMode === 'user'" class="user-name-input">
+                  <div v-if="!editMode">
+                    <span>{{ getMyName() }}</span>
+                    <svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg"
+                      @click="enterEditMode">
+                      <path
+                        d="M7 12.3333H13M10 1.33334C10.2652 1.06813 10.6249 0.919128 11 0.919128C11.1857 0.919128 11.3696 0.955708 11.5412 1.02678C11.7128 1.09785 11.8687 1.20202 12 1.33334C12.1313 1.46466 12.2355 1.62057 12.3066 1.79215C12.3776 1.96373 12.4142 2.14762 12.4142 2.33334C12.4142 2.51906 12.3776 2.70296 12.3066 2.87454C12.2355 3.04612 12.1313 3.20202 12 3.33334L3.66667 11.6667L1 12.3333L1.66667 9.66668L10 1.33334Z"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </div>
+                  <div v-else>
+                    <input v-model="editedUserName" @keypress.enter="saveEditedUserName" class="edit-user-input" />
+                    <button class="change-name-btn" @click="saveEditedUserName">OK</button>
+                    <button class="cancel-change-name-btn" @click="exitEditMode">Cancel</button>
+                  </div>
                 </div>
                 <div v-else>
-                  <input v-model="editedUserName" @keypress.enter="saveEditedUserName" class="edit-user-input" />
-                  <button class="change-name-btn" @click="saveEditedUserName">OK</button>
-                  <button class="cancel-change-name-btn" @click="exitEditMode">Cancel</button>
+                  <span>{{ getMyName() }}</span>
                 </div>
               </div>
-              <div v-else>
-                <span>{{ getMyName() }}</span>
+              <div v-if="showSystemMessages" class="system-message-section">
+                <input id="showSystemMEssages" type="checkbox" v-model="userShowSystemMessages">
+                <label for="showSystemMEssages">Show system messages</label>
               </div>
             </div>
-          </div>
+          </Transition>
           <div class="chat-body" ref="messageContainerRef">
             <TransitionGroup name="fade">
               <div v-for="(groupedMsgs, idGroup) in groupedMessages" :key="groupedMsgs[0].id"
                 :class="{ 'own-message': groupedMsgs[0].author.id === getMyID() }" class="message-container">
-                <span v-show="checkPreviousMsgName(idGroup)" class="user-name-baloon">
-                  {{ groupedMsgs[0].author.name }}
-                </span>
-                <div class="message">
-                  <TransitionGroup name="fade">
-                    <div v-for="(message, idMsg) in groupedMsgs" class="message-content" :key="idMsg">{{
-                      message.data.text
-                    }}
-                    </div>
-                  </TransitionGroup>
-                </div>
-                <div class="timestamp">
-                  {{ formatTimestamp(groupedMsgs[groupedMsgs.length - 1].timestamp) }}
-                </div>
+                <Transition name="fade">
+                  <span v-if="groupedMsgs[0].type === 'text' && checkPreviousMsgName(idGroup)" class="user-name-baloon">
+                    {{ groupedMsgs[0].author.name }}
+                  </span>
+                </Transition>
+                <Transition name="fade">
+                  <div v-if="groupedMsgs[0].type === 'text'" class="message">
+                    <TransitionGroup name="fade">
+                      <div v-for="(message, idMsg) in groupedMsgs" class="message-content" :key="idMsg">{{
+                        message.data
+                        }}
+                      </div>
+                    </TransitionGroup>
+                  </div>
+                  <div v-else-if="showSystemMessages && userShowSystemMessages && groupedMsgs[0].type === 'system'"
+                    class="system-message">
+                    <TransitionGroup name="fade">
+                      <div v-for="(message, idMsg) in groupedMsgs" class="message-content" :key="idMsg">{{
+                        printSystemMessage(message)
+                        }}
+                      </div>
+                    </TransitionGroup>
+                  </div>
+                </Transition>
+                <Transition name="fade">
+                  <div v-if="groupedMsgs[0].type === 'text'" class="timestamp">
+                    {{ formatTimestamp(groupedMsgs[groupedMsgs.length - 1].timestamp) }}
+                  </div>
+                </Transition>
               </div>
             </TransitionGroup>
           </div>

@@ -59,9 +59,9 @@ const retrieveMessages = async (_channel: string, _topic: string, callback: (msg
         contentTopic,
         pageDirection: "backward",
     };
-    if(getOptions()?.messagesToDownload){
+    if (getOptions()?.messagesToDownload) {
         queryOptions.pageSize = getOptions()?.messagesToDownload
-    }else{
+    } else {
         queryOptions.pageSize = 100
     }
 
@@ -80,6 +80,8 @@ export const setRoom = async (_room: string) => {
 
     chatState.value.participants = [myInfo.value]
 
+    if (getRoom())
+        sendMessage('leave', 'system')
     wakuData.subscription = await wakuData.lightNode.filter.createSubscription();
     await retrieveMessages(channelName, _room, messageCallback)
 
@@ -90,6 +92,7 @@ export const setRoom = async (_room: string) => {
         wakuData.pingInterval = setInterval(pingAndReinitiateSubscription, 10000);
 
     chatState.value.room = _room
+    sendMessage('enter', 'system')
 }
 
 export const onDestroyWaku = () => {
@@ -190,6 +193,7 @@ export const loadChat = (async () => {
 
 export const disconnectChat = async () => {
     if (wakuData.stopWaku) {
+        sendMessage('leave', 'system')
         clearInterval(wakuData.pingInterval)
         await wakuData.subscription.unsubscribeAll();
         await wakuData.stopWaku(wakuData.lightNode)
@@ -197,12 +201,11 @@ export const disconnectChat = async () => {
     }
 }
 
-export const sendMessage = (msgData: { text?: string, emoji?: string }, msgType: string) => {
+export const sendMessage = (msgData: string, msgType: string) => {
     const timestamp = Date.now()
     const msg: Message = {
         author: myInfo.value,
         room: chatState.value.room,
-        liked: false,
         type: msgType,
         data: msgData,
         timestamp: timestamp,

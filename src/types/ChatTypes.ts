@@ -3,8 +3,7 @@ export type Message = {
     author: Participant;
     type: string;
     timestamp: number;
-    liked: boolean;
-    data: { text?: string; emoji?: string };
+    data: string;
     room: string;
 };
 
@@ -20,6 +19,9 @@ export interface WakuChatVuePluginOptions {
     showSettings?: boolean
     disconnectDelay?: number
     groupMessagesTime?: number
+    messagesToDownload?: number
+    messageAgeToDownload?: number
+    showSystemMessages?: boolean
 }
 
 export interface WakuChatConfigCss {
@@ -96,6 +98,10 @@ export interface WakuChatConfigCss {
                 main: string,
                 text: string,
                 user: string
+            },
+            systemMessage: {
+                main: string,
+                text: string
             },
             timestamp: string,
         },

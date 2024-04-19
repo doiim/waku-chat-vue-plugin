@@ -34,7 +34,7 @@ let sendMessageToServer = async (msg: Message) => { console.log(msg) };
 
 const myInfo = ref<Participant>({ id: "", name: "" });
 
-const retrieveMessages = async (_channel: string, _topic: string, callback: (msg: any) => void) => {
+const retrieveMessages = async (_channel: string, _topic: string, callback: (msg: any) => boolean) => {
 
     if (!wakuData.lightNode || !wakuData.ChatDecoder || !wakuData.ChatInterface) return;
     const topic = _topic.toLowerCase().replace(/\s/g, '');
@@ -46,7 +46,9 @@ const retrieveMessages = async (_channel: string, _topic: string, callback: (msg
     // Get the time frame
     const endTime = new Date();
     const startTime = new Date();
-    startTime.setMilliseconds(endTime.getMilliseconds() - (24 * 60 * 60 * 1000));
+    let messageAgeToDownload = getOptions()?.messageAgeToDownload
+    messageAgeToDownload = messageAgeToDownload ? messageAgeToDownload : 24 * 60 * 60 * 1000
+    startTime.setMilliseconds(endTime.getMilliseconds() - messageAgeToDownload);
 
     // Retrieve a week of messages
     const queryOptions: any = {
@@ -57,6 +59,11 @@ const retrieveMessages = async (_channel: string, _topic: string, callback: (msg
         contentTopic,
         pageDirection: "backward",
     };
+    if (getOptions()?.messagesToDownload) {
+        queryOptions.pageSize = getOptions()?.messagesToDownload
+    } else {
+        queryOptions.pageSize = 100
+    }
 
     await wakuData.lightNode.store.queryWithOrderedCallback([wakuData.ChatDecoder], callback, queryOptions);
 
@@ -73,6 +80,8 @@ export const setRoom = async (_room: string) => {
 
     chatState.value.participants = [myInfo.value]
 
+    if (getRoom())
+        sendMessage('leave', 'system')
     wakuData.subscription = await wakuData.lightNode.filter.createSubscription();
     await retrieveMessages(channelName, _room, messageCallback)
 
@@ -83,6 +92,7 @@ export const setRoom = async (_room: string) => {
         wakuData.pingInterval = setInterval(pingAndReinitiateSubscription, 10000);
 
     chatState.value.room = _room
+    sendMessage('enter', 'system')
 }
 
 export const onDestroyWaku = () => {
@@ -183,6 +193,7 @@ export const loadChat = (async () => {
 
 export const disconnectChat = async () => {
     if (wakuData.stopWaku) {
+        sendMessage('leave', 'system')
         clearInterval(wakuData.pingInterval)
         await wakuData.subscription.unsubscribeAll();
         await wakuData.stopWaku(wakuData.lightNode)
@@ -190,12 +201,11 @@ export const disconnectChat = async () => {
     }
 }
 
-export const sendMessage = (msgData: { text?: string, emoji?: string }, msgType: string) => {
+export const sendMessage = (msgData: string, msgType: string) => {
     const timestamp = Date.now()
     const msg: Message = {
         author: myInfo.value,
         room: chatState.value.room,
-        liked: false,
         type: msgType,
         data: msgData,
         timestamp: timestamp,
@@ -207,18 +217,18 @@ export const sendMessage = (msgData: { text?: string, emoji?: string }, msgType:
 }
 
 const messageCallback = (wakuMessage: any) => {
-    if (!wakuData.ChatInterface || !wakuMessage.payload) return;
+    if (!wakuData.ChatInterface || !wakuMessage.payload) return false;
     let messageObj: any = undefined;
     try {
         messageObj = wakuData.ChatInterface.decode(wakuMessage.payload);
     } catch (err) {
         console.error("Decoding Error: ", err)
-        return
+        return false
     }
-    if (!messageObj) return;
+    if (!messageObj) return false;
 
     const existingMessageIndex = chatState.value.messageList.findIndex(message => message.id === messageObj.id);
-    if (existingMessageIndex !== -1) return;
+    if (existingMessageIndex !== -1) return true;
 
     const insertIndex = chatState.value.messageList.findIndex(message => message.timestamp > messageObj.timestamp);
     if (insertIndex !== -1) {
@@ -233,6 +243,7 @@ const messageCallback = (wakuMessage: any) => {
     } else {
         chatState.value.participants.push(messageObj.author);
     }
+    return true
 };
 
 const pingAndReinitiateSubscription = async () => {

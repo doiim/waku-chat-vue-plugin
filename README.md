@@ -144,8 +144,11 @@ Here are the available configuration options:
 - `wakuChannelName`: (string) - The name that will be used to create your message's topic on Waku.
 - `availableRooms`: (string[]) - Rooms available on your chat to separate messages.
 - `wakuPeers`: (string[]) (optional) - Waku peers to connect by default. If you don't set this, Waku will use automatic peers. Use this to set your own peers.
-- `disconnectDelay`: (number) - Time in milisseconds which chat can be minimized before being disconnected. 30 seconds if not set.
-- `groupMessagesTime`: (number) - Time in milisseconds which messages from the same sender can be grouped. 10 seconds if not set.
+- `disconnectDelay`: (number) (optional) - Time in milisseconds which chat can be minimized before being disconnected. 5 minutes if not set.
+- `groupMessagesTime`: (number) (optional) - Time in milisseconds which messages from the same sender can be grouped. 1 minute if not set.
+- `messagesToDownload`: (number) (optional) - Max number of messages to retrieve when user connects to chat. Default 100 messages.
+- `messageAgeToDownload`: (number) (optional) - Max age of messages in milisseconds which messages would be downloaded when user connects to chat. Default 24h.
+- `showSystemMessages`: (boolean) (optional) - Show or not system messages. Default not show.
 - `changeNickMode`: ('application' | 'user') (optional) - 'application' allows your app to change nicknames via a dispatch event, 'interface' allows users to directly change their nicknames and allows the same method as 'application'. Any other value won't allow change nicknames.
 
   If you set 'application' or 'user', in your code you can call:
@@ -226,6 +229,9 @@ Here are the available configuration options:
       - otherMessage: (Object) - Allow you to change colors from others messages.
         - main: (string) - main color.
         - user: (string) - user name color.
+        - text: (string) - text color.
+      - systemMessage: (Object) - Allow you to change colors from system messages.
+        - main: (string) - main color.
         - text: (string) - text color.
       - timestamp: (string) - timestamp text color.
     - background: (string) - Allow you to change background color.

@@ -14,7 +14,10 @@
   "exports": {
     ".": {
       "import": "./dist/waku-chat-vue-plugin.js",
-      "require": "./dist/waku-chat-vue-plugin.umd.cjs"
+      "require": [
+        "./dist/waku-chat-vue-plugin.umd.cjs",
+        "./dist/waku-chat-vue-plugin.d.ts"
+      ]
     }
   },
   "files": [
@@ -37,6 +40,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
+    "fs": "^0.0.1-security",
     "typescript": "^5.3.3",
     "vite": "^5.1.4",
     "vite-plugin-dts": "^3.7.3",

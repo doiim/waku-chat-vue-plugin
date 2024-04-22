@@ -202,6 +202,8 @@ export const disconnectChat = async () => {
 }
 
 export const sendMessage = (msgData: string, msgType: string) => {
+    if(getStatus() !== 'connected') return
+    
     const timestamp = Date.now()
     const msg: Message = {
         author: myInfo.value,

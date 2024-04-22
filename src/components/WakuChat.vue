@@ -146,7 +146,9 @@ onMounted(() => {
     }
   };
   //document.dispatchEvent(new CustomEvent('changeNickName', { detail: 'newNick' }));
-  document.addEventListener('changeNickName', handleNickNameChange);
+  setTimeout(() => {
+    document.addEventListener('changeNickName', handleNickNameChange);
+  }, 0);
 
   showSettings.value = !!getOptions()?.showSettings;
   showSystemMessages.value = !!getOptions()?.showSystemMessages;

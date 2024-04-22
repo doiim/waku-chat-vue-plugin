@@ -118,20 +118,21 @@ export const getStatus = () => {
 export const setMyID = (_newID: string) => {
     myInfo.value.id = _newID
     localStorage.setItem('myWakuChatId', _newID);
-    if (!getMyName()) {
-        setMyName(generate({ exactly: 3, minLength: 4, join: '-', seed: myInfo.value.id }))
-    }
+    setMyName()
 }
 
 export const getMyID = () => {
     if (!myInfo.value.id)
         return localStorage.getItem('myWakuChatId') || '';
-
     return myInfo.value.id
 }
 
-export const setMyName = (_newName: string) => {
-    myInfo.value.name = _newName
+export const setMyName = (_newName?: string) => {
+    if (!_newName) {
+        myInfo.value.name = generate({ exactly: 3, minLength: 4, join: '-', seed: getMyID() })
+    } else {
+        myInfo.value.name = _newName
+    }
 }
 
 export const getMyName = () => {
@@ -202,8 +203,7 @@ export const disconnectChat = async () => {
 }
 
 export const sendMessage = (msgData: string, msgType: string) => {
-    if(getStatus() !== 'connected') return
-    
+    if (getStatus() !== 'connected') return
     const timestamp = Date.now()
     const msg: Message = {
         author: myInfo.value,
@@ -231,7 +231,6 @@ const messageCallback = (wakuMessage: any) => {
 
     const existingMessageIndex = chatState.value.messageList.findIndex(message => message.id === messageObj.id);
     if (existingMessageIndex !== -1) return true;
-
     const insertIndex = chatState.value.messageList.findIndex(message => message.timestamp > messageObj.timestamp);
     if (insertIndex !== -1) {
         chatState.value.messageList.splice(insertIndex, 0, messageObj);

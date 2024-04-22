@@ -137,6 +137,14 @@ Follow these steps to install and use the package in your project:
       .mount("#app");
     ```
 
+4. Instantiate the componente inside your template.
+
+    ```js
+      <WakuChatVuePlugin :externalUserId="externalId" :externalUserName="externalName" />
+    ```
+
+Note that externalUserName is optional, if not provided, the user name will be generated using the id.
+
 ### Configuration Options
 
 Here are the available configuration options:
@@ -149,26 +157,7 @@ Here are the available configuration options:
 - `messagesToDownload`: (number) (optional) - Max number of messages to retrieve when user connects to chat. Default 100 messages.
 - `messageAgeToDownload`: (number) (optional) - Max age of messages in milisseconds which messages would be downloaded when user connects to chat. Default 24h.
 - `showSystemMessages`: (boolean) (optional) - Show or not system messages. Default not show.
-- `changeNickMode`: ('application' | 'user') (optional) - 'application' allows your app to change nicknames via a dispatch event, 'interface' allows users to directly change their nicknames and allows the same method as 'application'. Any other value won't allow change nicknames.
-
-  If you set 'application' or 'user', in your code you can call:
-
-  ```js
-  document.dispatchEvent(
-    new CustomEvent("changeNickName", { detail: "_newNickNameHere" })
-  );
-  ```
-
-  To change user’s nickname.
-
-  TIP: If you change id during the application run (because of login or logout) and you want your names derived of the id, you need to notice that the user name will persist, so you need to reset it:
-
-  ```js
-  document.dispatchEvent(new CustomEvent('changeNickName', { detail: '' }));
-  ```
-
-  So, when you change the id, a new name will be generated, or you can set another name on the message and no need to generate another.
-
+- `userChangeNick`: (boolean) (optional) - Allow users to change their nicknames.
 - `cssConfig`:(Object) (optional) - Allow you to change css. ALl of them are optional, if you don’t set any of them, a default value will be applied. They are:
   - colors:(Object) - Allow you to change colors of components.
     - header: (Object) - Allow you to change colors from header.

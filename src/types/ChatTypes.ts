@@ -13,7 +13,6 @@ export interface WakuChatVuePluginOptions {
     wakuChannelName: string,
     wakuPeers?: string[],
     availableRooms: string[],
-    changeNickMode: 'application' | 'user' | 'none',
     allowPrivateChat: boolean,
     cssConfig?: WakuChatConfigCss,
     showSettings?: boolean
@@ -22,6 +21,7 @@ export interface WakuChatVuePluginOptions {
     messagesToDownload?: number
     messageAgeToDownload?: number
     showSystemMessages?: boolean
+    userChangeNick?: boolean
 }
 
 export interface WakuChatConfigCss {

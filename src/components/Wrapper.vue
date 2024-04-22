@@ -3,7 +3,8 @@ import { ref, onMounted, defineProps } from "vue";
 import WakuChat from "./WakuChat.vue"
 
 const props = defineProps<{
-    externalUserId: string | undefined;
+    externalUserId?: string;
+    externalUserName?: string;
 }>()
 
 const shadowRootHeadRef = ref<HTMLElement | null>(null);
@@ -64,7 +65,7 @@ const myStyle = (jsonStyle: any) => {
         </head>
 
         <body>
-            <WakuChat :externalUserId="props.externalUserId" @myStyle="myStyle" />
+            <WakuChat :externalUserId="props.externalUserId" :externalUserName="props.externalUserName" @myStyle="myStyle" />
         </body>
     </shadow-root>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watchEffect, onBeforeUnmount, defineProps, computed, TransitionGroup, watch } from "vue";
+import { ref, watchEffect, defineProps, computed, TransitionGroup, watch, onBeforeUnmount } from "vue";
 import { WakuChatConfigCss } from "../types/ChatTypes";
 import {
   sendMessage,
@@ -19,8 +19,17 @@ import {
 } from "../components/WakuLogic"
 
 const props = defineProps<{
-  externalUserId: string | undefined;
+  externalUserId?: string;
+  externalUserName?: string;
 }>()
+
+const propUserId = computed(() => {
+  return props.externalUserId
+});
+
+const propUserName = computed(() => {
+  return props.externalUserName
+});
 
 const isChatOpen = ref<boolean>(false);
 const settingsMenu = ref<boolean>(false);
@@ -135,32 +144,13 @@ const handleToggleRoomDropdown = () => {
   roomDropdownOpened.value = !roomDropdownOpened.value
 }
 
-onMounted(() => {
-  const handleNickNameChange = (event: Event) => {
-    const newNick = (event as CustomEvent).detail;
-
-    if (getOptions()?.changeNickMode === 'application' || getOptions()?.changeNickMode === 'user') {
-      const myName = getMyName()
-      setMyName(newNick);
-      sendMessage('changeName:' + myName, 'system')
-    }
-  };
-  //document.dispatchEvent(new CustomEvent('changeNickName', { detail: 'newNick' }));
-  setTimeout(() => {
-    document.addEventListener('changeNickName', handleNickNameChange);
-  }, 0);
-
-  showSettings.value = !!getOptions()?.showSettings;
-  showSystemMessages.value = !!getOptions()?.showSystemMessages;
-
-  onBeforeUnmount(() => {
-    document.removeEventListener('changeNickName', handleNickNameChange);
-    onDestroyWaku();
-  });
+onBeforeUnmount(() => {
+  onDestroyWaku();
 });
 
 const enterEditMode = () => {
   editMode.value = true;
+  editedUserName.value = getMyName()
 };
 const exitEditMode = () => {
   editMode.value = false;
@@ -191,14 +181,18 @@ const changeRoomDropdown = async (selectedRoom: string) => {
 
 const idleTimeout = ref<NodeJS.Timeout>()
 
-
 const openChat = async () => {
   clearTimeout(idleTimeout.value)
   if (getStatus() !== "connected") {
-    await loadChat()
-    if (props.externalUserId) {
-      setMyID(props.externalUserId)
+    showSettings.value = !!getOptions()?.showSettings;
+    showSystemMessages.value = !!getOptions()?.showSystemMessages;
+    if (propUserId.value) {
+      setMyID(propUserId.value)
     }
+    if (propUserName.value) {
+      setMyName(propUserName.value)
+    }
+    await loadChat()
   }
   isChatOpen.value = true
 }
@@ -234,18 +228,18 @@ const scrollToBottom = () => {
   }, 300);
 };
 
-watchEffect(() => {
-  editedUserName.value = getMyName()
-});
-
 watch([showSystemMessages, userShowSystemMessages], () => {
   scrollToBottom();
 });
 
-watchEffect(() => {
-  if (props.externalUserId) {
-    setMyID(props.externalUserId)
+watch([propUserId], () => {
+  if (propUserId.value) {
+    setMyID(propUserId.value)
   }
+});
+
+watch([propUserName], () => {
+  setMyName(propUserName.value)
 });
 
 watchEffect(() => {
@@ -303,6 +297,7 @@ const mergeObjects = (target: any, source: any) => {
 
 const checkPreviousMsgName = (idx: number) => {
   return !(idx > 0
+    && groupedMessages.value[idx - 1][0].type === 'text'
     && groupedMessages.value[idx][0].author.id === groupedMessages.value[idx - 1][0].author.id
     && groupedMessages.value[idx][0].author.name === groupedMessages.value[idx - 1][0].author.name)
 }
@@ -865,7 +860,7 @@ watchEffect(() => {
           <Transition name="fade">
             <div v-if="settingsMenu" class="chat-subHeader">
               <div class="user-section">
-                <div v-if="getOptions()?.changeNickMode === 'user'" class="user-name-input">
+                <div v-if="getOptions()?.userChangeNick" class="user-name-input">
                   <div v-if="!editMode">
                     <span>{{ getMyName() }}</span>
                     <svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg"

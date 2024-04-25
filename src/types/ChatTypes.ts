@@ -5,6 +5,7 @@ export type Message = {
     timestamp: number;
     data: string;
     room: string;
+    responseTo?: string;
 };
 
 export type Participant = { id: string, name: string }

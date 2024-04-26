@@ -161,7 +161,7 @@ const loadOptions = () => {
 }
 
 const getChatInterface = (version?: number) => {
-    if (!version) version = wakuData.chatInterfaces?.length ? wakuData.chatInterfaces.length -1 : 0
+    if (!version) version = wakuData.chatInterfaces?.length ? wakuData.chatInterfaces.length - 1 : 0
     if (!wakuData.chatInterfaces || wakuData.chatInterfaces.length === 0) return undefined
     return wakuData.chatInterfaces[version]
 }
@@ -227,13 +227,14 @@ export const sendMessage = (msgData: string, msgType: string) => {
 
 const messageCallback = (wakuMessage: any) => {
     if (!wakuData.chatInterfaces?.length || !wakuMessage.payload) return false;
-    let messageVersion = 0;
+    let messageObj: any = undefined
     try {
-        messageVersion = getChatInterface().decode(wakuMessage.payload).version;
+        messageObj = getChatInterface().decode(wakuMessage.payload);
     } catch (err) {
         return false
     }
-    const messageObj: any = translateMessage(wakuMessage.payload, messageVersion, wakuData.chatInterfaces.length -1)
+    if (messageObj.version !== wakuData.chatInterfaces.length - 1)
+        messageObj = translateMessage(wakuMessage.payload, messageObj.version, wakuData.chatInterfaces.length - 1)
 
     if (!messageObj) return false;
 

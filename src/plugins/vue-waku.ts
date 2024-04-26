@@ -45,69 +45,70 @@ const plugin = {
         return node
       }
 
-      const chatInterfaces = getChatInterfaces()
+      const chatInterfaces = populateChatInterfaces()
 
-      return { startWaku, stopWaku, chatInterfaces, ChatOptions}
+      return { startWaku, stopWaku, chatInterfaces, ChatOptions }
     }
     app.provide('ChatOptions', ChatOptions)
 
   },
 }
 
-const getChatInterfaces = () => {
-  return [
-    //VERSION 0
-    //Initial Version
-    () => {
-      const ParticipantInterface = new Type("Participant")
-        .add(new Field("id", 1, "string"))
-        .add(new Field("name", 2, "string"))
+const populateChatInterfaces = () => {
 
-      const ChatInterface = new Type("ChatInterface")
-        .add(new Field("id", 1, "string"))
-        .add(new Field("author", 2, "Participant",))
-        .add(new Field("type", 3, "string"))
-        .add(new Field("timestamp", 4, "uint64"))
-        .add(new Field("data", 6, "string"))
-        .add(new Field("room", 7, "string"))
-      const versionField = new Field("version", 8, "uint64")
-      versionField.defaultValue = 0
-      ChatInterface
-        .add(versionField)
+  //VERSION 0
+  //Initial Version
+  const version1 = () => {
+    const ParticipantInterface = new Type("Participant")
+      .add(new Field("id", 1, "string"))
+      .add(new Field("name", 2, "string"))
 
-      ChatInterface.add(ParticipantInterface)
-      return ChatInterface
-    },
-    //VERSION 1
-    //Moved version to field 2
-    //type moved from field 3 to 4
-    //timestamp moved from field 4 to 5
-    //Added responseTo?:string on 8
-    () => {
-      const ParticipantInterface = new Type("Participant")
-        .add(new Field("id", 1, "string"))
-        .add(new Field("name", 2, "string"))
+    const ChatInterface = new Type("ChatInterface")
+      .add(new Field("id", 1, "string"))
+      .add(new Field("author", 2, "Participant",))
+      .add(new Field("type", 3, "string"))
+      .add(new Field("timestamp", 4, "uint64"))
+      .add(new Field("data", 6, "string"))
+      .add(new Field("room", 7, "string"))
+    const versionField = new Field("version", 8, "uint64")
+    versionField.defaultValue = 0
+    ChatInterface
+      .add(versionField)
 
-      const ChatInterface = new Type("ChatInterface")
-        .add(new Field("id", 1, "string"))
-      const versionField = new Field("version", 2, "uint64")
-      versionField.defaultValue = 1
-      ChatInterface
-        .add(versionField)
-        .add(new Field("author", 3, "Participant",))
-        .add(new Field("type", 4, "string"))
-        .add(new Field("timestamp", 5, "uint64"))
-        .add(new Field("data", 6, "string"))
-        .add(new Field("room", 7, "string"))
-      const responseToField = new Field("responseTo", 8, "string")
-      responseToField.optional = true
-      ChatInterface
-        .add(responseToField)
+    ChatInterface.add(ParticipantInterface)
+    return ChatInterface
+  }
+  //VERSION 1
+  //Moved version to field 2
+  //type moved from field 3 to 4
+  //timestamp moved from field 4 to 5
+  //Added responseTo?:string on 8
+  const version2 = () => {
+    const ParticipantInterface = new Type("Participant")
+      .add(new Field("id", 1, "string"))
+      .add(new Field("name", 2, "string"))
 
-      ChatInterface.add(ParticipantInterface)
-      return ChatInterface
-    },
-  ]
+    const ChatInterface = new Type("ChatInterface")
+      .add(new Field("id", 1, "string"))
+    const versionField = new Field("version", 2, "uint64")
+    versionField.defaultValue = 1
+    ChatInterface
+      .add(versionField)
+      .add(new Field("author", 3, "Participant",))
+      .add(new Field("type", 4, "string"))
+      .add(new Field("timestamp", 5, "uint64"))
+      .add(new Field("data", 6, "string"))
+      .add(new Field("room", 7, "string"))
+    const responseToField = new Field("responseTo", 8, "string")
+    responseToField.optional = true
+    ChatInterface
+      .add(responseToField)
+
+    ChatInterface.add(ParticipantInterface)
+    return ChatInterface
+  }
+
+  return [version1(), version2()]
 }
 
 export const upgradeMessage = (messageObj: any) => {
@@ -115,16 +116,6 @@ export const upgradeMessage = (messageObj: any) => {
     case 0:
       messageObj.version++;
       return { ...messageObj, responseTo: undefined }
-    default:
-      return messageObj
-  }
-}
-export const downgradeMessage = (messageObj: any) => { 
-  switch (messageObj.version) {
-    case 1:
-      messageObj.version--;
-      messageObj.responseTo = undefined
-      return messageObj
     default:
       return messageObj
   }

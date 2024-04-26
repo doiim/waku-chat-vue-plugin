@@ -1,6 +1,6 @@
 import { Message, Participant } from "../types/ChatTypes";
 import { ref, inject } from "vue";
-import { changeTopic, loadPlugin, upgradeMessage, downgradeMessage } from "../plugins/vue-waku";
+import { changeTopic, loadPlugin, upgradeMessage } from "../plugins/vue-waku";
 import { WakuChatVuePluginOptions } from "../types/ChatTypes";
 import { generate } from "random-words";
 
@@ -161,7 +161,7 @@ const loadOptions = () => {
 }
 
 const getChatInterface = (version?: number) => {
-    if (!version) version = wakuData.chatInterfaces?.length ? wakuData.chatInterfaces.length - 1 : 0
+    if (version === undefined) version = wakuData.chatInterfaces?.length ? wakuData.chatInterfaces.length - 1 : 0
     if (!wakuData.chatInterfaces || wakuData.chatInterfaces.length === 0) return undefined
     return wakuData.chatInterfaces[version]
 }
@@ -228,15 +228,19 @@ export const sendMessage = (msgData: string, msgType: string) => {
 const messageCallback = (wakuMessage: any) => {
     if (!wakuData.chatInterfaces?.length || !wakuMessage.payload) return false;
     let messageObj: any = undefined
-    try {
-        messageObj = getChatInterface().decode(wakuMessage.payload);
-    } catch (err) {
-        return false
+    let version = wakuData.chatInterfaces.length - 1
+    while (messageObj === undefined && version >= 0) {
+        try {
+            messageObj = getChatInterface(version).decode(wakuMessage.payload);
+        } catch (err) {
+            version--;
+        }
     }
-    if (messageObj.version !== wakuData.chatInterfaces.length - 1)
-        messageObj = translateMessage(wakuMessage.payload, messageObj.version, wakuData.chatInterfaces.length - 1)
 
     if (!messageObj) return false;
+
+    if (version < wakuData.chatInterfaces.length - 1)
+        messageObj = translateMessage(messageObj, wakuData.chatInterfaces.length - 1)
 
     const existingMessageIndex = chatState.value.messageList.findIndex(message => message.id === messageObj.id);
     if (existingMessageIndex !== -1) return true;
@@ -256,14 +260,9 @@ const messageCallback = (wakuMessage: any) => {
     return true
 };
 
-const translateMessage = (wakuMsg: any, msgVersion: number, chatVersion: number) => {
-    let messageObj = getChatInterface(msgVersion).decode(wakuMsg);
-
+const translateMessage = (messageObj: any, chatVersion: number) => {
     while (messageObj.version < chatVersion)
         messageObj = upgradeMessage(messageObj)
-
-    while (messageObj.version > chatVersion)
-        messageObj = downgradeMessage(messageObj)
 
     return messageObj
 }

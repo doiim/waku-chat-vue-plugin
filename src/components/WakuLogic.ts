@@ -1,13 +1,13 @@
 import { Message, Participant } from "../types/ChatTypes";
 import { ref, inject } from "vue";
-import { changeTopic, loadPlugin } from "../plugins/vue-waku";
+import { changeTopic, loadPlugin, upgradeMessage } from "../plugins/vue-waku";
 import { WakuChatVuePluginOptions } from "../types/ChatTypes";
 import { generate } from "random-words";
 
 type WakuData = {
     startWaku?: (stoppedNode: any) => Promise<any>,
     stopWaku?: (node: any) => Promise<any>,
-    ChatInterface?: any,
+    chatInterfaces?: any[],
     ChatEncoder?: any,
     ChatDecoder?: any,
     ChatOptions?: WakuChatVuePluginOptions,
@@ -36,7 +36,7 @@ const myInfo = ref<Participant>({ id: "", name: "" });
 
 const retrieveMessages = async (_channel: string, _topic: string, callback: (msg: any) => boolean) => {
 
-    if (!wakuData.lightNode || !wakuData.ChatDecoder || !wakuData.ChatInterface) return;
+    if (!wakuData.lightNode || !wakuData.ChatDecoder) return;
     const topic = _topic.toLowerCase().replace(/\s/g, '');
     const channel = _channel.toLowerCase().replace(/\s/g, '');
 
@@ -160,6 +160,12 @@ const loadOptions = () => {
     }
 }
 
+const getChatInterface = (version?: number) => {
+    if (version === undefined) version = wakuData.chatInterfaces?.length ? wakuData.chatInterfaces.length - 1 : 0
+    if (!wakuData.chatInterfaces || wakuData.chatInterfaces.length === 0) return undefined
+    return wakuData.chatInterfaces[version]
+}
+
 export const loadChat = (async () => {
     chatState.value.status = "connecting"
     if (!wakuData.startWaku)
@@ -179,10 +185,10 @@ export const loadChat = (async () => {
     sendMessageToServer = async (msg: Message) => {
         if (!wakuData.lightNode) return
         if (chatState.value.status !== "connected") return;
-        if (!wakuData.ChatInterface || !wakuData.ChatEncoder) return
+        if (!wakuData.chatInterfaces?.length || !wakuData.ChatEncoder) return
 
-        const protoMessage = wakuData.ChatInterface.create(msg);
-        const serialisedMessage = wakuData.ChatInterface.encode(protoMessage).finish();
+        const protoMessage = getChatInterface().create(msg);
+        const serialisedMessage = getChatInterface().encode(protoMessage).finish();
 
         await wakuData.lightNode.lightPush.send(wakuData.ChatEncoder, {
             payload: serialisedMessage,
@@ -212,6 +218,7 @@ export const sendMessage = (msgData: string, msgType: string) => {
         data: msgData,
         timestamp: timestamp,
         id: getMyID() + timestamp,
+        responseTo: undefined,
     }
     setTimeout(async () => {
         await sendMessageToServer(msg)
@@ -219,15 +226,21 @@ export const sendMessage = (msgData: string, msgType: string) => {
 }
 
 const messageCallback = (wakuMessage: any) => {
-    if (!wakuData.ChatInterface || !wakuMessage.payload) return false;
-    let messageObj: any = undefined;
-    try {
-        messageObj = wakuData.ChatInterface.decode(wakuMessage.payload);
-    } catch (err) {
-        console.error("Decoding Error: ", err)
-        return false
+    if (!wakuData.chatInterfaces?.length || !wakuMessage.payload) return false;
+    let messageObj: any = undefined
+    let version = wakuData.chatInterfaces.length - 1
+    while (messageObj === undefined && version >= 0) {
+        try {
+            messageObj = getChatInterface(version).decode(wakuMessage.payload);
+        } catch (err) {
+            version--;
+        }
     }
+
     if (!messageObj) return false;
+
+    if (version < wakuData.chatInterfaces.length - 1)
+        messageObj = translateMessage(messageObj, wakuData.chatInterfaces.length - 1)
 
     const existingMessageIndex = chatState.value.messageList.findIndex(message => message.id === messageObj.id);
     if (existingMessageIndex !== -1) return true;
@@ -246,6 +259,13 @@ const messageCallback = (wakuMessage: any) => {
     }
     return true
 };
+
+const translateMessage = (messageObj: any, chatVersion: number) => {
+    while (messageObj.version < chatVersion)
+        messageObj = upgradeMessage(messageObj)
+
+    return messageObj
+}
 
 const pingAndReinitiateSubscription = async () => {
     if (!wakuData.lightNode) return

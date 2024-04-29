@@ -208,7 +208,7 @@ export const disconnectChat = async () => {
     }
 }
 
-export const sendMessage = (msgData: string, msgType: string) => {
+export const sendMessage = (msgData: string, msgType: string, responseId?: string) => {
     if (getStatus() !== 'connected') return
     const timestamp = Date.now()
     const msg: Message = {
@@ -218,7 +218,7 @@ export const sendMessage = (msgData: string, msgType: string) => {
         data: msgData,
         timestamp: timestamp,
         id: getMyID() + timestamp,
-        responseTo: undefined,
+        responseTo: responseId,
     }
     setTimeout(async () => {
         await sendMessageToServer(msg)

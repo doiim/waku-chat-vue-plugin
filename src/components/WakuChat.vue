@@ -99,6 +99,12 @@ const computedCss = ref<WakuChatConfigCss>({
       placeholder: 'rgba(156, 163, 175, 1)',
       text: 'rgba(31, 41, 55, 1)',
       disabled: 'rgba(229, 231, 235, 1)',
+      response: {
+        main: 'rgba(229, 231, 235, 1)',
+        text: 'rgba(31, 41, 55, 1)',
+        close: 'rgba(107, 114, 128, 1)',
+        closeHover: 'rgba(30, 64, 175, 1)',
+      }
     },
     minimizeBtn: {
       main: 'rgba(107, 114, 128, 1)',
@@ -109,17 +115,26 @@ const computedCss = ref<WakuChatConfigCss>({
         main: 'rgba(37, 99, 235, 1)',
         user: 'rgba(37, 99, 235, 1)',
         text: 'rgba(249, 250, 251, 1)',
+        response: {
+          main: 'rgb(104 144 231)',
+          text: 'rgba(249, 250, 251, 1)',
+        }
       },
       otherMessage: {
         main: 'rgba(229, 231, 235, 1)',
         user: 'rgba(156, 163, 175, 1)',
         text: 'rgba(31, 41, 55, 1)',
+        response: {
+          main: 'rgb(180 199 235)',
+          text: 'rgba(31, 41, 55, 1)',
+        }
       },
       systemMessage: {
         main: 'rgba(229, 231, 235, 1)',
         text: 'rgba(37, 99, 235, 1)',
       },
       timestamp: 'rgba(156, 163, 175, 1)',
+      responseIcon: 'rgba(37, 99, 235, 1)'
     },
     background: 'rgba(249, 250, 251, 1)',
     border: 'rgba(37, 99, 235, 1)',
@@ -204,8 +219,11 @@ const closeChat = () => {
 }
 
 const handleSendMessage = () => {
-  if (messageInput.value)
-    sendMessage(messageInput.value, 'text')
+  if (messageInput.value) {
+    var responseId = responseTo.value !== undefined ? groupedMessages.value[responseTo.value][0].id : undefined
+    sendMessage(messageInput.value, 'text', responseId)
+    responseTo.value = undefined
+  }
   messageInput.value = ''
 }
 
@@ -227,6 +245,30 @@ const scrollToBottom = () => {
     }
   }, 300);
 };
+
+const scrollToMessage = (id: string) => {
+  setTimeout(() => {
+    const container = messageContainerRef.value;
+    if (container) {
+      const messageElement = container.querySelector(`#${id}`);
+      if (messageElement) {
+        const containerRect = container.getBoundingClientRect();
+        const messageRect = messageElement.getBoundingClientRect();
+        const scrollTop = container.scrollTop;
+        const targetTop = messageRect.top - containerRect.top + scrollTop;
+        let count = 0;
+
+        const scrollInterval = setInterval(() => {
+          if (count < 100) {
+            container.scrollTop = scrollTop + (targetTop - scrollTop) * 0.5 * (1 - Math.cos(++count * (Math.PI / 100)));
+          } else {
+            clearInterval(scrollInterval);
+          }
+        }, 5);
+      }
+    }
+  }, 300);
+}
 
 watch([showSystemMessages, userShowSystemMessages], () => {
   scrollToBottom();
@@ -267,8 +309,9 @@ const groupedMessages = computed(() => {
     if (
       currentMsg.author.id === previousMsg.author.id &&
       currentMsg.author.name === previousMsg.author.name &&
-      currentMsg.type === 'text' &&
-      previousMsg.type === 'text' &&
+      currentMsg.type !== 'system' &&
+      previousMsg.type !== 'system' &&
+      !currentMsg.responseTo &&
       Math.abs(previousMsg.timestamp - currentMsg.timestamp) <= groupMessagesTime
     ) {
       currentGroup.push(currentMsg);
@@ -315,6 +358,21 @@ const emit = defineEmits<{
   myStyle: [myStyle: string]
 }>()
 
+
+const responseTo = ref<number | undefined>(undefined);
+
+const setResponse = (groupedMsgIdx: number | undefined) => {
+  responseTo.value = groupedMsgIdx
+}
+
+const groupedResponse = (id: string) => {
+  for (var i = 0; i < groupedMessages.value.length; i++) {
+    if (groupedMessages.value[i][0].id === id) {
+      return groupedMessages.value[i]
+    }
+  }
+  return []
+}
 
 const computedStyles = ref<any>({});
 
@@ -579,8 +637,32 @@ watchEffect(() => {
     },
     '.chat-footer': {
       display: 'flex',
+      flexDirection: 'column',
       alignItems: 'center',
-      padding: '16px 16px 24px 16px'
+      padding: '16px 30px 24px 30px'
+    },
+    '.response-input': {
+      backgroundColor: computedCss.value.colors.input.response.main,
+      color: computedCss.value.colors.input.response.text,
+      width: '100%',
+      borderTopLeftRadius: '8px',
+      borderTopRightRadius: '8px',
+      display: 'flex'
+    },
+    '.response-input > div': {
+      padding: '8px',
+    },
+    '.response-input button': {
+      stroke: computedCss.value.colors.input.response.close,
+      alignSelf: 'center',
+      marginLeft: 'auto',
+      background: 'transparent',
+      border: 'none',
+      cursor: 'pointer',
+      padding: '8px',
+    },
+    '.response-input button:hover': {
+      stroke: computedCss.value.colors.input.response.closeHover,
     },
     '.message-input': {
       display: 'flex',
@@ -682,21 +764,22 @@ watchEffect(() => {
     '.spinner svg': {
       animation: 'spin 1s linear infinite'
     },
-    '.own-message div': {
-      alignSelf: 'end'
-    },
     '.own-message .message': {
       backgroundColor: computedCss.value.colors.chat.myMessage.main,
       fontWeight: '400',
       color: computedCss.value.colors.chat.myMessage.text,
-      alignSelf: 'end'
     },
     '.own-message .timestamp': {
-      alignSelf: 'end'
+      marginLeft: 'auto'
     },
     '.own-message .user-name-baloon': {
-      alignSelf: 'end',
+      marginLeft: 'auto',
       color: computedCss.value.colors.chat.myMessage.user
+    },
+    '.own-message .grouped-response .message': {
+      marginLeft: 'auto',
+      backgroundColor: computedCss.value.colors.chat.myMessage.response.main,
+      color: computedCss.value.colors.chat.myMessage.response.text,
     },
     '.user-name-baloon': {
       fontSize: '10px !important',
@@ -709,8 +792,33 @@ watchEffect(() => {
       flexDirection: 'column',
       justifyContent: 'flex-end'
     },
-    '.message-container div': {
-      alignSelf: 'start'
+    '.grouped-response .message': {
+      backgroundColor: computedCss.value.colors.chat.otherMessage.response.main,
+      color: computedCss.value.colors.chat.otherMessage.response.text,
+      padding: '8px',
+      cursor:'pointer'
+    },
+    '.grouped-message': {
+      display: 'flex',
+      width: '100%',
+    },
+    '.grouped-message button': {
+      alignSelf: 'center',
+      marginRight: 'auto',
+      marginLeft: '8px',
+      background: 'transparent',
+      border: 'none',
+      cursor: 'pointer',
+      transform: 'scaleX(-1)'
+    },
+    '.grouped-message:hover svg': {
+      stroke: computedCss.value.colors.chat.responseIcon,
+    },
+    '.own-message .grouped-message button': {
+      alignSelf: 'center',
+      marginRight: '8px',
+      marginLeft: 'auto',
+      transform: 'scaleX(1)'
     },
     '.message': {
       lineHeight: '16px',
@@ -889,20 +997,56 @@ watchEffect(() => {
           <div class="chat-body" ref="messageContainerRef">
             <TransitionGroup name="fade">
               <div v-for="(groupedMsgs, idGroup) in groupedMessages" :key="groupedMsgs[0].id"
-                :class="{ 'own-message': groupedMsgs[0].author.id === getMyID() }" class="message-container">
+                :class="{ 'own-message': groupedMsgs[0].author.id === getMyID() }" class="message-container" :id="groupedMsgs[0].id">
                 <Transition name="fade">
                   <span v-if="groupedMsgs[0].type === 'text' && checkPreviousMsgName(idGroup)" class="user-name-baloon">
                     {{ groupedMsgs[0].author.name }}
                   </span>
                 </Transition>
                 <Transition name="fade">
-                  <div v-if="groupedMsgs[0].type === 'text'" class="message">
-                    <TransitionGroup name="fade">
-                      <div v-for="(message, idMsg) in groupedMsgs" class="message-content" :key="idMsg">{{
-                        message.data
+                  <div v-if="groupedMsgs[0].responseTo" class="grouped-message grouped-response">
+                    <div class="message" @click="scrollToMessage(groupedMsgs[0].responseTo)">
+                      <div v-for="(message, idMsg) in groupedResponse(groupedMsgs[0].responseTo).slice(0, 4)"
+                        :key="idMsg" class="message-content">{{
+                          message.data
                         }}
                       </div>
-                    </TransitionGroup>
+                      <div v-if="groupedResponse(groupedMsgs[0].responseTo).length > 4" class="message-content">...
+                      </div>
+                    </div>
+                  </div>
+                </Transition>
+                <Transition name="fade">
+                  <div v-if="groupedMsgs[0].type === 'text'" class="grouped-message">
+                    <Transition name="fade">
+                      <button v-if="groupedMsgs[0].author.id === getMyID()" @click="setResponse(idGroup)">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                          <path
+                            d="M 14.877 1.132 C 14.877 6.404 13.841 8.878 11.608 10.035 C 9.374 11.191 5.944 11.029 1.155 11.029 M 1.155 11.029 C 1.869 10.395 2.584 9.76 3.299 9.126 C 4.014 8.491 4.728 7.857 5.443 7.222 M 1.155 11.029 C 1.869 11.664 2.584 12.298 3.299 12.933 C 4.014 13.567 4.728 14.202 5.443 14.836"
+                            stroke-linecap="round" stroke-linejoin="round"
+                            style="stroke-width: 2px; transform-origin: 8.016px 7.984px;"></path>
+                        </svg>
+                      </button>
+                    </Transition>
+                    <div class="message">
+                      <TransitionGroup name="fade">
+                        <div v-for="(message, idxMsg) in groupedMsgs" class="message-content"
+                          :key="idxMsg">{{
+                            message.data
+                          }}
+                        </div>
+                      </TransitionGroup>
+                    </div>
+                    <Transition name="fade">
+                      <button v-if="groupedMsgs[0].author.id !== getMyID()" @click="setResponse(idGroup)">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                          <path
+                            d="M 14.877 1.132 C 14.877 6.404 13.841 8.878 11.608 10.035 C 9.374 11.191 5.944 11.029 1.155 11.029 M 1.155 11.029 C 1.869 10.395 2.584 9.76 3.299 9.126 C 4.014 8.491 4.728 7.857 5.443 7.222 M 1.155 11.029 C 1.869 11.664 2.584 12.298 3.299 12.933 C 4.014 13.567 4.728 14.202 5.443 14.836"
+                            stroke-linecap="round" stroke-linejoin="round"
+                            style="stroke-width: 2px; transform-origin: 8.016px 7.984px;"></path>
+                        </svg>
+                      </button>
+                    </Transition>
                   </div>
                   <div v-else-if="showSystemMessages && userShowSystemMessages && groupedMsgs[0].type === 'system'"
                     class="system-message">
@@ -923,6 +1067,24 @@ watchEffect(() => {
             </TransitionGroup>
           </div>
           <div class="chat-footer">
+            <Transition name="fade">
+              <div v-if="responseTo !== undefined" class="response-input">
+                <div>
+                  <TransitionGroup name="fade">
+                    <div v-for="(message, idMsg) in groupedMessages[responseTo].slice(0, 4)" :key="idMsg">{{
+                      message.data
+                    }}
+                    </div>
+                    <div v-if="groupedMessages[responseTo].length > 4">...</div>
+                  </TransitionGroup>
+                </div>
+                <button @click="setResponse(undefined)">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.5 0.5L0.5 11.5M0.5 0.5L11.5 11.5" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+              </div>
+            </Transition>
             <div class="message-input">
               <input v-model="messageInput" placeholder="Type your message..." @keypress.enter="handleSendMessage"
                 :disabled="loadingRoom" />

@@ -105,6 +105,12 @@ Follow these steps to install and use the package in your project:
               placeholder: 'rgba(156, 163, 175, 1)',
               text: 'rgba(31, 41, 55, 1)',
               disabled: 'rgba(229, 231, 235, 1)',
+              response: {
+                main: 'rgba(229, 231, 235, 1)',
+                text: 'rgba(31, 41, 55, 1)',
+                close: 'rgba(107, 114, 128, 1)',
+                closeHover: 'rgba(30, 64, 175, 1)',
+              }
             },
             minimizeBtn: {
               main: 'rgba(107, 114, 128, 1)',
@@ -115,23 +121,37 @@ Follow these steps to install and use the package in your project:
                 main: 'rgba(37, 99, 235, 1)',
                 user: 'rgba(37, 99, 235, 1)',
                 text: 'rgba(249, 250, 251, 1)',
+                response: {
+                  main: 'rgb(104 144 231)',
+                  text: 'rgba(249, 250, 251, 1)',
+                }
               },
               otherMessage: {
                 main: 'rgba(229, 231, 235, 1)',
                 user: 'rgba(156, 163, 175, 1)',
                 text: 'rgba(31, 41, 55, 1)',
+                response: {
+                  main: 'rgb(180 199 235)',
+                  text: 'rgba(31, 41, 55, 1)',
+                }
+              },
+              systemMessage: {
+                main: 'rgba(229, 231, 235, 1)',
+                text: 'rgba(37, 99, 235, 1)',
               },
               timestamp: 'rgba(156, 163, 175, 1)',
+              responseIcon: 'rgba(37, 99, 235, 1)'
             },
             background: 'rgba(249, 250, 251, 1)',
             border: 'rgba(37, 99, 235, 1)',
           },
           shadows: {
-            openedComponent: 0.1
+            openedComponent: 0.1,
+            messageBalloon: 0.1
           },
           border: {
             size: '1px'
-          },
+          }
         },
       })
       .mount("#app");
@@ -207,6 +227,11 @@ Here are the available configuration options:
       - placeholder: (string) - placeholder text color.
       - text: (string) - text color.
       - disabled: (string) - disabled background color.
+      - response: (Object) - Allow you to change colors from response preview on input.
+        - main: (string) - main color.
+        - text: (string) - text color.
+        - close: (string) - close button color.
+        - closeHover: (string) - close button hover color.
     - minimizeBtn: (Object) - Allow you to change colors from minimize button.
       - main: (string) - main color.
       - hover: (string) - hover button color.
@@ -215,14 +240,21 @@ Here are the available configuration options:
         - main: (string) - main color.
         - user: (string) - user name color.
         - text: (string) - text color.
+        - response: (Object) - Allow you to change colors from response.
+          - main: (string) - main color.
+          - text: (string) - text color.
       - otherMessage: (Object) - Allow you to change colors from others messages.
         - main: (string) - main color.
         - user: (string) - user name color.
         - text: (string) - text color.
+        - response: (Object) - Allow you to change colors from response.
+          - main: (string) - main color.
+          - text: (string) - text color.
       - systemMessage: (Object) - Allow you to change colors from system messages.
         - main: (string) - main color.
         - text: (string) - text color.
       - timestamp: (string) - timestamp text color.
+      - responseIcon: (string) - response icon color.
     - background: (string) - Allow you to change background color.
     - border: (string) - Allow you to change border color.
   - shadows: allow you change shadows from component

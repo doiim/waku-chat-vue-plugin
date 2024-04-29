@@ -651,6 +651,12 @@ watchEffect(() => {
     },
     '.response-input > div': {
       padding: '8px',
+      width: '85%',
+    },
+    '.response-input > div > div': {
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
     },
     '.response-input button': {
       stroke: computedCss.value.colors.input.response.close,
@@ -796,7 +802,7 @@ watchEffect(() => {
       backgroundColor: computedCss.value.colors.chat.otherMessage.response.main,
       color: computedCss.value.colors.chat.otherMessage.response.text,
       padding: '8px',
-      cursor:'pointer'
+      cursor: 'pointer'
     },
     '.grouped-message': {
       display: 'flex',
@@ -997,7 +1003,8 @@ watchEffect(() => {
           <div class="chat-body" ref="messageContainerRef">
             <TransitionGroup name="fade">
               <div v-for="(groupedMsgs, idGroup) in groupedMessages" :key="groupedMsgs[0].id"
-                :class="{ 'own-message': groupedMsgs[0].author.id === getMyID() }" class="message-container" :id="groupedMsgs[0].id">
+                :class="{ 'own-message': groupedMsgs[0].author.id === getMyID() }" class="message-container"
+                :id="groupedMsgs[0].id">
                 <Transition name="fade">
                   <span v-if="groupedMsgs[0].type === 'text' && checkPreviousMsgName(idGroup)" class="user-name-baloon">
                     {{ groupedMsgs[0].author.name }}
@@ -1030,10 +1037,9 @@ watchEffect(() => {
                     </Transition>
                     <div class="message">
                       <TransitionGroup name="fade">
-                        <div v-for="(message, idxMsg) in groupedMsgs" class="message-content"
-                          :key="idxMsg">{{
-                            message.data
-                          }}
+                        <div v-for="(message, idxMsg) in groupedMsgs" class="message-content" :key="idxMsg">{{
+                          message.data
+                        }}
                         </div>
                       </TransitionGroup>
                     </div>
@@ -1053,7 +1059,7 @@ watchEffect(() => {
                     <TransitionGroup name="fade">
                       <div v-for="(message, idMsg) in groupedMsgs" class="message-content" :key="idMsg">{{
                         printSystemMessage(message)
-                        }}
+                      }}
                       </div>
                     </TransitionGroup>
                   </div>
@@ -1073,7 +1079,7 @@ watchEffect(() => {
                   <TransitionGroup name="fade">
                     <div v-for="(message, idMsg) in groupedMessages[responseTo].slice(0, 4)" :key="idMsg">{{
                       message.data
-                    }}
+                      }}
                     </div>
                     <div v-if="groupedMessages[responseTo].length > 4">...</div>
                   </TransitionGroup>

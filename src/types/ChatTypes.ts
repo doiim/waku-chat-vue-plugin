@@ -84,6 +84,12 @@ export interface WakuChatConfigCss {
             placeholder: string,
             text: string,
             disabled: string,
+            response: {
+                main: string,
+                text: string,
+                close: string,
+                closeHover: string,
+            }
         },
         minimizeBtn: {
             main: string,
@@ -93,18 +99,35 @@ export interface WakuChatConfigCss {
             myMessage: {
                 main: string,
                 text: string,
-                user: string
+                user: string,
+                response: {
+                    main: string,
+                    text: string,
+                }
             },
             otherMessage: {
                 main: string,
                 text: string,
-                user: string
+                user: string,
+                response: {
+                    main: string,
+                    text: string,
+                }
+            },
+            disabledResponse: {
+                text: string,
+                main: string,
             },
             systemMessage: {
                 main: string,
                 text: string
             },
+            reaction: {
+                main: string,
+                text: string
+            }
             timestamp: string,
+            interactIcons: string
         },
         background: string,
         border: string,

@@ -21,12 +21,10 @@ let wakuData: WakuData = {}
 const chatState = ref<{
     status: string,
     messageList: Message[],
-    participants: Participant[],
     room: string
 }>({
     status: 'idle',
     messageList: [],
-    participants: [],
     room: ''
 })
 
@@ -43,22 +41,23 @@ const retrieveMessages = async (_channel: string, _topic: string, callback: (msg
     // Choose a content topic
     const contentTopic = `/${channel}/1/${topic}/proto`;
 
-    // Get the time frame
-    const endTime = new Date();
-    const startTime = new Date();
-    let messageAgeToDownload = getOptions()?.messageAgeToDownload
-    messageAgeToDownload = messageAgeToDownload ? messageAgeToDownload : 24 * 60 * 60 * 1000
-    startTime.setMilliseconds(endTime.getMilliseconds() - messageAgeToDownload);
-
     // Retrieve a week of messages
     const queryOptions: any = {
-        timeFilter: {
-            startTime,
-            endTime,
-        },
         contentTopic,
         pageDirection: "backward",
     };
+    let messageAgeToDownload = getOptions()?.messageAgeToDownload
+
+    if (messageAgeToDownload) {
+        const endTime = new Date();
+        const startTime = new Date();
+        startTime.setMilliseconds(endTime.getMilliseconds() - messageAgeToDownload);
+        queryOptions.timeFilter = {
+            startTime,
+            endTime,
+        }
+    }
+
     if (getOptions()?.messagesToDownload) {
         queryOptions.pageSize = getOptions()?.messagesToDownload
     } else {
@@ -77,8 +76,6 @@ export const setRoom = async (_room: string) => {
     const { encoder, decoder } = await changeTopic(channelName, _room)
     wakuData.ChatEncoder = encoder;
     wakuData.ChatDecoder = decoder;
-
-    chatState.value.participants = [myInfo.value]
 
     if (getRoom())
         sendMessage('leave', 'system')
@@ -105,10 +102,6 @@ export const getRoom = () => {
 
 export const getMessageList = () => {
     return chatState.value.messageList
-}
-
-export const getParticipants = () => {
-    return chatState.value.participants
 }
 
 export const getStatus = () => {
@@ -208,7 +201,7 @@ export const disconnectChat = async () => {
     }
 }
 
-export const sendMessage = (msgData: string, msgType: string) => {
+export const sendMessage = (msgData: string, msgType: string, responseId?: string) => {
     if (getStatus() !== 'connected') return
     const timestamp = Date.now()
     const msg: Message = {
@@ -218,7 +211,7 @@ export const sendMessage = (msgData: string, msgType: string) => {
         data: msgData,
         timestamp: timestamp,
         id: getMyID() + timestamp,
-        responseTo: undefined,
+        responseTo: responseId,
     }
     setTimeout(async () => {
         await sendMessageToServer(msg)
@@ -237,7 +230,7 @@ const messageCallback = (wakuMessage: any) => {
         }
     }
 
-    if (!messageObj) return false;
+    if (!messageObj || !messageObj.author) return false;
 
     if (version < wakuData.chatInterfaces.length - 1)
         messageObj = translateMessage(messageObj, wakuData.chatInterfaces.length - 1)
@@ -251,12 +244,6 @@ const messageCallback = (wakuMessage: any) => {
         chatState.value.messageList.push(messageObj);
     }
 
-    const authorIndex = chatState.value.participants.findIndex(participant => participant.id === messageObj.author.id);
-    if (authorIndex !== -1) {
-        chatState.value.participants[authorIndex] = messageObj.author;
-    } else {
-        chatState.value.participants.push(messageObj.author);
-    }
     return true
 };
 

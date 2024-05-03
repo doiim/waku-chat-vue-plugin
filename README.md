@@ -253,11 +253,14 @@ Here are the available configuration options:
       - systemMessage: (Object) - Allow you to change colors from system messages.
         - main: (string) - main color.
         - text: (string) - text color.
+      - reaction: (Object) - Allow you to change colors from reaction.
+        - main: (string) - main color.
+        - text: (string) - text color.
       - disabledResponse: (Object) - Allow you to change colors from disabled messages.
         - main: (string) - main color.
         - text: (string) - text color.
       - timestamp: (string) - timestamp text color.
-      - responseIcon: (string) - response icon color.
+      - interactIcons: (string) - interaction icons color.
     - background: (string) - Allow you to change background color.
     - border: (string) - Allow you to change border color.
   - shadows: allow you change shadows from component

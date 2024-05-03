@@ -122,8 +122,12 @@ export interface WakuChatConfigCss {
                 main: string,
                 text: string
             },
+            reaction: {
+                main: string,
+                text: string
+            }
             timestamp: string,
-            responseIcon: string
+            interactIcons: string
         },
         background: string,
         border: string,

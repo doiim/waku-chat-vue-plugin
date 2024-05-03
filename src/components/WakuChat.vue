@@ -5,7 +5,6 @@ import {
   sendMessage,
   loadChat,
   setRoom,
-  getParticipants,
   getStatus,
   getMessageList,
   getRoom,
@@ -129,6 +128,10 @@ const computedCss = ref<WakuChatConfigCss>({
           text: 'rgba(31, 41, 55, 1)',
         }
       },
+      disabledResponse: {
+        text: 'rgba(249, 250, 251, 1)',
+        main: 'rgba(156, 163, 175, 1)',
+      },
       systemMessage: {
         main: 'rgba(229, 231, 235, 1)',
         text: 'rgba(37, 99, 235, 1)',
@@ -176,14 +179,6 @@ const saveEditedUserName = () => {
   setMyName(editedUserName.value);
   sendMessage('changeName:' + myName, 'system')
   exitEditMode()
-};
-
-const getRoomName = (room: string) => {
-  let name = getOptions()?.availableRooms[0];
-  getParticipants().forEach(participant => {
-    name = room.replace(new RegExp(participant.id, 'g'), participant.name);
-  });
-  return name;
 };
 
 const changeRoomDropdown = async (selectedRoom: string) => {
@@ -808,6 +803,12 @@ watchEffect(() => {
       display: 'flex',
       width: '100%',
     },
+    '.response-disabled .message': {
+      color: computedCss.value.colors.chat.disabledResponse.text + " !important",
+      backgroundColor: computedCss.value.colors.chat.disabledResponse.main + " !important",
+      fontStyle: 'italic',
+      cursor: 'default'
+    },
     '.grouped-message button': {
       alignSelf: 'center',
       marginRight: 'auto',
@@ -947,7 +948,7 @@ watchEffect(() => {
               </div>
               <div class="room-dropdown">
                 <button class="dropdown-button" @click="handleToggleRoomDropdown">
-                  <div>{{ getRoomName(getRoom()) }}</div>
+                  <div>{{ getRoom() }}</div>
                   <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M4 6.5L8 10.5L12 6.5" stroke-linecap="round" stroke-linejoin="round" />
                   </svg>
@@ -1010,8 +1011,14 @@ watchEffect(() => {
                     {{ groupedMsgs[0].author.name }}
                   </span>
                 </Transition>
-                <Transition name="fade">
-                  <div v-if="groupedMsgs[0].responseTo" class="grouped-message grouped-response">
+                <TransitionGroup name="fade">
+                  <div v-if="groupedMsgs[0].responseTo && groupedResponse(groupedMsgs[0].responseTo).length <= 0"
+                    class="grouped-message grouped-response response-disabled">
+                    <div class="message">
+                      <div class="message-content">unloaded message</div>
+                    </div>
+                  </div>
+                  <div v-else-if="groupedMsgs[0].responseTo" class="grouped-message grouped-response">
                     <div class="message" @click="scrollToMessage(groupedMsgs[0].responseTo)">
                       <div v-for="(message, idMsg) in groupedResponse(groupedMsgs[0].responseTo).slice(0, 4)"
                         :key="idMsg" class="message-content">{{
@@ -1022,7 +1029,7 @@ watchEffect(() => {
                       </div>
                     </div>
                   </div>
-                </Transition>
+                </TransitionGroup>
                 <Transition name="fade">
                   <div v-if="groupedMsgs[0].type === 'text'" class="grouped-message">
                     <Transition name="fade">
@@ -1039,7 +1046,7 @@ watchEffect(() => {
                       <TransitionGroup name="fade">
                         <div v-for="(message, idxMsg) in groupedMsgs" class="message-content" :key="idxMsg">{{
                           message.data
-                        }}
+                          }}
                         </div>
                       </TransitionGroup>
                     </div>
@@ -1059,7 +1066,7 @@ watchEffect(() => {
                     <TransitionGroup name="fade">
                       <div v-for="(message, idMsg) in groupedMsgs" class="message-content" :key="idMsg">{{
                         printSystemMessage(message)
-                      }}
+                        }}
                       </div>
                     </TransitionGroup>
                   </div>
@@ -1079,7 +1086,7 @@ watchEffect(() => {
                   <TransitionGroup name="fade">
                     <div v-for="(message, idMsg) in groupedMessages[responseTo].slice(0, 4)" :key="idMsg">{{
                       message.data
-                      }}
+                    }}
                     </div>
                     <div v-if="groupedMessages[responseTo].length > 4">...</div>
                   </TransitionGroup>

@@ -175,7 +175,7 @@ Here are the available configuration options:
 - `disconnectDelay`: (number) (optional) - Time in milisseconds which chat can be minimized before being disconnected. 5 minutes if not set.
 - `groupMessagesTime`: (number) (optional) - Time in milisseconds which messages from the same sender can be grouped. 1 minute if not set.
 - `messagesToDownload`: (number) (optional) - Max number of messages to retrieve when user connects to chat. Default 100 messages.
-- `messageAgeToDownload`: (number) (optional) - Max age of messages in milisseconds which messages would be downloaded when user connects to chat. Default 24h.
+- `messageAgeToDownload`: (number) (optional) - Max age of messages in milisseconds which messages would be downloaded when user connects to chat. Default not considering age of messages.
 - `showSystemMessages`: (boolean) (optional) - Show or not system messages. Default not show.
 - `userChangeNick`: (boolean) (optional) - Allow users to change their nicknames.
 - `cssConfig`:(Object) (optional) - Allow you to change css. ALl of them are optional, if you don’t set any of them, a default value will be applied. They are:
@@ -251,6 +251,9 @@ Here are the available configuration options:
           - main: (string) - main color.
           - text: (string) - text color.
       - systemMessage: (Object) - Allow you to change colors from system messages.
+        - main: (string) - main color.
+        - text: (string) - text color.
+      - disabledResponse: (Object) - Allow you to change colors from disabled messages.
         - main: (string) - main color.
         - text: (string) - text color.
       - timestamp: (string) - timestamp text color.

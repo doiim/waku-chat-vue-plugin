@@ -114,6 +114,10 @@ export interface WakuChatConfigCss {
                     text: string,
                 }
             },
+            disabledResponse: {
+                text: string,
+                main: string,
+            },
             systemMessage: {
                 main: string,
                 text: string

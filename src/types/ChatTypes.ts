@@ -139,4 +139,5 @@ export interface WakuChatConfigCss {
     border: {
         size: string
     }
+    [key: string]: Object | string;
 }

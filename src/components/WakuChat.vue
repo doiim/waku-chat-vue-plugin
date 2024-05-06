@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watchEffect, defineProps, computed, TransitionGroup, watch, onBeforeUnmount } from "vue";
-import { WakuChatConfigCss } from "../types/ChatTypes";
+
 import {
   sendMessage,
   loadChat,
@@ -16,6 +16,9 @@ import {
   onDestroyWaku,
   disconnectChat
 } from "../components/WakuLogic"
+import { defaultCss, mergeCssConfiguration } from "../utils/defaultStyle";
+import { formatTimestamp } from "../utils/formatation";
+import { scrollToBottom, scrollToMessage } from "../utils/animation";
 
 const props = defineProps<{
   externalUserId?: string;
@@ -38,127 +41,10 @@ const messageInput = ref<string>('');
 const showSettings = ref<boolean>(false);
 const showSystemMessages = ref<boolean>(false);
 const userShowSystemMessages = ref<boolean>(false);
-
-const computedCss = ref<WakuChatConfigCss>({
-  colors: {
-    header: {
-      main: 'rgba(219, 234, 254, 1)',
-      text: 'rgba(107, 114, 128, 1)',
-      btn: 'rgba(37, 99, 235, 1)',
-      btnHover: 'rgba(30, 64, 175, 1)',
-    },
-    room: {
-      btn: {
-        text: 'rgba(37, 99, 235, 1)',
-        textHover: 'rgba(30, 64, 175, 1)',
-      },
-      dropdown: {
-        main: 'rgba(255, 255, 255, 1)',
-        text: 'rgba(31, 41, 55, 1)',
-        hover: 'rgba(243, 244, 246, 1)',
-        selected: 'rgba(29, 78, 216, 1)'
-      }
-    },
-    subHeader: {
-      main: 'rgba(239, 246, 255, 1)',
-      text: 'rgba(37, 99, 235, 1)',
-      textHover: 'rgba(30, 64, 175, 1)',
-      editName: {
-        main: 'rgba(229, 231, 235, 1)',
-        placeholder: 'rgba(156, 163, 175, 1)',
-        text: 'rgba(31, 41, 55, 1)',
-        disabled: 'rgba(229, 231, 235, 1)',
-      }
-    },
-    loadBtn: {
-      main: 'rgba(37, 99, 235, 1)',
-      hover: 'rgba(30, 64, 175, 1)',
-      text: 'rgba(249, 250, 251, 1)',
-      textHover: 'rgba(249, 250, 251, 1)',
-    },
-    loadingBtn: {
-      main: 'rgba(37, 99, 235, 1)',
-      text: 'rgba(249, 250, 251, 1)',
-    },
-    openBtn: {
-      main: 'rgba(37, 99, 235, 1)',
-      hover: 'rgba(30, 64, 175, 1)',
-      text: 'rgba(249, 250, 251, 1)',
-      textHover: 'rgba(249, 250, 251, 1)',
-    },
-    sendBtn: {
-      main: 'rgba(37, 99, 235, 1)',
-      hover: 'rgba(30, 64, 175, 1)',
-      text: 'rgba(249, 250, 251, 1)',
-      textHover: 'rgba(249, 250, 251, 1)',
-      disabled: 'rgba(75, 85, 99, 1)',
-    },
-    input: {
-      main: 'rgba(229, 231, 235, 1)',
-      placeholder: 'rgba(156, 163, 175, 1)',
-      text: 'rgba(31, 41, 55, 1)',
-      disabled: 'rgba(229, 231, 235, 1)',
-      response: {
-        main: 'rgba(229, 231, 235, 1)',
-        text: 'rgba(31, 41, 55, 1)',
-        close: 'rgba(107, 114, 128, 1)',
-        closeHover: 'rgba(30, 64, 175, 1)',
-      }
-    },
-    minimizeBtn: {
-      main: 'rgba(107, 114, 128, 1)',
-      hover: 'rgba(30, 64, 175, 1)',
-    },
-    chat: {
-      myMessage: {
-        main: 'rgba(37, 99, 235, 1)',
-        user: 'rgba(37, 99, 235, 1)',
-        text: 'rgba(249, 250, 251, 1)',
-        response: {
-          main: 'rgb(104 144 231)',
-          text: 'rgba(249, 250, 251, 1)',
-        }
-      },
-      otherMessage: {
-        main: 'rgba(229, 231, 235, 1)',
-        user: 'rgba(156, 163, 175, 1)',
-        text: 'rgba(31, 41, 55, 1)',
-        response: {
-          main: 'rgb(180 199 235)',
-          text: 'rgba(31, 41, 55, 1)',
-        }
-      },
-      disabledResponse: {
-        text: 'rgba(249, 250, 251, 1)',
-        main: 'rgba(156, 163, 175, 1)',
-      },
-      systemMessage: {
-        main: 'rgba(229, 231, 235, 1)',
-        text: 'rgba(37, 99, 235, 1)',
-      },
-      reaction: {
-        main: 'rgba(138, 138, 239, 1)',
-        text: 'rgba(249, 250, 251, 1)',
-      },
-      timestamp: 'rgba(156, 163, 175, 1)',
-      interactIcons: 'rgba(37, 99, 235, 1)'
-    },
-    background: 'rgba(249, 250, 251, 1)',
-    border: 'rgba(37, 99, 235, 1)',
-  },
-  shadows: {
-    openedComponent: 0.1,
-    messageBalloon: 0.1
-  },
-  border: {
-    size: '1px'
-  }
-});
+const messageContainerRef = ref<HTMLElement | null>(null);
 
 const editMode = ref(false);
 const editedUserName = ref('');
-
-const messageContainerRef = ref<HTMLElement | null>(null);
 
 const roomDropdownOpened = ref<boolean>(false);
 
@@ -208,7 +94,7 @@ const openChat = async () => {
     }
     await loadChat()
     setTimeout(() => {
-      scrollToBottom()
+      scrollToBottom(messageContainerRef.value)
     }, 300);
   }
   isChatOpen.value = true
@@ -227,50 +113,7 @@ const handleSendMessage = () => {
     responseTo.value = undefined
   }
   messageInput.value = ''
-  scrollToBottom()
-}
-
-const scrollToBottom = () => {
-  setTimeout(() => {
-    const container = messageContainerRef.value;
-    if (container) {
-      const scrollHeight = container.scrollHeight;
-      const scrollTop = container.scrollTop;
-      let count = 0;
-
-      const scrollInterval = setInterval(() => {
-        if (count < 100) {
-          container.scrollTop = scrollTop + (scrollHeight - scrollTop) * 0.5 * (1 - Math.cos(++count * (Math.PI / 100)));
-        } else {
-          clearInterval(scrollInterval);
-        }
-      }, 5);
-    }
-  }, 300);
-};
-
-const scrollToMessage = (id: string) => {
-  setTimeout(() => {
-    const container = messageContainerRef.value;
-    if (container) {
-      const messageElement = container.querySelector(`#${id}`);
-      if (messageElement) {
-        const containerRect = container.getBoundingClientRect();
-        const messageRect = messageElement.getBoundingClientRect();
-        const scrollTop = container.scrollTop;
-        const targetTop = messageRect.top - containerRect.top + scrollTop;
-        let count = 0;
-
-        const scrollInterval = setInterval(() => {
-          if (count < 100) {
-            container.scrollTop = scrollTop + (targetTop - scrollTop) * 0.5 * (1 - Math.cos(++count * (Math.PI / 100)));
-          } else {
-            clearInterval(scrollInterval);
-          }
-        }, 5);
-      }
-    }
-  }, 300);
+  scrollToBottom(messageContainerRef.value)
 }
 
 watch([propUserId], () => {
@@ -319,19 +162,6 @@ const groupedMessages = computed(() => {
   return groupedMsgs;
 });
 
-const mergeObjects = (target: any, source: any) => {
-  for (const key in source) {
-    if (source[key] instanceof Object) {
-      if (!(target[key] instanceof Object)) {
-        target[key] = {};
-      }
-      mergeObjects(target[key], source[key]);
-    } else {
-      target[key] = source[key];
-    }
-  }
-}
-
 const reactions = computed(() => {
   return getMessageList().filter(message => {
     return message.room === getRoom() && message.type === 'reaction';
@@ -365,13 +195,15 @@ const checkPreviousMsgName = (idx: number) => {
     && groupedMessages.value[idx][0].author.name === groupedMessages.value[idx - 1][0].author.name)
 }
 
+var cssConfiguration: any = defaultCss
+
 watchEffect(() => {
   const options = getOptions();
   const colorConfig = options?.cssConfig as Record<string, any> | undefined;;
 
   if (!colorConfig) return;
 
-  mergeObjects(computedCss.value, colorConfig);
+  cssConfiguration = mergeCssConfiguration(cssConfiguration, colorConfig);
 });
 
 const responseTo = ref<number | undefined>(undefined);
@@ -405,25 +237,6 @@ const groupedResponse = (id: string) => {
     }
   }
   return []
-}
-
-const formatTimestamp = (timestamp: number) => {
-  const now = new Date();
-  const messageDate = new Date(timestamp);
-
-  if (now.toDateString() === messageDate.toDateString()) return (new Date(timestamp)).toLocaleTimeString();
-
-  const yesterday = new Date(now);
-  yesterday.setDate(now.getDate() - 1);
-  if (yesterday.toDateString() === messageDate.toDateString()) return 'Yesterday';
-
-  const seconds = Math.floor((now.getTime() - timestamp) / 1000);
-
-  if (seconds < (86400 * 7)) return `${Math.floor(seconds / 86400)} day${seconds < 86400 * 2 ? '' : 's'} ago`;
-  if (seconds < (86400 * 30)) return `${Math.floor(seconds / (86400 * 7))} week${seconds < (86400 * 7) * 2 ? '' : 's'} ago`;
-  if (seconds < (86400 * 365)) return `${Math.floor(seconds / (86400 * 30))} month${seconds < (86400 * 30) * 2 ? '' : 's'} ago`;
-
-  return `${Math.floor(seconds / (86400 * 365))} year${seconds < (86400 * 365) * 2 ? '' : 's'} ago`;
 }
 
 const printSystemMessage = (msg: any) => {
@@ -535,7 +348,7 @@ const printSystemMessage = (msg: any) => {
                     </div>
                   </div>
                   <div v-else-if="groupedMsgs[0].responseTo" class="grouped-message grouped-response">
-                    <div class="message" @click="scrollToMessage(groupedMsgs[0].responseTo)">
+                    <div class="message" @click="scrollToMessage(groupedMsgs[0].responseTo,messageContainerRef)">
                       <div v-for="(message, idMsg) in groupedResponse(groupedMsgs[0].responseTo).slice(0, 4)"
                         :key="idMsg" class="message-content">{{
                           message.data
@@ -606,7 +419,7 @@ const printSystemMessage = (msg: any) => {
                     <TransitionGroup name="fade">
                       <div v-for="(message, idMsg) in groupedMsgs" class="message-content" :key="idMsg">{{
                         printSystemMessage(message)
-                      }}
+                        }}
                       </div>
                     </TransitionGroup>
                   </div>
@@ -626,7 +439,7 @@ const printSystemMessage = (msg: any) => {
                   <TransitionGroup name="fade">
                     <div v-for="(message, idMsg) in groupedMessages[responseTo].slice(0, 4)" :key="idMsg">{{
                       message.data
-                    }}
+                      }}
                     </div>
                     <div v-if="groupedMessages[responseTo].length > 4">...</div>
                   </TransitionGroup>
@@ -694,8 +507,8 @@ const printSystemMessage = (msg: any) => {
   width: 50%;
   outline: none;
   padding-left: 8px;
-  color: v-bind('computedCss.colors.subHeader.editName.text');
-  background-color: v-bind('computedCss.colors.subHeader.editName.main');
+  color: v-bind('cssConfiguration.colors.subHeader.editName.text');
+  background-color: v-bind('cssConfiguration.colors.subHeader.editName.main');
 }
 
 .user-name-input div span {
@@ -707,7 +520,7 @@ const printSystemMessage = (msg: any) => {
 
 .user-name-input svg {
   cursor: pointer;
-  stroke: v-bind('computedCss.colors.subHeader.editName.text');
+  stroke: v-bind('cssConfiguration.colors.subHeader.editName.text');
   margin-left: 8px;
 }
 
@@ -719,25 +532,25 @@ const printSystemMessage = (msg: any) => {
 .change-name-btn {
   cursor: pointer;
   margin-left: 8px;
-  color: v-bind('computedCss.colors.subHeader.text');
+  color: v-bind('cssConfiguration.colors.subHeader.text');
   background: transparent;
   border: none;
 }
 
 .change-name-btn:hover {
-  color: v-bind('computedCss.colors.subHeader.textHover');
+  color: v-bind('cssConfiguration.colors.subHeader.textHover');
 }
 
 .cancel-change-name-btn {
   cursor: pointer;
   margin-left: auto;
-  color: v-bind('computedCss.colors.subHeader.text');
+  color: v-bind('cssConfiguration.colors.subHeader.text');
   background: transparent;
   border: none;
 }
 
 .cancel-change-name-btn:hover {
-  color: v-bind('computedCss.colors.subHeader.textHover');
+  color: v-bind('cssConfiguration.colors.subHeader.textHover');
 }
 
 .room-dropdown {
@@ -749,7 +562,7 @@ const printSystemMessage = (msg: any) => {
   display: block;
   left: -62px;
   position: absolute;
-  background-color: v-bind('computedCss.colors.room.dropdown.main');
+  background-color: v-bind('cssConfiguration.colors.room.dropdown.main');
   min-width: 136px;
   z-index: 1;
   max-width: 344px;
@@ -760,7 +573,7 @@ const printSystemMessage = (msg: any) => {
 }
 
 .dropdown-content button {
-  color: v-bind('computedCss.colors.room.dropdown.text');
+  color: v-bind('cssConfiguration.colors.room.dropdown.text');
   padding: 12px 16px;
   text-decoration: none;
   display: block;
@@ -775,11 +588,11 @@ const printSystemMessage = (msg: any) => {
 }
 
 .dropdown-content .selected {
-  color: v-bind('computedCss.colors.room.dropdown.selected');
+  color: v-bind('cssConfiguration.colors.room.dropdown.selected');
 }
 
 .dropdown-content button:hover {
-  background-color: v-bind('computedCss.colors.room.dropdown.hover');
+  background-color: v-bind('cssConfiguration.colors.room.dropdown.hover');
 }
 
 .dropdown-button {
@@ -790,8 +603,8 @@ const printSystemMessage = (msg: any) => {
   font-weight: 600;
   line-height: 14px;
   align-items: center;
-  color: v-bind('computedCss.colors.room.btn.text');
-  stroke: v-bind('computedCss.colors.room.btn.text');
+  color: v-bind('cssConfiguration.colors.room.btn.text');
+  stroke: v-bind('cssConfiguration.colors.room.btn.text');
 }
 
 .dropdown-button svg {
@@ -799,8 +612,8 @@ const printSystemMessage = (msg: any) => {
 }
 
 .dropdown-button:hover {
-  color: v-bind('computedCss.colors.room.btn.textHover');
-  stroke: v-bind('computedCss.colors.room.btn.textHover');
+  color: v-bind('cssConfiguration.colors.room.btn.textHover');
+  stroke: v-bind('cssConfiguration.colors.room.btn.textHover');
   text-decoration: underline;
 }
 
@@ -810,13 +623,13 @@ const printSystemMessage = (msg: any) => {
   position: fixed;
   bottom: 16px;
   right: 16px;
-  background-color: v-bind('computedCss.colors.background');
-  border: v-bind('computedCss.border.size') solid v-bind('computedCss.colors.border');
+  background-color: v-bind('cssConfiguration.colors.background');
+  border: v-bind('cssConfiguration.border.size') solid v-bind('cssConfiguration.colors.border');
   border-radius: 8px;
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease-in-out;
-  box-shadow: 0px 10px 25px -5px rgba(0, 0, 0, v-bind('computedCss.shadows.openedComponent'));
+  box-shadow: 0px 10px 25px -5px rgba(0, 0, 0, v-bind('cssConfiguration.shadows.openedComponent'));
 }
 
 .chat-container.open {
@@ -831,7 +644,7 @@ const printSystemMessage = (msg: any) => {
   height: 100%;
   border-radius: 8px;
   background-color: rgba(0, 0, 0, 0.2);
-  stroke: v-bind('computedCss.colors.border');
+  stroke: v-bind('cssConfiguration.colors.border');
   text-align: center;
   align-content: center;
   z-index: 1000;
@@ -842,8 +655,8 @@ const printSystemMessage = (msg: any) => {
 }
 
 .chat-header {
-  background-color: v-bind('computedCss.colors.header.main');
-  color: v-bind('computedCss.colors.header.text');
+  background-color: v-bind('cssConfiguration.colors.header.main');
+  color: v-bind('cssConfiguration.colors.header.text');
   padding: 12px 16px;
   display: flex;
   justify-content: space-between;
@@ -859,14 +672,14 @@ const printSystemMessage = (msg: any) => {
 }
 
 .settings-button {
-  color: v-bind('computedCss.colors.header.btn');
+  color: v-bind('cssConfiguration.colors.header.btn');
   background: transparent;
   line-height: 14px;
   border: none;
 }
 
 .settings-button:hover {
-  color: v-bind('computedCss.colors.header.btnHover');
+  color: v-bind('cssConfiguration.colors.header.btnHover');
   text-decoration: underline;
   cursor: pointer;
 }
@@ -907,8 +720,8 @@ const printSystemMessage = (msg: any) => {
   min-height: 48px;
   font-size: 12px !important;
   gap: 8px;
-  background-color: v-bind('computedCss.colors.subHeader.main');
-  color: v-bind('computedCss.colors.subHeader.text');
+  background-color: v-bind('cssConfiguration.colors.subHeader.main');
+  color: v-bind('cssConfiguration.colors.subHeader.text');
 }
 
 .non-edit {
@@ -927,7 +740,7 @@ const printSystemMessage = (msg: any) => {
   margin-right: 10px;
   line-height: 16px;
   font-size: 12px !important;
-  color: v-bind('computedCss.colors.header.text');
+  color: v-bind('cssConfiguration.colors.header.text');
 }
 
 .room-name {
@@ -946,7 +759,7 @@ const printSystemMessage = (msg: any) => {
 }
 
 .chat-body::-webkit-scrollbar-thumb {
-  background-color: v-bind('computedCss.colors.border');
+  background-color: v-bind('cssConfiguration.colors.border');
   border-radius: 5px;
 }
 
@@ -958,8 +771,8 @@ const printSystemMessage = (msg: any) => {
 }
 
 .response-input {
-  background-color: v-bind('computedCss.colors.input.response.main');
-  color: v-bind('computedCss.colors.input.response.text');
+  background-color: v-bind('cssConfiguration.colors.input.response.main');
+  color: v-bind('cssConfiguration.colors.input.response.text');
   width: 100%;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
@@ -978,7 +791,7 @@ const printSystemMessage = (msg: any) => {
 }
 
 .response-input button {
-  stroke: v-bind('computedCss.colors.input.response.close');
+  stroke: v-bind('cssConfiguration.colors.input.response.close');
   align-self: center;
   margin-left: auto;
   background: transparent;
@@ -988,7 +801,7 @@ const printSystemMessage = (msg: any) => {
 }
 
 .response-input button:hover {
-  stroke: v-bind('computedCss.colors.input.response.closeHover');
+  stroke: v-bind('cssConfiguration.colors.input.response.closeHover');
 }
 
 .message-input {
@@ -998,24 +811,24 @@ const printSystemMessage = (msg: any) => {
   padding: 0px 12px;
   line-height: 16px;
   border-radius: 8px;
-  background-color: v-bind('computedCss.colors.input.main');
+  background-color: v-bind('cssConfiguration.colors.input.main');
 }
 
 .message-input input {
   width: 100%;
   outline: none;
   border: none;
-  color: v-bind('computedCss.colors.input.text');
-  background-color: v-bind('computedCss.colors.input.main');
+  color: v-bind('cssConfiguration.colors.input.text');
+  background-color: v-bind('cssConfiguration.colors.input.main');
 }
 
 .message-input input::placeholder {
-  color: v-bind('computedCss.colors.input.placeholder');
+  color: v-bind('cssConfiguration.colors.input.placeholder');
   opacity: 1;
 }
 
 .message-input input::-ms-input-placeholder {
-  color: v-bind('computedCss.colors.input.placeholder');
+  color: v-bind('cssConfiguration.colors.input.placeholder');
 }
 
 .message-input button {
@@ -1046,38 +859,38 @@ const printSystemMessage = (msg: any) => {
 }
 
 .load-button {
-  background-color: v-bind('computedCss.colors.loadBtn.main');
-  color: v-bind('computedCss.colors.loadBtn.text');
-  fill: v-bind('computedCss.colors.loadBtn.text');
+  background-color: v-bind('cssConfiguration.colors.loadBtn.main');
+  color: v-bind('cssConfiguration.colors.loadBtn.text');
+  fill: v-bind('cssConfiguration.colors.loadBtn.text');
 }
 
 .load-button:hover {
-  background-color: v-bind('computedCss.colors.loadBtn.hover');
-  color: v-bind('computedCss.colors.loadBtn.textHover');
-  fill: v-bind('computedCss.colors.loadBtn.textHover');
+  background-color: v-bind('cssConfiguration.colors.loadBtn.hover');
+  color: v-bind('cssConfiguration.colors.loadBtn.textHover');
+  fill: v-bind('cssConfiguration.colors.loadBtn.textHover');
 }
 
 .open-button {
-  background-color: v-bind('computedCss.colors.openBtn.main');
-  color: v-bind('computedCss.colors.openBtn.text');
-  fill: v-bind('computedCss.colors.openBtn.text');
+  background-color: v-bind('cssConfiguration.colors.openBtn.main');
+  color: v-bind('cssConfiguration.colors.openBtn.text');
+  fill: v-bind('cssConfiguration.colors.openBtn.text');
 }
 
 .open-button:hover {
-  background-color: v-bind('computedCss.colors.openBtn.hover');
-  color: v-bind('computedCss.colors.openBtn.textHover');
-  fill: v-bind('computedCss.colors.openBtn.textHover');
+  background-color: v-bind('cssConfiguration.colors.openBtn.hover');
+  color: v-bind('cssConfiguration.colors.openBtn.textHover');
+  fill: v-bind('cssConfiguration.colors.openBtn.textHover');
 }
 
 .spinner {
-  background-color: v-bind('computedCss.colors.loadingBtn.main');
-  color: v-bind('computedCss.colors.loadingBtn.text');
-  stroke: v-bind('computedCss.colors.loadingBtn.text');
+  background-color: v-bind('cssConfiguration.colors.loadingBtn.main');
+  color: v-bind('cssConfiguration.colors.loadingBtn.text');
+  stroke: v-bind('cssConfiguration.colors.loadingBtn.text');
 }
 
 .minimize-button {
   margin-left: 32px;
-  stroke: v-bind('computedCss.colors.minimizeBtn.main');
+  stroke: v-bind('cssConfiguration.colors.minimizeBtn.main');
   background: transparent;
 }
 
@@ -1086,7 +899,7 @@ const printSystemMessage = (msg: any) => {
 }
 
 .minimize-button:hover {
-  stroke: v-bind('computedCss.colors.minimizeBtn.hover');
+  stroke: v-bind('cssConfiguration.colors.minimizeBtn.hover');
 }
 
 .send-button {
@@ -1095,13 +908,13 @@ const printSystemMessage = (msg: any) => {
 }
 
 .send-button svg {
-  fill: v-bind('computedCss.colors.sendBtn.main');
-  color: v-bind('computedCss.colors.sendBtn.text');
+  fill: v-bind('cssConfiguration.colors.sendBtn.main');
+  color: v-bind('cssConfiguration.colors.sendBtn.text');
 }
 
 .send-button:hover svg {
-  fill: v-bind('computedCss.colors.sendBtn.hover');
-  color: v-bind('computedCss.colors.sendBtn.textHover');
+  fill: v-bind('cssConfiguration.colors.sendBtn.hover');
+  color: v-bind('cssConfiguration.colors.sendBtn.textHover');
 }
 
 .send-button:disabled {
@@ -1109,8 +922,8 @@ const printSystemMessage = (msg: any) => {
 }
 
 .send-button:disabled svg {
-  fill: v-bind('computedCss.colors.sendBtn.disabled');
-  color: v-bind('computedCss.colors.sendBtn.text');
+  fill: v-bind('cssConfiguration.colors.sendBtn.disabled');
+  color: v-bind('cssConfiguration.colors.sendBtn.text');
 }
 
 .spinner svg {
@@ -1118,9 +931,9 @@ const printSystemMessage = (msg: any) => {
 }
 
 .own-message .message {
-  background-color: v-bind('computedCss.colors.chat.myMessage.main');
+  background-color: v-bind('cssConfiguration.colors.chat.myMessage.main');
   font-weight: 400;
-  color: v-bind('computedCss.colors.chat.myMessage.text');
+  color: v-bind('cssConfiguration.colors.chat.myMessage.text');
 }
 
 .own-message .timestamp {
@@ -1129,20 +942,20 @@ const printSystemMessage = (msg: any) => {
 
 .own-message .user-name-baloon {
   margin-left: auto;
-  color: v-bind('computedCss.colors.chat.myMessage.user');
+  color: v-bind('cssConfiguration.colors.chat.myMessage.user');
 }
 
 .own-message .grouped-response .message {
   margin-left: auto;
-  background-color: v-bind('computedCss.colors.chat.myMessage.response.main');
-  color: v-bind('computedCss.colors.chat.myMessage.response.text');
+  background-color: v-bind('cssConfiguration.colors.chat.myMessage.response.main');
+  color: v-bind('cssConfiguration.colors.chat.myMessage.response.text');
 }
 
 .user-name-baloon {
   font-size: 10px !important;
   line-height: 12px;
   margin-bottom: 4px;
-  color: v-bind('computedCss.colors.chat.otherMessage.user');
+  color: v-bind('cssConfiguration.colors.chat.otherMessage.user');
 }
 
 .message-container {
@@ -1152,8 +965,8 @@ const printSystemMessage = (msg: any) => {
 }
 
 .grouped-response .message {
-  background-color: v-bind('computedCss.colors.chat.otherMessage.response.main');
-  color: v-bind('computedCss.colors.chat.otherMessage.response.text');
+  background-color: v-bind('cssConfiguration.colors.chat.otherMessage.response.main');
+  color: v-bind('cssConfiguration.colors.chat.otherMessage.response.text');
   padding: 8px;
   cursor: pointer;
 }
@@ -1164,8 +977,8 @@ const printSystemMessage = (msg: any) => {
 }
 
 .response-disabled .message {
-  color: v-bind('computedCss.colors.chat.disabledResponse.text') !important;
-  background-color: v-bind('computedCss.colors.chat.disabledResponse.main') !important;
+  color: v-bind('cssConfiguration.colors.chat.disabledResponse.text') !important;
+  background-color: v-bind('cssConfiguration.colors.chat.disabledResponse.main') !important;
   font-style: italic;
   cursor: default;
 }
@@ -1184,7 +997,7 @@ const printSystemMessage = (msg: any) => {
 }
 
 .grouped-message:hover>button svg {
-  stroke: v-bind('computedCss.colors.chat.interactIcons');
+  stroke: v-bind('cssConfiguration.colors.chat.interactIcons');
 }
 
 .own-message .grouped-message button {
@@ -1206,9 +1019,9 @@ const printSystemMessage = (msg: any) => {
   max-width: 67%;
   padding: 12px;
   border-radius: 8px;
-  background-color: v-bind('computedCss.colors.chat.otherMessage.main');
-  color: v-bind('computedCss.colors.chat.otherMessage.text');
-  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, v-bind('computedCss.shadows.messageBalloon'));
+  background-color: v-bind('cssConfiguration.colors.chat.otherMessage.main');
+  color: v-bind('cssConfiguration.colors.chat.otherMessage.text');
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, v-bind('cssConfiguration.shadows.messageBalloon'));
 }
 
 .system-message {
@@ -1220,13 +1033,13 @@ const printSystemMessage = (msg: any) => {
   border-radius: 4px;
   align-self: center !important;
   text-align: center;
-  background-color: v-bind('computedCss.colors.chat.systemMessage.main');
-  color: v-bind('computedCss.colors.chat.systemMessage.text');
-  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, v-bind('computedCss.shadows.messageBalloon'));
+  background-color: v-bind('cssConfiguration.colors.chat.systemMessage.main');
+  color: v-bind('cssConfiguration.colors.chat.systemMessage.text');
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, v-bind('cssConfiguration.shadows.messageBalloon'));
 }
 
 .timestamp {
-  color: v-bind('computedCss.colors.chat.timestamp');
+  color: v-bind('cssConfiguration.colors.chat.timestamp');
   margin: 8px 0px 8px 0px;
   font-size: 9px !important;
   line-height: 9px;
@@ -1243,10 +1056,10 @@ const printSystemMessage = (msg: any) => {
 }
 
 .message-react button {
-  background: v-bind('computedCss.colors.chat.reaction.main');
+  background: v-bind('cssConfiguration.colors.chat.reaction.main');
   border-radius: 12px;
-  color: v-bind('computedCss.colors.chat.reaction.text');
-  stroke: v-bind('computedCss.colors.chat.reaction.text');
+  color: v-bind('cssConfiguration.colors.chat.reaction.text');
+  stroke: v-bind('cssConfiguration.colors.chat.reaction.text');
 }
 
 @keyframes spin {

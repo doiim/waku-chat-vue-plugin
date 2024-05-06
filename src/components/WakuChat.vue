@@ -374,11 +374,6 @@ watchEffect(() => {
   mergeObjects(computedCss.value, colorConfig);
 });
 
-const emit = defineEmits<{
-  myStyle: [myStyle: string]
-}>()
-
-
 const responseTo = ref<number | undefined>(undefined);
 
 const setResponse = (groupedMsgIdx: number | undefined) => {
@@ -412,8 +407,6 @@ const groupedResponse = (id: string) => {
   return []
 }
 
-const computedStyles = ref<any>({});
-
 const formatTimestamp = (timestamp: number) => {
   const now = new Date();
   const messageDate = new Date(timestamp);
@@ -443,543 +436,6 @@ const printSystemMessage = (msg: any) => {
   }
   return ''
 }
-
-watchEffect(() => {
-  computedStyles.value = {
-    '.user-name-input': {
-      width: '100%'
-    },
-    '.user-name-input input': {
-      lineHeight: '16px',
-      width: '50%',
-      outline: 'none',
-      paddingLeft: '8px',
-      color: computedCss.value.colors.subHeader.editName.text,
-      backgroundColor: computedCss.value.colors.subHeader.editName.main
-    },
-    '.user-name-input div span': {
-      maxWidth: '50%',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      fontSize: '12px !important'
-    },
-    '.user-name-input svg': {
-      cursor: 'pointer',
-      stroke: computedCss.value.colors.subHeader.editName.text,
-      marginLeft: '8px'
-    },
-    '.user-name-input>div': {
-      display: 'flex',
-      width: '100%'
-    },
-    '.change-name-btn': {
-      cursor: 'pointer',
-      marginLeft: '8px',
-      color: computedCss.value.colors.subHeader.text,
-      background: 'transparent',
-      border: 'none'
-    },
-    '.change-name-btn:hover': {
-      color: computedCss.value.colors.subHeader.textHover
-    },
-    '.cancel-change-name-btn': {
-      cursor: 'pointer',
-      marginLeft: 'auto',
-      color: computedCss.value.colors.subHeader.text,
-      background: 'transparent',
-      border: 'none'
-    },
-    '.cancel-change-name-btn:hover': {
-      color: computedCss.value.colors.subHeader.textHover
-    },
-    '.room-dropdown': {
-      position: 'relative',
-      display: 'inline-block'
-    },
-    '.dropdown-content': {
-      display: 'block',
-      left: '-62px',
-      position: 'absolute',
-      backgroundColor: computedCss.value.colors.room.dropdown.main,
-      minWidth: '136px',
-      zIndex: '1',
-      maxWidth: '344px',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-      borderRadius: '8px'
-    },
-    '.dropdown-content button': {
-      color: computedCss.value.colors.room.dropdown.text,
-      padding: '12px 16px',
-      textDecoration: 'none',
-      display: 'block',
-      cursor: 'pointer',
-      width: '100%',
-      textAlign: 'left',
-      fontWeight: '600',
-      border: 'none',
-      background: 'none',
-      transition: 'background-color 0.3s ease-in-out',
-      borderRadius: '8px'
-    },
-    '.dropdown-content .selected': {
-      color: computedCss.value.colors.room.dropdown.selected
-    },
-    '.dropdown-content button:hover': {
-      backgroundColor: computedCss.value.colors.room.dropdown.hover
-    },
-    '.dropdown-button': {
-      display: 'flex',
-      background: 'none',
-      border: 'none',
-      cursor: 'pointer',
-      fontWeight: '600',
-      lineHeight: '14px',
-      alignItems: "center",
-      color: computedCss.value.colors.room.btn.text,
-      stroke: computedCss.value.colors.room.btn.text
-    },
-    '.dropdown-button svg': {
-      marginLeft: '8px'
-    },
-    '.dropdown-button:hover': {
-      color: computedCss.value.colors.room.btn.textHover,
-      stroke: computedCss.value.colors.room.btn.textHover,
-      textDecoration: 'underline'
-    },
-    '.chat-container': {
-      width: '360px',
-      height: '600px',
-      position: 'fixed',
-      bottom: '16px',
-      right: '16px',
-      backgroundColor: computedCss.value.colors.background,
-      border: computedCss.value.border.size + ' solid ' + computedCss.value.colors.border,
-      borderRadius: '8px',
-      display: 'flex',
-      flexDirection: 'column',
-      transition: 'transform 0.3s ease-in-out',
-      boxShadow: '0px 10px 25px -5px rgba(0, 0, 0, ' + computedCss.value.shadows.openedComponent + ')'
-    },
-    '.chat-container.open': {
-      transform: 'translateY(0)'
-    },
-    '.change-room-overlay': {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      borderRadius: '8px',
-      backgroundColor: 'rgba(0, 0, 0, 0.2)',
-      stroke: computedCss.value.colors.border,
-      textAlign: 'center',
-      alignContent: 'center',
-      zIndex: 1000,
-    },
-    '.change-room-overlay svg': {
-      animation: 'spin 1s linear infinite'
-    },
-    '.chat-header': {
-      backgroundColor: computedCss.value.colors.header.main,
-      color: computedCss.value.colors.header.text,
-      padding: '12px 16px',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      borderTopLeftRadius: '8px',
-      borderTopRightRadius: '8px'
-    },
-    '.settings-section': {
-      display: 'flex',
-      alignItems: 'center'
-    },
-    '.settings-button': {
-      color: computedCss.value.colors.header.btn,
-      background: 'transparent',
-      lineHeight: '14px',
-      border: 'none'
-    },
-    '.settings-button:hover': {
-      color: computedCss.value.colors.header.btnHover,
-      textDecoration: 'underline',
-      cursor: 'pointer'
-    },
-    '.user-section': {
-      display: 'flex',
-      fontSize: '12px !important',
-      width: '100%',
-      justifyContent: 'space-between'
-    },
-    '.system-message-section': {
-      display: 'flex',
-      fontSize: '12px !important',
-      width: '100%',
-    },
-    '.system-message-section input': {
-      margin: '0px',
-      cursor: 'pointer'
-    },
-    '.system-message-section label': {
-      marginLeft: '8px',
-      cursor: 'pointer'
-    },
-    '.room-section': {
-      display: 'flex',
-      width: '100%',
-      alignItems: 'center'
-    },
-    '.chat-subHeader': {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'normal',
-      padding: '16px',
-      minHeight: '48px',
-      fontSize: '12px !important',
-      gap: '8px',
-      backgroundColor: computedCss.value.colors.subHeader.main,
-      color: computedCss.value.colors.subHeader.text
-    },
-    '.non-edit': {
-      cursor: 'default'
-    },
-    '.edit-user-input': {
-      border: 'none',
-      borderRadius: '8px',
-      margin: '4px 0px',
-      height: '38px',
-      width: '100%'
-    },
-    '.room-info': {
-      marginRight: '10px',
-      lineHeight: '16px',
-      fontSize: '12px !important',
-      color: computedCss.value.colors.header.text
-    },
-    '.room-name': {
-      fontWeight: 'bold'
-    },
-    '.chat-body': {
-      flex: '1',
-      overflowY: 'auto',
-      padding: '16px 1px 0px 16px',
-      marginRight: '15px'
-    },
-    '.chat-body::-webkit-scrollbar': {
-      width: '5px'
-    },
-    '.chat-body::-webkit-scrollbar-thumb': {
-      backgroundColor: computedCss.value.colors.border,
-      borderRadius: '5px',
-    },
-    '.chat-footer': {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      padding: '16px 30px 24px 30px'
-    },
-    '.response-input': {
-      backgroundColor: computedCss.value.colors.input.response.main,
-      color: computedCss.value.colors.input.response.text,
-      width: '100%',
-      borderTopLeftRadius: '8px',
-      borderTopRightRadius: '8px',
-      display: 'flex'
-    },
-    '.response-input > div': {
-      padding: '8px',
-      width: '85%',
-    },
-    '.response-input > div > div': {
-      whiteSpace: 'nowrap',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-    },
-    '.response-input button': {
-      stroke: computedCss.value.colors.input.response.close,
-      alignSelf: 'center',
-      marginLeft: 'auto',
-      background: 'transparent',
-      border: 'none',
-      cursor: 'pointer',
-      padding: '8px',
-    },
-    '.response-input button:hover': {
-      stroke: computedCss.value.colors.input.response.closeHover,
-    },
-    '.message-input': {
-      display: 'flex',
-      width: '100%',
-      height: '48px',
-      padding: '0px 12px',
-      lineHeight: '16px',
-      borderRadius: '8px',
-      backgroundColor: computedCss.value.colors.input.main
-    },
-    '.message-input input': {
-      width: '100%',
-      outline: 'none',
-      border: 'none',
-      color: computedCss.value.colors.input.text,
-      backgroundColor: computedCss.value.colors.input.main
-    },
-    '.message-input input::placeholder': {
-      color: computedCss.value.colors.input.placeholder,
-      opacity: "1",
-    },
-    '.message-input input::-ms-input-placeholder': {
-      color: computedCss.value.colors.input.placeholder,
-    },
-    '.message-input button': {
-      marginLeft: 'auto'
-    },
-    '.open-button, .load-button, .spinner': {
-      width: '64px',
-      height: '64px',
-      borderRadius: '50%',
-      transition: 'backgroundColor 0.3s ease-in-out',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      position: 'fixed',
-      right: '34px',
-      bottom: '36px'
-    },
-    '.open-button, .load-button, .minimize-button, .send-button': {
-      cursor: 'pointer',
-      borderWidth: '0px',
-    },
-    '.load-button': {
-      backgroundColor: computedCss.value.colors.loadBtn.main,
-      color: computedCss.value.colors.loadBtn.text,
-      fill: computedCss.value.colors.loadBtn.text
-    },
-    '.load-button:hover': {
-      backgroundColor: computedCss.value.colors.loadBtn.hover,
-      color: computedCss.value.colors.loadBtn.textHover,
-      fill: computedCss.value.colors.loadBtn.textHover
-    },
-    '.open-button': {
-      backgroundColor: computedCss.value.colors.openBtn.main,
-      color: computedCss.value.colors.openBtn.text,
-      fill: computedCss.value.colors.openBtn.text
-    },
-    '.open-button:hover': {
-      backgroundColor: computedCss.value.colors.openBtn.hover,
-      color: computedCss.value.colors.openBtn.textHover,
-      fill: computedCss.value.colors.openBtn.textHover
-    },
-    '.spinner': {
-      backgroundColor: computedCss.value.colors.loadingBtn.main,
-      color: computedCss.value.colors.loadingBtn.text,
-      stroke: computedCss.value.colors.loadingBtn.text,
-    },
-    '.minimize-button': {
-      marginLeft: '32px',
-      stroke: computedCss.value.colors.minimizeBtn.main,
-      background: 'transparent',
-    },
-    '.minimize-button svg': {
-      verticalAlign: 'middle'
-    },
-    '.minimize-button:hover': {
-      stroke: computedCss.value.colors.minimizeBtn.hover
-    },
-    '.send-button': {
-      background: 'transparent',
-      marginTop: '4px'
-    },
-    '.send-button svg': {
-      fill: computedCss.value.colors.sendBtn.main,
-      color: computedCss.value.colors.sendBtn.text
-    },
-    '.send-button:hover svg': {
-      fill: computedCss.value.colors.sendBtn.hover,
-      color: computedCss.value.colors.sendBtn.textHover
-    },
-    '.send-button:disabled': {
-      cursor: 'auto'
-    },
-    '.send-button:disabled svg': {
-      fill: computedCss.value.colors.sendBtn.disabled,
-      color: computedCss.value.colors.sendBtn.text
-    },
-    '.spinner svg': {
-      animation: 'spin 1s linear infinite'
-    },
-    '.own-message .message': {
-      backgroundColor: computedCss.value.colors.chat.myMessage.main,
-      fontWeight: '400',
-      color: computedCss.value.colors.chat.myMessage.text,
-    },
-    '.own-message .timestamp': {
-      marginLeft: 'auto'
-    },
-    '.own-message .user-name-baloon': {
-      marginLeft: 'auto',
-      color: computedCss.value.colors.chat.myMessage.user
-    },
-    '.own-message .grouped-response .message': {
-      marginLeft: 'auto',
-      backgroundColor: computedCss.value.colors.chat.myMessage.response.main,
-      color: computedCss.value.colors.chat.myMessage.response.text,
-    },
-    '.user-name-baloon': {
-      fontSize: '10px !important',
-      lineHeight: '12px',
-      marginBottom: '4px',
-      color: computedCss.value.colors.chat.otherMessage.user
-    },
-    '.message-container': {
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'flex-end'
-    },
-    '.grouped-response .message': {
-      backgroundColor: computedCss.value.colors.chat.otherMessage.response.main,
-      color: computedCss.value.colors.chat.otherMessage.response.text,
-      padding: '8px',
-      cursor: 'pointer'
-    },
-    '.grouped-message': {
-      display: 'flex',
-      width: '100%',
-    },
-    '.response-disabled .message': {
-      color: computedCss.value.colors.chat.disabledResponse.text + " !important",
-      backgroundColor: computedCss.value.colors.chat.disabledResponse.main + " !important",
-      fontStyle: 'italic',
-      cursor: 'default'
-    },
-    '.grouped-message button': {
-      alignSelf: 'center',
-      marginRight: '4px',
-      marginLeft: '4px',
-      background: 'transparent',
-      border: 'none',
-      cursor: 'pointer'
-    },
-    '.grouped-message button:first-child': {
-      marginRight: 'auto',
-    },
-    '.grouped-message:hover > button svg': {
-      stroke: computedCss.value.colors.chat.interactIcons,
-    },
-    '.own-message .grouped-message button': {
-      alignSelf: 'center',
-      marginRight: '4px',
-      marginLeft: '4px',
-      transform: 'scaleX(1)'
-    },
-    '.own-message .grouped-message button:first-child': {
-      marginLeft: 'auto',
-    },
-    '.message': {
-      position: 'relative',
-      lineHeight: '16px',
-      minWidth: '96px',
-      maxWidth: '67%',
-      padding: '12px',
-      borderRadius: '8px',
-      backgroundColor: computedCss.value.colors.chat.otherMessage.main,
-      color: computedCss.value.colors.chat.otherMessage.text,
-      boxShadow: `0px 1px 3px 0px rgba(0, 0, 0, ${computedCss.value.shadows.messageBalloon})`
-    },
-    '.system-message': {
-      lineHeight: '16px',
-      minWidth: '96px',
-      width: '80%',
-      padding: '2px, 8px, 2px, 8px',
-      margin: '8px',
-      borderRadius: '4px',
-      alignSelf: 'center !important',
-      textAlign: 'center',
-      backgroundColor: computedCss.value.colors.chat.systemMessage.main,
-      color: computedCss.value.colors.chat.systemMessage.text,
-      boxShadow: `0px 1px 3px 0px rgba(0, 0, 0, ${computedCss.value.shadows.messageBalloon})`
-    },
-    '.timestamp': {
-      color: computedCss.value.colors.chat.timestamp,
-      margin: '8px 0px 8px 0px',
-      fontSize: '9px !important',
-      lineHeight: '9px',
-    },
-    '.message-content': {
-      wordWrap: 'break-word'
-    },
-    '.message-react': {
-      position: 'absolute',
-      bottom: '-8px',
-      right: '8px'
-    },
-    '.message-react button': {
-      background: computedCss.value.colors.chat.reaction.main,
-      borderRadius: '12px',
-      color: computedCss.value.colors.chat.reaction.text,
-      stroke: computedCss.value.colors.chat.reaction.text
-    },
-    '@keyframes spin': {
-      '0%': {
-        transform: 'rotate(0deg)'
-      },
-      '100%': {
-        transform: 'rotate(360deg)'
-      }
-    },
-    '.waku-chat-vue-plugin div, .waku-chat-vue-plugin button, .waku-chat-vue-plugin span, .waku-chat-vue-plugin input': {
-      fontFamily: 'IBM Plex Sans',
-      fontSize: '14px'
-    },
-    '.slide-enter-active': {
-      animation: 'translate-out .5s reverse',
-    },
-    '.slide-leave-active': {
-      animation: 'translate-out .5s',
-    },
-    '@keyframes translate-out': {
-      '0%': {
-        transform: 'translateY(0%)',
-      },
-      '100%': {
-        transform: 'translateY(110%)',
-      }
-    },
-    '.fade-enter-active': {
-      animation: 'fade-in .5s',
-    },
-    '.fade-leave-active': {
-      animation: 'fade-in .5s reverse',
-    },
-    '@keyframes fade-in': {
-      '0%': {
-        opacity: '0',
-      },
-      '100%': {
-        opacity: '1',
-      }
-    },
-    '.fastFade-enter-active': {
-      animation: 'fastFade-in .5s',
-    },
-    '.fastFade-leave-active': {
-      animation: 'fastFade-in .5s reverse',
-    },
-    '@keyframes fastFade-in': {
-      '0%': {
-        opacity: '0',
-      },
-      '60%': {
-        opacity: '0',
-      },
-      '100%': {
-        opacity: '1',
-      }
-    }
-  }
-
-  emit('myStyle', computedStyles.value)
-});
 
 </script>
 
@@ -1150,7 +606,7 @@ watchEffect(() => {
                     <TransitionGroup name="fade">
                       <div v-for="(message, idMsg) in groupedMsgs" class="message-content" :key="idMsg">{{
                         printSystemMessage(message)
-                        }}
+                      }}
                       </div>
                     </TransitionGroup>
                   </div>
@@ -1170,7 +626,7 @@ watchEffect(() => {
                   <TransitionGroup name="fade">
                     <div v-for="(message, idMsg) in groupedMessages[responseTo].slice(0, 4)" :key="idMsg">{{
                       message.data
-                      }}
+                    }}
                     </div>
                     <div v-if="groupedMessages[responseTo].length > 4">...</div>
                   </TransitionGroup>
@@ -1227,3 +683,645 @@ watchEffect(() => {
     </div>
   </div>
 </template>
+
+<style scoped lang="css">
+.user-name-input {
+  width: 100%;
+}
+
+.user-name-input input {
+  line-height: 16px;
+  width: 50%;
+  outline: none;
+  padding-left: 8px;
+  color: v-bind('computedCss.colors.subHeader.editName.text');
+  background-color: v-bind('computedCss.colors.subHeader.editName.main');
+}
+
+.user-name-input div span {
+  max-width: 50%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px !important;
+}
+
+.user-name-input svg {
+  cursor: pointer;
+  stroke: v-bind('computedCss.colors.subHeader.editName.text');
+  margin-left: 8px;
+}
+
+.user-name-input>div {
+  display: flex;
+  width: 100%;
+}
+
+.change-name-btn {
+  cursor: pointer;
+  margin-left: 8px;
+  color: v-bind('computedCss.colors.subHeader.text');
+  background: transparent;
+  border: none;
+}
+
+.change-name-btn:hover {
+  color: v-bind('computedCss.colors.subHeader.textHover');
+}
+
+.cancel-change-name-btn {
+  cursor: pointer;
+  margin-left: auto;
+  color: v-bind('computedCss.colors.subHeader.text');
+  background: transparent;
+  border: none;
+}
+
+.cancel-change-name-btn:hover {
+  color: v-bind('computedCss.colors.subHeader.textHover');
+}
+
+.room-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: block;
+  left: -62px;
+  position: absolute;
+  background-color: v-bind('computedCss.colors.room.dropdown.main');
+  min-width: 136px;
+  z-index: 1;
+  max-width: 344px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-radius: 8px;
+}
+
+.dropdown-content button {
+  color: v-bind('computedCss.colors.room.dropdown.text');
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-weight: 600;
+  border: none;
+  background: none;
+  transition: background-color 0.3s ease-in-out;
+  border-radius: 8px;
+}
+
+.dropdown-content .selected {
+  color: v-bind('computedCss.colors.room.dropdown.selected');
+}
+
+.dropdown-content button:hover {
+  background-color: v-bind('computedCss.colors.room.dropdown.hover');
+}
+
+.dropdown-button {
+  display: flex;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  line-height: 14px;
+  align-items: center;
+  color: v-bind('computedCss.colors.room.btn.text');
+  stroke: v-bind('computedCss.colors.room.btn.text');
+}
+
+.dropdown-button svg {
+  margin-left: 8px;
+}
+
+.dropdown-button:hover {
+  color: v-bind('computedCss.colors.room.btn.textHover');
+  stroke: v-bind('computedCss.colors.room.btn.textHover');
+  text-decoration: underline;
+}
+
+.chat-container {
+  width: 360px;
+  height: 600px;
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  background-color: v-bind('computedCss.colors.background');
+  border: v-bind('computedCss.border.size') solid v-bind('computedCss.colors.border');
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease-in-out;
+  box-shadow: 0px 10px 25px -5px rgba(0, 0, 0, v-bind('computedCss.shadows.openedComponent'));
+}
+
+.chat-container.open {
+  transform: translateY(0);
+}
+
+.change-room-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.2);
+  stroke: v-bind('computedCss.colors.border');
+  text-align: center;
+  align-content: center;
+  z-index: 1000;
+}
+
+.change-room-overlay svg {
+  animation: spin 1s linear infinite;
+}
+
+.chat-header {
+  background-color: v-bind('computedCss.colors.header.main');
+  color: v-bind('computedCss.colors.header.text');
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.settings-section {
+  display: flex;
+  align-items: center;
+
+}
+
+.settings-button {
+  color: v-bind('computedCss.colors.header.btn');
+  background: transparent;
+  line-height: 14px;
+  border: none;
+}
+
+.settings-button:hover {
+  color: v-bind('computedCss.colors.header.btnHover');
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.user-section {
+  display: flex;
+  font-size: 12px !important;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.system-message-section {
+  display: flex;
+  font-size: 12px !important;
+  width: 100%;
+}
+
+.system-message-section input {
+  margin: 0px;
+  cursor: pointer;
+}
+
+.system-message-section label {
+  margin-left: 8px;
+  cursor: pointer;
+}
+
+.room-section {
+  display: flex;
+  width: 100%;
+}
+
+.chat-subHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: normal;
+  padding: 16px;
+  min-height: 48px;
+  font-size: 12px !important;
+  gap: 8px;
+  background-color: v-bind('computedCss.colors.subHeader.main');
+  color: v-bind('computedCss.colors.subHeader.text');
+}
+
+.non-edit {
+  cursor: default;
+}
+
+.edit-user-input {
+  border: none;
+  border-radius: 8px;
+  margin: 4px 0px;
+  height: 38px;
+  width: 100%;
+}
+
+.room-info {
+  margin-right: 10px;
+  line-height: 16px;
+  font-size: 12px !important;
+  color: v-bind('computedCss.colors.header.text');
+}
+
+.room-name {
+  font-weight: bold;
+}
+
+.chat-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 1px 0px 16px;
+  margin-right: 15px;
+}
+
+.chat-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.chat-body::-webkit-scrollbar-thumb {
+  background-color: v-bind('computedCss.colors.border');
+  border-radius: 5px;
+}
+
+.chat-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 30px 24px 30px;
+}
+
+.response-input {
+  background-color: v-bind('computedCss.colors.input.response.main');
+  color: v-bind('computedCss.colors.input.response.text');
+  width: 100%;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  display: flex;
+}
+
+.response-input>div {
+  padding: 8px;
+  width: 85%;
+}
+
+.response-input>div>div {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.response-input button {
+  stroke: v-bind('computedCss.colors.input.response.close');
+  align-self: center;
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.response-input button:hover {
+  stroke: v-bind('computedCss.colors.input.response.closeHover');
+}
+
+.message-input {
+  display: flex;
+  width: 100%;
+  height: 48px;
+  padding: 0px 12px;
+  line-height: 16px;
+  border-radius: 8px;
+  background-color: v-bind('computedCss.colors.input.main');
+}
+
+.message-input input {
+  width: 100%;
+  outline: none;
+  border: none;
+  color: v-bind('computedCss.colors.input.text');
+  background-color: v-bind('computedCss.colors.input.main');
+}
+
+.message-input input::placeholder {
+  color: v-bind('computedCss.colors.input.placeholder');
+  opacity: 1;
+}
+
+.message-input input::-ms-input-placeholder {
+  color: v-bind('computedCss.colors.input.placeholder');
+}
+
+.message-input button {
+  margin-left: auto;
+}
+
+.open-button,
+.load-button,
+.spinner {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  transition: background-color 0.3s ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  right: 34px;
+  bottom: 36px;
+}
+
+.open-button,
+.load-button,
+.minimize-button,
+.send-button {
+  cursor: pointer;
+  border-width: 0px;
+}
+
+.load-button {
+  background-color: v-bind('computedCss.colors.loadBtn.main');
+  color: v-bind('computedCss.colors.loadBtn.text');
+  fill: v-bind('computedCss.colors.loadBtn.text');
+}
+
+.load-button:hover {
+  background-color: v-bind('computedCss.colors.loadBtn.hover');
+  color: v-bind('computedCss.colors.loadBtn.textHover');
+  fill: v-bind('computedCss.colors.loadBtn.textHover');
+}
+
+.open-button {
+  background-color: v-bind('computedCss.colors.openBtn.main');
+  color: v-bind('computedCss.colors.openBtn.text');
+  fill: v-bind('computedCss.colors.openBtn.text');
+}
+
+.open-button:hover {
+  background-color: v-bind('computedCss.colors.openBtn.hover');
+  color: v-bind('computedCss.colors.openBtn.textHover');
+  fill: v-bind('computedCss.colors.openBtn.textHover');
+}
+
+.spinner {
+  background-color: v-bind('computedCss.colors.loadingBtn.main');
+  color: v-bind('computedCss.colors.loadingBtn.text');
+  stroke: v-bind('computedCss.colors.loadingBtn.text');
+}
+
+.minimize-button {
+  margin-left: 32px;
+  stroke: v-bind('computedCss.colors.minimizeBtn.main');
+  background: transparent;
+}
+
+.minimize-button svg {
+  vertical-align: middle;
+}
+
+.minimize-button:hover {
+  stroke: v-bind('computedCss.colors.minimizeBtn.hover');
+}
+
+.send-button {
+  background: transparent;
+  margin-top: 4px;
+}
+
+.send-button svg {
+  fill: v-bind('computedCss.colors.sendBtn.main');
+  color: v-bind('computedCss.colors.sendBtn.text');
+}
+
+.send-button:hover svg {
+  fill: v-bind('computedCss.colors.sendBtn.hover');
+  color: v-bind('computedCss.colors.sendBtn.textHover');
+}
+
+.send-button:disabled {
+  cursor: auto;
+}
+
+.send-button:disabled svg {
+  fill: v-bind('computedCss.colors.sendBtn.disabled');
+  color: v-bind('computedCss.colors.sendBtn.text');
+}
+
+.spinner svg {
+  animation: spin 1s linear infinite;
+}
+
+.own-message .message {
+  background-color: v-bind('computedCss.colors.chat.myMessage.main');
+  font-weight: 400;
+  color: v-bind('computedCss.colors.chat.myMessage.text');
+}
+
+.own-message .timestamp {
+  margin-left: auto;
+}
+
+.own-message .user-name-baloon {
+  margin-left: auto;
+  color: v-bind('computedCss.colors.chat.myMessage.user');
+}
+
+.own-message .grouped-response .message {
+  margin-left: auto;
+  background-color: v-bind('computedCss.colors.chat.myMessage.response.main');
+  color: v-bind('computedCss.colors.chat.myMessage.response.text');
+}
+
+.user-name-baloon {
+  font-size: 10px !important;
+  line-height: 12px;
+  margin-bottom: 4px;
+  color: v-bind('computedCss.colors.chat.otherMessage.user');
+}
+
+.message-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.grouped-response .message {
+  background-color: v-bind('computedCss.colors.chat.otherMessage.response.main');
+  color: v-bind('computedCss.colors.chat.otherMessage.response.text');
+  padding: 8px;
+  cursor: pointer;
+}
+
+.grouped-message {
+  display: flex;
+  width: 100%;
+}
+
+.response-disabled .message {
+  color: v-bind('computedCss.colors.chat.disabledResponse.text') !important;
+  background-color: v-bind('computedCss.colors.chat.disabledResponse.main') !important;
+  font-style: italic;
+  cursor: default;
+}
+
+.grouped-message button {
+  align-self: center;
+  margin-right: 4px;
+  margin-left: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.grouped-message button:first-child {
+  margin-right: auto;
+}
+
+.grouped-message:hover>button svg {
+  stroke: v-bind('computedCss.colors.chat.interactIcons');
+}
+
+.own-message .grouped-message button {
+  align-self: center;
+  margin-right: 4px;
+  margin-left: 4px;
+  transform: scaleX(1);
+}
+
+.own-message .grouped-message button:first-child {
+  margin-left: auto;
+}
+
+.message {
+
+  position: relative;
+  line-height: 16px;
+  min-width: 96px;
+  max-width: 67%;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: v-bind('computedCss.colors.chat.otherMessage.main');
+  color: v-bind('computedCss.colors.chat.otherMessage.text');
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, v-bind('computedCss.shadows.messageBalloon'));
+}
+
+.system-message {
+  line-height: 16px;
+  min-width: 96px;
+  width: 80%;
+  padding: 2px 8px 2px 8px;
+  margin: 8px;
+  border-radius: 4px;
+  align-self: center !important;
+  text-align: center;
+  background-color: v-bind('computedCss.colors.chat.systemMessage.main');
+  color: v-bind('computedCss.colors.chat.systemMessage.text');
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, v-bind('computedCss.shadows.messageBalloon'));
+}
+
+.timestamp {
+  color: v-bind('computedCss.colors.chat.timestamp');
+  margin: 8px 0px 8px 0px;
+  font-size: 9px !important;
+  line-height: 9px;
+}
+
+.message-content {
+  word-wrap: break-word;
+}
+
+.message-react {
+  position: absolute;
+  bottom: -8px;
+  right: 8px;
+}
+
+.message-react button {
+  background: v-bind('computedCss.colors.chat.reaction.main');
+  border-radius: 12px;
+  color: v-bind('computedCss.colors.chat.reaction.text');
+  stroke: v-bind('computedCss.colors.chat.reaction.text');
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.waku-chat-vue-plugin div,
+.waku-chat-vue-plugin button,
+.waku-chat-vue-plugin span,
+.waku-chat-vue-plugin input {
+  font-family: IBM Plex Sans;
+  font-size: 14px;
+}
+
+.slide-enter-active {
+  animation: translate-out .5s reverse;
+}
+
+.slide-leave-active {
+  animation: translate-out .5s;
+}
+
+@keyframes translate-out {
+  0% {
+    transform: translateY(0%);
+  }
+
+  100% {
+    transform: translateY(110%);
+  }
+}
+
+.fade-enter-active {
+  animation: fade-in .5s;
+}
+
+.fade-leave-active {
+  animation: fade-in .5s reverse;
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.fastFade-enter-active {
+  animation: fastFade-in .5s;
+}
+
+.fastFade-leave-active {
+  animation: fastFade-in .5s reverse;
+}
+
+@keyframes fastFade-in {
+  0% {
+    opacity: 0;
+  }
+
+  60% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+</style>

@@ -2,7 +2,7 @@
   "name": "@doiim/waku-chat-vue-plugin",
   "type": "module",
   "homepage": "https://doiim.github.io/waku-chat-vue-plugin/",
-  "version": "0.8.9",
+  "version": "0.8.10",
   "main": "./dist/waku-chat-vue-plugin.umd.cjs",
   "module": "./dist/waku-chat-vue-plugin.js",
   "keywords": [
@@ -13,7 +13,9 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/waku-chat-vue-plugin.js",
+      "import": [
+        "./dist/waku-chat-vue-plugin.js"
+      ],
       "require": [
         "./dist/waku-chat-vue-plugin.umd.cjs",
         "./dist/waku-chat-vue-plugin.d.ts"

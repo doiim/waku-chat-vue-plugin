@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, defineProps } from "vue";
+import { defineProps, onMounted, ref } from "vue";
 import WakuChat from "./WakuChat.vue"
 
 const props = defineProps<{
@@ -7,56 +7,22 @@ const props = defineProps<{
     externalUserName?: string;
 }>()
 
-const shadowRootHeadRef = ref<HTMLElement | null>(null);
+const pluginHead = ref<HTMLHeadElement | null>(null);
 
 onMounted(() => {
-    setTimeout(async () => {
-        const styleElements = document.head.querySelectorAll('style');
-        styleElements.forEach(link => {
-            const dataViteDevId = link.getAttribute('data-vite-dev-id');
-            if (dataViteDevId?.endsWith('waku-chat-vue-plugin/dist/index.css')) {
-
-                if (shadowRootHeadRef.value) {
-                    shadowRootHeadRef.value.appendChild(link.cloneNode(true));
-                    link.remove();
-                }
-            }
-        });
-    }, 0);
+    const style = document.createElement('style');
+    style.textContent = "MY_STYLE_CONTENT";
+    style.type = 'text/css';
+    if (pluginHead.value)
+        pluginHead.value.appendChild(style);
 });
-
-const JSONtoCss = (_style: any) => {
-    let str = ''
-    for (let key in _style) {
-        if (typeof _style[key] === 'object' && _style[key] !== null) {
-            str += `${key}{`;
-            str += JSONtoCss(_style[key]);
-            str += `}`
-        } else {
-            str += (`${key.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`)}:${_style[key]};`);
-        }
-    }
-    return str
-};
-
-const myStyle = (jsonStyle: any) => {
-    let styleElement = shadowRootHeadRef.value?.querySelector('style')
-    if (!styleElement) {
-        styleElement = document.createElement('style')
-        styleElement.type = 'text/css'
-        shadowRootHeadRef.value?.appendChild(styleElement)
-    }
-    if (styleElement)
-        styleElement.appendChild(document.createTextNode(JSONtoCss(jsonStyle)));
-
-}
 
 </script>
 
 <template>
     <shadow-root>
 
-        <head ref="shadowRootHeadRef">
+        <head ref="pluginHead">
             <link rel="preconnect" href="https://fonts.googleapis.com">
             <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true">
             <link
@@ -65,7 +31,7 @@ const myStyle = (jsonStyle: any) => {
         </head>
 
         <body>
-            <WakuChat :externalUserId="props.externalUserId" :externalUserName="props.externalUserName" @myStyle="myStyle" />
+            <WakuChat :externalUserId="props.externalUserId" :externalUserName="props.externalUserName" />
         </body>
     </shadow-root>
 </template>

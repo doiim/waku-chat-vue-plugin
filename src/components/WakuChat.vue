@@ -789,7 +789,7 @@ const printSystemMessage = (msg: any) => {
   cursor: pointer;
   font-weight: 600;
   line-height: 14px;
-  align-items: "center";
+  align-items: center;
   color: v-bind('computedCss.colors.room.btn.text');
   stroke: v-bind('computedCss.colors.room.btn.text');
 }
@@ -811,7 +811,7 @@ const printSystemMessage = (msg: any) => {
   bottom: 16px;
   right: 16px;
   background-color: v-bind('computedCss.colors.background');
-  border: v-bind('computedCss.border.size') + ' solid ' + v-bind('computedCss.colors.border');
+  border: v-bind('computedCss.border.size') solid v-bind('computedCss.colors.border');
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -1011,7 +1011,7 @@ const printSystemMessage = (msg: any) => {
 
 .message-input input::placeholder {
   color: v-bind('computedCss.colors.input.placeholder');
-  opacity: "1";
+  opacity: 1;
 }
 
 .message-input input::-ms-input-placeholder {
@@ -1164,8 +1164,8 @@ const printSystemMessage = (msg: any) => {
 }
 
 .response-disabled .message {
-  color: v-bind('computedCss.colors.chat.disabledResponse.text') + " !important";
-  background-color: v-bind('computedCss.colors.chat.disabledResponse.main') + " !important";
+  color: v-bind('computedCss.colors.chat.disabledResponse.text') !important;
+  background-color: v-bind('computedCss.colors.chat.disabledResponse.main') !important;
   font-style: italic;
   cursor: default;
 }

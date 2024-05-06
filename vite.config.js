@@ -4,6 +4,16 @@ import vue from '@vitejs/plugin-vue'
 import dts from 'vite-plugin-dts'
 import fs from 'fs'
 
+const replaceStyleContent = (filePath) => {
+    const styleFilePath = resolve(__dirname, 'dist/style.css');
+    const styleContent = fs.readFileSync(styleFilePath, 'utf-8');
+
+    let fileContent = fs.readFileSync(filePath, 'utf-8');
+    fileContent = fileContent.replace(/"MY_STYLE_CONTENT"/g, `"${styleContent.replace(/\n+$/, '')}"`);
+
+    fs.writeFileSync(filePath, fileContent);
+};
+
 
 export default defineConfig({
     plugins: [
@@ -14,7 +24,19 @@ export default defineConfig({
                 const destPath = resolve(__dirname, 'dist/waku-chat-vue-plugin.d.ts')
                 fs.renameSync(srcPath, destPath)
             }
-        })
+        }),
+        {
+            name: 'replace-style-content',
+            async buildEnd() {
+                setTimeout(async () => {
+                    const jsFilePath = resolve(__dirname, 'dist/waku-chat-vue-plugin.js');
+                    const umdFilePath = resolve(__dirname, 'dist/waku-chat-vue-plugin.umd.cjs');
+
+                    replaceStyleContent(jsFilePath);
+                    replaceStyleContent(umdFilePath);
+                }, 5000);
+            }
+        }
     ],
     css: {
         modules: { scopeBehaviour: 'global', },

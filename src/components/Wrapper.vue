@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps } from "vue";
+import { defineProps, onMounted, ref } from "vue";
 import WakuChat from "./WakuChat.vue"
 
 const props = defineProps<{
@@ -7,19 +7,28 @@ const props = defineProps<{
     externalUserName?: string;
 }>()
 
+const pluginHead = ref<HTMLHeadElement | null>(null);
+
+onMounted(() => {
+    const style = document.createElement('style');
+    style.textContent = "MY_STYLE_CONTENT";
+    style.type = 'text/css';
+    if (pluginHead.value)
+        pluginHead.value.appendChild(style);
+});
+
 </script>
 
 <template>
     <shadow-root>
 
-        <head>
+        <head ref="pluginHead">
             <link rel="preconnect" href="https://fonts.googleapis.com">
             <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true">
             <link
                 href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap"
                 rel="stylesheet">
         </head>
-        <link href="./node_modules/@doiim/waku-chat-vue-plugin/dist/style.css" rel="stylesheet">
 
         <body>
             <WakuChat :externalUserId="props.externalUserId" :externalUserName="props.externalUserName" />

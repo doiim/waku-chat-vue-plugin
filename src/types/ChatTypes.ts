@@ -127,7 +127,12 @@ export interface WakuChatConfigCss {
                 text: string
             }
             timestamp: string,
-            interactIcons: string
+            interactIcons: {
+                main: string,
+                hover: string,
+                text: string,
+                textHover: string,
+            }
         },
         background: string,
         border: string,

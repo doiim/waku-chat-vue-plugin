@@ -214,20 +214,20 @@ const printSystemMessage = (msg: any) => {
         </TransitionGroup>
         <Transition name="fade">
           <div v-if="groupedMsgs[0].type === 'text'" class="grouped-message">
-            <button v-if="groupedMsgs[0].author.id === getMyID()" @click="setResponse(idGroup)">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M 14.877 1.132 C 14.877 6.404 13.841 8.878 11.608 10.035 C 9.374 11.191 5.944 11.029 1.155 11.029 M 1.155 11.029 C 1.869 10.395 2.584 9.76 3.299 9.126 C 4.014 8.491 4.728 7.857 5.443 7.222 M 1.155 11.029 C 1.869 11.664 2.584 12.298 3.299 12.933 C 4.014 13.567 4.728 14.202 5.443 14.836"
-                  stroke-linecap="round" stroke-linejoin="round"
-                  style="stroke-width: 2px; transform-origin: 8.016px 7.984px;"></path>
+            <button class="interact-button" v-if="groupedMsgs[0].author.id === getMyID()"
+              @click="setResponse(idGroup)">
+              <svg width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 4.75H7.66667C10.6122 4.75 13 6.98858 13 9.75V11M1 4.75L5 8.5M1 4.75L5 1"
+                  stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </button>
-            <button v-if="!messageReacted(groupedMsgs[0].id) && groupedMsgs[0].author.id === getMyID()"
+            <button class="interact-button"
+              v-if="!messageReacted(groupedMsgs[0].id) && groupedMsgs[0].author.id === getMyID()"
               @click="reactMessage(idGroup, 'like')">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
-                  d="M 15.364 8.138 L 14.758 8.042 L 15.364 8.138 Z M 14.786 11.174 L 14.179 11.079 L 14.786 11.174 Z M 3.847 14.308 L 3.234 14.357 L 3.847 14.308 Z M 3.18 7.318 L 3.793 7.271 L 3.18 7.318 Z M 9.637 2.955 L 10.244 3.046 L 9.637 2.955 Z M 9.093 5.965 L 9.7 6.055 L 9.093 5.965 Z M 3.65 6.271 L 3.248 5.849 L 3.65 6.271 Z M 4.83 5.349 L 5.232 5.772 L 4.83 5.349 Z M 6.784 2.63 L 6.188 2.489 L 6.784 2.63 Z M 7.175 1.265 L 7.77 1.405 L 7.175 1.265 Z M 8.548 0.606 L 8.359 1.137 L 8.548 0.606 Z M 8.667 0.641 L 8.855 0.109 L 8.667 0.641 Z M 6.246 3.879 L 6.788 4.142 L 6.246 3.879 Z M 9.563 1.487 L 8.967 1.627 L 9.563 1.487 Z M 7.733 0.656 L 7.466 0.154 L 7.733 0.656 Z M 1.413 15.048 L 0.799 15.096 L 1.413 15.048 Z M 0.615 6.686 L 1.228 6.638 C 1.2 6.34 0.918 6.116 0.589 6.128 C 0.259 6.141 0 6.387 0 6.686 L 0.615 6.686 Z M 14.758 8.042 L 14.179 11.079 L 15.392 11.269 L 15.971 8.233 L 14.758 8.042 Z M 9.022 14.884 L 5.207 14.884 L 5.207 16 L 9.022 16 L 9.022 14.884 Z M 4.46 14.26 L 3.793 7.271 L 2.567 7.367 L 3.234 14.357 L 4.46 14.26 Z M 14.179 11.079 C 13.763 13.26 11.595 14.884 9.022 14.884 L 9.022 16 C 12.161 16 14.869 14.014 15.392 11.269 L 14.179 11.079 Z M 9.03 2.865 L 8.486 5.875 L 9.7 6.055 L 10.244 3.046 L 9.03 2.865 Z M 4.052 6.695 L 5.232 5.772 L 4.428 4.926 L 3.248 5.849 L 4.052 6.695 Z M 7.38 2.77 L 7.77 1.405 L 6.579 1.125 L 6.188 2.489 L 7.38 2.77 Z M 8.359 1.137 L 8.478 1.172 L 8.855 0.109 L 8.736 0.074 L 8.359 1.137 Z M 6.788 4.142 C 7.044 3.707 7.244 3.247 7.38 2.77 L 6.188 2.489 C 6.077 2.881 5.913 3.259 5.703 3.616 L 6.788 4.142 Z M 8.478 1.172 C 8.73 1.245 8.908 1.421 8.967 1.627 L 10.159 1.346 C 9.99 0.757 9.493 0.295 8.855 0.109 L 8.478 1.172 Z M 7.77 1.405 C 7.799 1.304 7.879 1.212 8 1.159 L 7.466 0.154 C 7.029 0.344 6.701 0.696 6.579 1.125 L 7.77 1.405 Z M 8 1.159 C 8.11 1.111 8.24 1.103 8.359 1.137 L 8.736 0.074 C 8.318 -0.047 7.861 -0.019 7.466 0.154 L 8 1.159 Z M 9.767 7.244 L 14.019 7.244 L 14.019 6.128 L 9.767 6.128 L 9.767 7.244 Z M 2.026 15 L 1.228 6.638 L 0.002 6.734 L 0.799 15.096 L 2.026 15 Z M 1.231 15.079 L 1.231 6.686 L 0 6.686 L 0 15.079 L 1.231 15.079 Z M 0.799 15.096 C 0.789 14.983 0.887 14.884 1.015 14.884 L 1.015 16 C 1.611 16 2.077 15.537 2.026 15 L 0.799 15.096 Z M 10.244 3.046 C 10.347 2.48 10.317 1.901 10.159 1.346 L 8.967 1.627 C 9.083 2.031 9.104 2.453 9.03 2.865 L 10.244 3.046 Z M 5.207 14.884 C 4.818 14.884 4.493 14.614 4.46 14.26 L 3.234 14.357 C 3.321 15.286 4.179 16 5.207 16 L 5.207 14.884 Z M 5.232 5.772 C 5.79 5.336 6.391 4.817 6.788 4.142 L 5.703 3.616 C 5.419 4.099 4.966 4.506 4.428 4.926 L 5.232 5.772 Z M 15.971 8.233 C 16.18 7.134 15.248 6.128 14.019 6.128 L 14.019 7.244 C 14.483 7.244 14.837 7.625 14.758 8.042 L 15.971 8.233 Z M 1.015 14.884 C 1.135 14.884 1.231 14.972 1.231 15.079 L 0 15.079 C 0 15.587 0.454 16 1.015 16 L 1.015 14.884 Z M 8.486 5.875 C 8.356 6.592 8.966 7.244 9.767 7.244 L 9.767 6.128 C 9.726 6.128 9.694 6.094 9.7 6.055 L 8.486 5.875 Z M 3.793 7.271 C 3.772 7.052 3.869 6.838 4.052 6.695 L 3.248 5.849 C 2.765 6.226 2.512 6.791 2.567 7.367 L 3.793 7.271 Z">
-                </path>
+                  d="M3.5 11V5.4253M1 6.5V10C1 10.5523 1.45911 11 2.02544 11H8.90935C9.66854 11 10.3142 10.4598 10.4296 9.72809L10.9818 6.22809C11.1251 5.31945 10.4042 4.5 9.46151 4.5H7.66536C7.3822 4.5 7.15264 4.27614 7.15264 4V2.23292C7.15264 1.552 6.5866 1 5.88836 1C5.72181 1 5.57089 1.09565 5.50325 1.24406L3.69893 5.20307C3.61664 5.38363 3.43302 5.5 3.2304 5.5H2.02544C1.45911 5.5 1 5.94772 1 6.5Z"
+                  stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </button>
             <div class="message">
@@ -238,31 +238,31 @@ const printSystemMessage = (msg: any) => {
                 <div v-for="(msgReact, idxReact) in getMessageReactions(groupedMsgs[0].id)" class="message-react"
                   :key="idxReact">
                   <button v-if="msgReact.reaction === 'like'" @click="reactMessage(idGroup, 'none')">
-                    {{ msgReact.quantity }}
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path
-                        d="M 15.364 8.138 L 14.758 8.042 L 15.364 8.138 Z M 14.786 11.174 L 14.179 11.079 L 14.786 11.174 Z M 3.847 14.308 L 3.234 14.357 L 3.847 14.308 Z M 3.18 7.318 L 3.793 7.271 L 3.18 7.318 Z M 9.637 2.955 L 10.244 3.046 L 9.637 2.955 Z M 9.093 5.965 L 9.7 6.055 L 9.093 5.965 Z M 3.65 6.271 L 3.248 5.849 L 3.65 6.271 Z M 4.83 5.349 L 5.232 5.772 L 4.83 5.349 Z M 6.784 2.63 L 6.188 2.489 L 6.784 2.63 Z M 7.175 1.265 L 7.77 1.405 L 7.175 1.265 Z M 8.548 0.606 L 8.359 1.137 L 8.548 0.606 Z M 8.667 0.641 L 8.855 0.109 L 8.667 0.641 Z M 6.246 3.879 L 6.788 4.142 L 6.246 3.879 Z M 9.563 1.487 L 8.967 1.627 L 9.563 1.487 Z M 7.733 0.656 L 7.466 0.154 L 7.733 0.656 Z M 1.413 15.048 L 0.799 15.096 L 1.413 15.048 Z M 0.615 6.686 L 1.228 6.638 C 1.2 6.34 0.918 6.116 0.589 6.128 C 0.259 6.141 0 6.387 0 6.686 L 0.615 6.686 Z M 14.758 8.042 L 14.179 11.079 L 15.392 11.269 L 15.971 8.233 L 14.758 8.042 Z M 9.022 14.884 L 5.207 14.884 L 5.207 16 L 9.022 16 L 9.022 14.884 Z M 4.46 14.26 L 3.793 7.271 L 2.567 7.367 L 3.234 14.357 L 4.46 14.26 Z M 14.179 11.079 C 13.763 13.26 11.595 14.884 9.022 14.884 L 9.022 16 C 12.161 16 14.869 14.014 15.392 11.269 L 14.179 11.079 Z M 9.03 2.865 L 8.486 5.875 L 9.7 6.055 L 10.244 3.046 L 9.03 2.865 Z M 4.052 6.695 L 5.232 5.772 L 4.428 4.926 L 3.248 5.849 L 4.052 6.695 Z M 7.38 2.77 L 7.77 1.405 L 6.579 1.125 L 6.188 2.489 L 7.38 2.77 Z M 8.359 1.137 L 8.478 1.172 L 8.855 0.109 L 8.736 0.074 L 8.359 1.137 Z M 6.788 4.142 C 7.044 3.707 7.244 3.247 7.38 2.77 L 6.188 2.489 C 6.077 2.881 5.913 3.259 5.703 3.616 L 6.788 4.142 Z M 8.478 1.172 C 8.73 1.245 8.908 1.421 8.967 1.627 L 10.159 1.346 C 9.99 0.757 9.493 0.295 8.855 0.109 L 8.478 1.172 Z M 7.77 1.405 C 7.799 1.304 7.879 1.212 8 1.159 L 7.466 0.154 C 7.029 0.344 6.701 0.696 6.579 1.125 L 7.77 1.405 Z M 8 1.159 C 8.11 1.111 8.24 1.103 8.359 1.137 L 8.736 0.074 C 8.318 -0.047 7.861 -0.019 7.466 0.154 L 8 1.159 Z M 9.767 7.244 L 14.019 7.244 L 14.019 6.128 L 9.767 6.128 L 9.767 7.244 Z M 2.026 15 L 1.228 6.638 L 0.002 6.734 L 0.799 15.096 L 2.026 15 Z M 1.231 15.079 L 1.231 6.686 L 0 6.686 L 0 15.079 L 1.231 15.079 Z M 0.799 15.096 C 0.789 14.983 0.887 14.884 1.015 14.884 L 1.015 16 C 1.611 16 2.077 15.537 2.026 15 L 0.799 15.096 Z" />
+                        d="M3.5 11V5.4253M1 6.5V10C1 10.5523 1.45911 11 2.02544 11H8.90935C9.66854 11 10.3142 10.4598 10.4296 9.72809L10.9818 6.22809C11.1251 5.31945 10.4042 4.5 9.46151 4.5H7.66536C7.3822 4.5 7.15264 4.27614 7.15264 4V2.23292C7.15264 1.552 6.5866 1 5.88836 1C5.72181 1 5.57089 1.09565 5.50325 1.24406L3.69893 5.20307C3.61664 5.38363 3.43302 5.5 3.2304 5.5H2.02544C1.45911 5.5 1 5.94772 1 6.5Z"
+                        stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
+                    <div>{{ msgReact.quantity }}</div>
                   </button>
                 </div>
               </TransitionGroup>
             </div>
             <TransitionGroup name="fade">
-              <button v-if="!messageReacted(groupedMsgs[0].id) && groupedMsgs[0].author.id !== getMyID()"
+              <button class="interact-button"
+                v-if="!messageReacted(groupedMsgs[0].id) && groupedMsgs[0].author.id !== getMyID()"
                 @click="reactMessage(idGroup, 'like')">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
-                    d="M 15.364 8.138 L 14.758 8.042 L 15.364 8.138 Z M 14.786 11.174 L 14.179 11.079 L 14.786 11.174 Z M 3.847 14.308 L 3.234 14.357 L 3.847 14.308 Z M 3.18 7.318 L 3.793 7.271 L 3.18 7.318 Z M 9.637 2.955 L 10.244 3.046 L 9.637 2.955 Z M 9.093 5.965 L 9.7 6.055 L 9.093 5.965 Z M 3.65 6.271 L 3.248 5.849 L 3.65 6.271 Z M 4.83 5.349 L 5.232 5.772 L 4.83 5.349 Z M 6.784 2.63 L 6.188 2.489 L 6.784 2.63 Z M 7.175 1.265 L 7.77 1.405 L 7.175 1.265 Z M 8.548 0.606 L 8.359 1.137 L 8.548 0.606 Z M 8.667 0.641 L 8.855 0.109 L 8.667 0.641 Z M 6.246 3.879 L 6.788 4.142 L 6.246 3.879 Z M 9.563 1.487 L 8.967 1.627 L 9.563 1.487 Z M 7.733 0.656 L 7.466 0.154 L 7.733 0.656 Z M 1.413 15.048 L 0.799 15.096 L 1.413 15.048 Z M 0.615 6.686 L 1.228 6.638 C 1.2 6.34 0.918 6.116 0.589 6.128 C 0.259 6.141 0 6.387 0 6.686 L 0.615 6.686 Z M 14.758 8.042 L 14.179 11.079 L 15.392 11.269 L 15.971 8.233 L 14.758 8.042 Z M 9.022 14.884 L 5.207 14.884 L 5.207 16 L 9.022 16 L 9.022 14.884 Z M 4.46 14.26 L 3.793 7.271 L 2.567 7.367 L 3.234 14.357 L 4.46 14.26 Z M 14.179 11.079 C 13.763 13.26 11.595 14.884 9.022 14.884 L 9.022 16 C 12.161 16 14.869 14.014 15.392 11.269 L 14.179 11.079 Z M 9.03 2.865 L 8.486 5.875 L 9.7 6.055 L 10.244 3.046 L 9.03 2.865 Z M 4.052 6.695 L 5.232 5.772 L 4.428 4.926 L 3.248 5.849 L 4.052 6.695 Z M 7.38 2.77 L 7.77 1.405 L 6.579 1.125 L 6.188 2.489 L 7.38 2.77 Z M 8.359 1.137 L 8.478 1.172 L 8.855 0.109 L 8.736 0.074 L 8.359 1.137 Z M 6.788 4.142 C 7.044 3.707 7.244 3.247 7.38 2.77 L 6.188 2.489 C 6.077 2.881 5.913 3.259 5.703 3.616 L 6.788 4.142 Z M 8.478 1.172 C 8.73 1.245 8.908 1.421 8.967 1.627 L 10.159 1.346 C 9.99 0.757 9.493 0.295 8.855 0.109 L 8.478 1.172 Z M 7.77 1.405 C 7.799 1.304 7.879 1.212 8 1.159 L 7.466 0.154 C 7.029 0.344 6.701 0.696 6.579 1.125 L 7.77 1.405 Z M 8 1.159 C 8.11 1.111 8.24 1.103 8.359 1.137 L 8.736 0.074 C 8.318 -0.047 7.861 -0.019 7.466 0.154 L 8 1.159 Z M 9.767 7.244 L 14.019 7.244 L 14.019 6.128 L 9.767 6.128 L 9.767 7.244 Z M 2.026 15 L 1.228 6.638 L 0.002 6.734 L 0.799 15.096 L 2.026 15 Z M 1.231 15.079 L 1.231 6.686 L 0 6.686 L 0 15.079 L 1.231 15.079 Z M 0.799 15.096 C 0.789 14.983 0.887 14.884 1.015 14.884 L 1.015 16 C 1.611 16 2.077 15.537 2.026 15 L 0.799 15.096 Z M 10.244 3.046 C 10.347 2.48 10.317 1.901 10.159 1.346 L 8.967 1.627 C 9.083 2.031 9.104 2.453 9.03 2.865 L 10.244 3.046 Z M 5.207 14.884 C 4.818 14.884 4.493 14.614 4.46 14.26 L 3.234 14.357 C 3.321 15.286 4.179 16 5.207 16 L 5.207 14.884 Z M 5.232 5.772 C 5.79 5.336 6.391 4.817 6.788 4.142 L 5.703 3.616 C 5.419 4.099 4.966 4.506 4.428 4.926 L 5.232 5.772 Z M 15.971 8.233 C 16.18 7.134 15.248 6.128 14.019 6.128 L 14.019 7.244 C 14.483 7.244 14.837 7.625 14.758 8.042 L 15.971 8.233 Z M 1.015 14.884 C 1.135 14.884 1.231 14.972 1.231 15.079 L 0 15.079 C 0 15.587 0.454 16 1.015 16 L 1.015 14.884 Z M 8.486 5.875 C 8.356 6.592 8.966 7.244 9.767 7.244 L 9.767 6.128 C 9.726 6.128 9.694 6.094 9.7 6.055 L 8.486 5.875 Z M 3.793 7.271 C 3.772 7.052 3.869 6.838 4.052 6.695 L 3.248 5.849 C 2.765 6.226 2.512 6.791 2.567 7.367 L 3.793 7.271 Z">
-                  </path>
+                    d="M3.5 11V5.4253M1 6.5V10C1 10.5523 1.45911 11 2.02544 11H8.90935C9.66854 11 10.3142 10.4598 10.4296 9.72809L10.9818 6.22809C11.1251 5.31945 10.4042 4.5 9.46151 4.5H7.66536C7.3822 4.5 7.15264 4.27614 7.15264 4V2.23292C7.15264 1.552 6.5866 1 5.88836 1C5.72181 1 5.57089 1.09565 5.50325 1.24406L3.69893 5.20307C3.61664 5.38363 3.43302 5.5 3.2304 5.5H2.02544C1.45911 5.5 1 5.94772 1 6.5Z"
+                    stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </button>
-              <button v-if="groupedMsgs[0].author.id !== getMyID()" @click="setResponse(idGroup)">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path
-                    d="M 14.877 1.132 C 14.877 6.404 13.841 8.878 11.608 10.035 C 9.374 11.191 5.944 11.029 1.155 11.029 M 1.155 11.029 C 1.869 10.395 2.584 9.76 3.299 9.126 C 4.014 8.491 4.728 7.857 5.443 7.222 M 1.155 11.029 C 1.869 11.664 2.584 12.298 3.299 12.933 C 4.014 13.567 4.728 14.202 5.443 14.836"
-                    stroke-linecap="round" stroke-linejoin="round"
-                    style="stroke-width: 2px; transform-origin: 8.016px 7.984px;">
-                  </path>
+              <button class="interact-button" v-if="groupedMsgs[0].author.id !== getMyID()"
+                @click="setResponse(idGroup)">
+                <svg width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 4.75H7.66667C10.6122 4.75 13 6.98858 13 9.75V11M1 4.75L5 8.5M1 4.75L5 1"
+                    stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </button>
             </TransitionGroup>
@@ -272,7 +272,7 @@ const printSystemMessage = (msg: any) => {
             <TransitionGroup name="fade">
               <div v-for="(message, idMsg) in groupedMsgs" class="message-content" :key="idMsg">{{
                 printSystemMessage(message)
-                }}
+              }}
               </div>
             </TransitionGroup>
           </div>
@@ -292,7 +292,7 @@ const printSystemMessage = (msg: any) => {
           <TransitionGroup name="fade">
             <div v-for="(message, idMsg) in groupedMessages[responseTo].slice(0, 4)" :key="idMsg">{{
               message.data
-              }}
+            }}
             </div>
             <div v-if="groupedMessages[responseTo].length > 4">...</div>
           </TransitionGroup>
@@ -488,24 +488,34 @@ const printSystemMessage = (msg: any) => {
   cursor: default;
 }
 
-.grouped-message button {
+.interact-button {
   align-self: center;
   margin-right: 4px;
   margin-left: 4px;
   background: transparent;
   border: none;
   cursor: pointer;
+  border-radius: 100%;
+  width: 24px;
+  height: 24px;
+}
+
+.grouped-message:hover > .interact-button:hover {
+  stroke: v-bind('cssConfiguration.colors.chat.interactIcons.textHover');
+  background-color: v-bind('cssConfiguration.colors.chat.interactIcons.hover');
 }
 
 .grouped-message button:first-child {
   margin-right: auto;
+  margin-left: 4px;
 }
 
-.grouped-message:hover>button svg {
-  stroke: v-bind('cssConfiguration.colors.chat.interactIcons');
+.grouped-message:hover > .interact-button {
+  stroke: v-bind('cssConfiguration.colors.chat.interactIcons.text');
+  background-color: v-bind('cssConfiguration.colors.chat.interactIcons.main');
 }
 
-.own-message .grouped-message button {
+.own-message .interact-button {
   align-self: center;
   margin-right: 4px;
   margin-left: 4px;
@@ -514,6 +524,7 @@ const printSystemMessage = (msg: any) => {
 
 .own-message .grouped-message button:first-child {
   margin-left: auto;
+  margin-right: 4px;
 }
 
 .message {
@@ -555,15 +566,30 @@ const printSystemMessage = (msg: any) => {
 
 .message-react {
   position: absolute;
-  bottom: -8px;
-  right: 8px;
+  bottom: -16px;
+  right: 0px;
+}
+
+.own-message .message-react {
+  right: none;
+  left: 0px;
 }
 
 .message-react button {
+  padding: 4px 8px 4px 8px;
+  display: inline-flex;
   background: v-bind('cssConfiguration.colors.chat.reaction.main');
   border-radius: 12px;
+  border: none;
+  cursor: pointer;
   color: v-bind('cssConfiguration.colors.chat.reaction.text');
   stroke: v-bind('cssConfiguration.colors.chat.reaction.text');
+}
+
+.message-react button div {
+  padding-left: 4px;
+  font-size: 9px;
+  align-self: self-end;
 }
 
 @keyframes spin {

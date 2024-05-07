@@ -98,11 +98,16 @@ export const defaultCss: WakuChatConfigCss = {
                 text: 'rgba(37, 99, 235, 1)',
             },
             reaction: {
-                main: 'rgba(138, 138, 239, 1)',
+                main: 'rgba(30, 64, 175, 1)',
                 text: 'rgba(249, 250, 251, 1)',
             },
             timestamp: 'rgba(156, 163, 175, 1)',
-            interactIcons: 'rgba(37, 99, 235, 1)'
+            interactIcons: {
+                main: 'rgba(229, 231, 235, 1)',
+                hover: 'rgba(30, 64, 175, 1)',
+                text: 'rgba(31, 41, 55, 1)',
+                textHover: 'rgba(249, 250, 251, 1)',
+            }
         },
         background: 'rgba(249, 250, 251, 1)',
         border: 'rgba(37, 99, 235, 1)',
@@ -118,14 +123,14 @@ export const defaultCss: WakuChatConfigCss = {
 
 export const mergeCssConfiguration = (target: any, source: any) => {
     for (const key in source) {
-      if (source[key] instanceof Object) {
-        if (!(target[key] instanceof Object)) {
-          target[key] = {};
+        if (source[key] instanceof Object) {
+            if (!(target[key] instanceof Object)) {
+                target[key] = {};
+            }
+            target[key] = mergeCssConfiguration(target[key], source[key]);
+        } else {
+            target[key] = source[key];
         }
-        target[key] = mergeCssConfiguration(target[key], source[key]);
-      } else {
-        target[key] = source[key];
-      }
     }
     return target
-  }
+}

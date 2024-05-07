@@ -183,74 +183,28 @@ const printSystemMessage = (msg: any) => {
 </script>
 
 <template>
-  <div class="chat-body" ref="messageContainerRef">
-    <TransitionGroup name="fade">
-      <div v-for="(groupedMsgs, idGroup) in groupedMessages" :key="groupedMsgs[0].id"
-        :class="{ 'own-message': groupedMsgs[0].author.id === getMyID() }" class="message-container"
-        :id="groupedMsgs[0].id">
-        <Transition name="fade">
-          <span v-if="groupedMsgs[0].type === 'text' && checkPreviousMsgName(idGroup)" class="user-name-baloon">
-            {{ groupedMsgs[0].author.name }}
-          </span>
-        </Transition>
-        <TransitionGroup name="fade">
-          <div v-if="groupedMsgs[0].responseTo && groupedResponse(groupedMsgs[0].responseTo).length <= 0"
-            class="grouped-message grouped-response response-disabled">
-            <div class="message">
-              <div class="message-content">unloaded message</div>
-            </div>
-          </div>
-          <div v-else-if="groupedMsgs[0].responseTo" class="grouped-message grouped-response">
-            <div class="message" @click="scrollToMessage(groupedMsgs[0].responseTo, messageContainerRef)">
-              <div v-for="(message, idMsg) in groupedResponse(groupedMsgs[0].responseTo).slice(0, 4)" :key="idMsg"
-                class="message-content">{{
-                  message.data
-                }}
-              </div>
-              <div v-if="groupedResponse(groupedMsgs[0].responseTo).length > 4" class="message-content">...
-              </div>
-            </div>
-          </div>
-        </TransitionGroup>
-        <Transition name="fade">
-          <div v-if="groupedMsgs[0].type === 'text'" class="grouped-message">
-            <button class="interact-button" v-if="groupedMsgs[0].author.id === getMyID()"
-              @click="setResponse(idGroup)">
-              <svg width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1 4.75H7.66667C10.6122 4.75 13 6.98858 13 9.75V11M1 4.75L5 8.5M1 4.75L5 1"
-                  stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </button>
-            <button class="interact-button"
-              v-if="!messageReacted(groupedMsgs[0].id) && groupedMsgs[0].author.id === getMyID()"
-              @click="reactMessage(idGroup, 'like')">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M3.5 11V5.4253M1 6.5V10C1 10.5523 1.45911 11 2.02544 11H8.90935C9.66854 11 10.3142 10.4598 10.4296 9.72809L10.9818 6.22809C11.1251 5.31945 10.4042 4.5 9.46151 4.5H7.66536C7.3822 4.5 7.15264 4.27614 7.15264 4V2.23292C7.15264 1.552 6.5866 1 5.88836 1C5.72181 1 5.57089 1.09565 5.50325 1.24406L3.69893 5.20307C3.61664 5.38363 3.43302 5.5 3.2304 5.5H2.02544C1.45911 5.5 1 5.94772 1 6.5Z"
-                  stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </button>
-            <div class="message">
-              <TransitionGroup name="fade">
-                <div v-for="(message, idxMsg) in groupedMsgs" class="message-content" :key="idxMsg">
-                  {{ message.data }}
-                </div>
-                <div v-for="(msgReact, idxReact) in getMessageReactions(groupedMsgs[0].id)" class="message-react"
-                  :key="idxReact">
-                  <button v-if="msgReact.reaction === 'like'" @click="reactMessage(idGroup, 'none')">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path
-                        d="M3.5 11V5.4253M1 6.5V10C1 10.5523 1.45911 11 2.02544 11H8.90935C9.66854 11 10.3142 10.4598 10.4296 9.72809L10.9818 6.22809C11.1251 5.31945 10.4042 4.5 9.46151 4.5H7.66536C7.3822 4.5 7.15264 4.27614 7.15264 4V2.23292C7.15264 1.552 6.5866 1 5.88836 1C5.72181 1 5.57089 1.09565 5.50325 1.24406L3.69893 5.20307C3.61664 5.38363 3.43302 5.5 3.2304 5.5H2.02544C1.45911 5.5 1 5.94772 1 6.5Z"
-                        stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    <div>{{ msgReact.quantity }}</div>
-                  </button>
-                </div>
-              </TransitionGroup>
-            </div>
-            <TransitionGroup name="fade">
+  <div class="main-container">
+    <div class="chat-body" ref="messageContainerRef">
+      <TransitionGroup name="fade">
+        <div v-for="(groupedMsgs, idGroup) in groupedMessages" :key="groupedMsgs[0].id"
+          :class="{ 'own-message': groupedMsgs[0].author.id === getMyID() }" class="message-container"
+          :id="groupedMsgs[0].id">
+          <Transition name="fade">
+            <span v-if="groupedMsgs[0].type === 'text' && checkPreviousMsgName(idGroup)" class="user-name-baloon">
+              {{ groupedMsgs[0].author.name }}
+            </span>
+          </Transition>
+          <Transition name="fade">
+            <div v-if="groupedMsgs[0].type === 'text'" class="grouped-message">
+              <button class="interact-button" v-if="groupedMsgs[0].author.id === getMyID()"
+                @click="setResponse(idGroup)">
+                <svg width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 4.75H7.66667C10.6122 4.75 13 6.98858 13 9.75V11M1 4.75L5 8.5M1 4.75L5 1"
+                    stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
               <button class="interact-button"
-                v-if="!messageReacted(groupedMsgs[0].id) && groupedMsgs[0].author.id !== getMyID()"
+                v-if="!messageReacted(groupedMsgs[0].id) && groupedMsgs[0].author.id === getMyID()"
                 @click="reactMessage(idGroup, 'like')">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -258,66 +212,126 @@ const printSystemMessage = (msg: any) => {
                     stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </button>
-              <button class="interact-button" v-if="groupedMsgs[0].author.id !== getMyID()"
-                @click="setResponse(idGroup)">
-                <svg width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 4.75H7.66667C10.6122 4.75 13 6.98858 13 9.75V11M1 4.75L5 8.5M1 4.75L5 1"
-                    stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </button>
-            </TransitionGroup>
-          </div>
-          <div v-else-if="showSystemMessages && userShowSystemMessages && groupedMsgs[0].type === 'system'"
-            class="system-message">
+              <div class="message">
+                <TransitionGroup name="fade">
+                  <div v-if="groupedMsgs[0].responseTo && groupedResponse(groupedMsgs[0].responseTo).length <= 0"
+                    class="grouped-message grouped-response response-disabled">
+                    Couldn&apos;t load the message
+                  </div>
+                  <div v-else-if="groupedMsgs[0].responseTo"
+                    @click="scrollToMessage(groupedMsgs[0].responseTo, messageContainerRef)"
+                    class="grouped-message grouped-response">
+                    <span class="user-name-baloon">
+                      {{ groupedResponse(groupedMsgs[0].responseTo)[0].author.name }}
+                    </span>
+                    <div class="message">
+                      <div v-for="(message, idMsg) in groupedResponse(groupedMsgs[0].responseTo).slice(0, 4)"
+                        :key="idMsg" class="message-content">{{
+                          message.data
+                        }}
+                      </div>
+                      <div v-if="groupedResponse(groupedMsgs[0].responseTo).length > 4" class="message-content">...
+                      </div>
+                    </div>
+                  </div>
+                </TransitionGroup>
+                <TransitionGroup name="fade">
+                  <div v-for="(message, idxMsg) in groupedMsgs" class="message-content" :key="idxMsg">
+                    {{ message.data }}
+                  </div>
+                  <div v-for="(msgReact, idxReact) in getMessageReactions(groupedMsgs[0].id)" class="message-react"
+                    :key="idxReact">
+                    <button v-if="msgReact.reaction === 'like'" @click="reactMessage(idGroup, 'none')">
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                          d="M3.5 11V5.4253M1 6.5V10C1 10.5523 1.45911 11 2.02544 11H8.90935C9.66854 11 10.3142 10.4598 10.4296 9.72809L10.9818 6.22809C11.1251 5.31945 10.4042 4.5 9.46151 4.5H7.66536C7.3822 4.5 7.15264 4.27614 7.15264 4V2.23292C7.15264 1.552 6.5866 1 5.88836 1C5.72181 1 5.57089 1.09565 5.50325 1.24406L3.69893 5.20307C3.61664 5.38363 3.43302 5.5 3.2304 5.5H2.02544C1.45911 5.5 1 5.94772 1 6.5Z"
+                          stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                      <div>{{ msgReact.quantity }}</div>
+                    </button>
+                  </div>
+                </TransitionGroup>
+              </div>
+              <TransitionGroup name="fade">
+                <button class="interact-button"
+                  v-if="!messageReacted(groupedMsgs[0].id) && groupedMsgs[0].author.id !== getMyID()"
+                  @click="reactMessage(idGroup, 'like')">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M3.5 11V5.4253M1 6.5V10C1 10.5523 1.45911 11 2.02544 11H8.90935C9.66854 11 10.3142 10.4598 10.4296 9.72809L10.9818 6.22809C11.1251 5.31945 10.4042 4.5 9.46151 4.5H7.66536C7.3822 4.5 7.15264 4.27614 7.15264 4V2.23292C7.15264 1.552 6.5866 1 5.88836 1C5.72181 1 5.57089 1.09565 5.50325 1.24406L3.69893 5.20307C3.61664 5.38363 3.43302 5.5 3.2304 5.5H2.02544C1.45911 5.5 1 5.94772 1 6.5Z"
+                      stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+                <button class="interact-button" v-if="groupedMsgs[0].author.id !== getMyID()"
+                  @click="setResponse(idGroup)">
+                  <svg width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 4.75H7.66667C10.6122 4.75 13 6.98858 13 9.75V11M1 4.75L5 8.5M1 4.75L5 1"
+                      stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+              </TransitionGroup>
+            </div>
+            <div v-else-if="showSystemMessages && userShowSystemMessages && groupedMsgs[0].type === 'system'"
+              class="system-message">
+              <TransitionGroup name="fade">
+                <div v-for="(message, idMsg) in groupedMsgs" class="message-content" :key="idMsg">{{
+                  printSystemMessage(message)
+                }}
+                </div>
+              </TransitionGroup>
+            </div>
+          </Transition>
+          <Transition name="fade">
+            <div v-if="groupedMsgs[0].type === 'text'" class="timestamp">
+              {{ formatTimestamp(groupedMsgs[groupedMsgs.length - 1].timestamp) }}
+            </div>
+          </Transition>
+        </div>
+      </TransitionGroup>
+    </div>
+    <div :class="`chat-footer ${responseTo !== undefined ? 'footer-response' : ''}`">
+      <Transition name="fade">
+        <div v-if="responseTo !== undefined" class="response-input">
+          <div>
+            <span class="user-name-baloon">
+              {{ groupedMessages[responseTo][0].author.name }}
+            </span>
             <TransitionGroup name="fade">
-              <div v-for="(message, idMsg) in groupedMsgs" class="message-content" :key="idMsg">{{
-                printSystemMessage(message)
+              <div v-for="(message, idMsg) in groupedMessages[responseTo].slice(0, 1)" :key="idMsg">{{
+                message.data
               }}
               </div>
+              <div v-if="groupedMessages[responseTo].length > 1">...</div>
             </TransitionGroup>
           </div>
-        </Transition>
-        <Transition name="fade">
-          <div v-if="groupedMsgs[0].type === 'text'" class="timestamp">
-            {{ formatTimestamp(groupedMsgs[groupedMsgs.length - 1].timestamp) }}
-          </div>
-        </Transition>
-      </div>
-    </TransitionGroup>
-  </div>
-  <div class="chat-footer">
-    <Transition name="fade">
-      <div v-if="responseTo !== undefined" class="response-input">
-        <div>
-          <TransitionGroup name="fade">
-            <div v-for="(message, idMsg) in groupedMessages[responseTo].slice(0, 4)" :key="idMsg">{{
-              message.data
-            }}
-            </div>
-            <div v-if="groupedMessages[responseTo].length > 4">...</div>
-          </TransitionGroup>
+          <button @click="setResponse(undefined)">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M11.5 0.5L0.5 11.5M0.5 0.5L11.5 11.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
         </div>
-        <button @click="setResponse(undefined)">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M11.5 0.5L0.5 11.5M0.5 0.5L11.5 11.5" stroke-linecap="round" stroke-linejoin="round" />
+      </Transition>
+      <div class="message-input">
+        <input v-model="messageInput" placeholder="Type your message..." @keypress.enter="handleSendMessage"
+          :disabled="loadingRoom" />
+        <button @click="handleSendMessage" class="send-button" :disabled="loadingRoom || !messageInput">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="current">
+            <path
+              d="M20.3534 10.9267C21.2378 11.3689 21.2378 12.6311 20.3534 13.0733L4.61964 20.9402C3.59859 21.4507 2.50875 20.3816 2.99955 19.351L6.25432 12.5159C6.40974 12.1895 6.40974 11.8105 6.25432 11.4841L2.99955 4.64905C2.50875 3.61837 3.59859 2.54929 4.61964 3.05982L20.3534 10.9267Z" />
           </svg>
         </button>
       </div>
-    </Transition>
-    <div class="message-input">
-      <input v-model="messageInput" placeholder="Type your message..." @keypress.enter="handleSendMessage"
-        :disabled="loadingRoom" />
-      <button @click="handleSendMessage" class="send-button" :disabled="loadingRoom || !messageInput">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="current">
-          <path
-            d="M20.3534 10.9267C21.2378 11.3689 21.2378 12.6311 20.3534 13.0733L4.61964 20.9402C3.59859 21.4507 2.50875 20.3816 2.99955 19.351L6.25432 12.5159C6.40974 12.1895 6.40974 11.8105 6.25432 11.4841L2.99955 4.64905C2.50875 3.61837 3.59859 2.54929 4.61964 3.05982L20.3534 10.9267Z" />
-        </svg>
-      </button>
     </div>
   </div>
 </template>
 
 <style scoped lang="css">
+.main-container {
+  display: flex;
+  flex-direction: column;
+  height: 557px;
+}
+
 .chat-body {
   flex: 1;
   overflow-y: auto;
@@ -338,21 +352,31 @@ const printSystemMessage = (msg: any) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px 30px 24px 30px;
+  padding: 24px 16px;
+  background-color: v-bind('cssConfiguration.colors.footer.main');
+}
+
+.footer-response {
+  background-color: v-bind('cssConfiguration.colors.footer.response');
 }
 
 .response-input {
-  background-color: v-bind('cssConfiguration.colors.input.response.main');
-  color: v-bind('cssConfiguration.colors.input.response.text');
   width: 100%;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+  margin-bottom: 8px;
   display: flex;
 }
 
+.response-input .user-name-baloon {
+  margin-left: auto;
+  color: v-bind('cssConfiguration.colors.input.response.user');
+}
+
 .response-input>div {
-  padding: 8px;
-  width: 85%;
+  padding: 4px 8px;
+  border-radius: 8px;
+  max-width: 67%;
+  background-color: v-bind('cssConfiguration.colors.input.response.main');
+  color: v-bind('cssConfiguration.colors.input.response.text');
 }
 
 .response-input>div>div {
@@ -379,7 +403,6 @@ const printSystemMessage = (msg: any) => {
   display: flex;
   width: 100%;
   height: 48px;
-  padding: 0px 12px;
   line-height: 16px;
   border-radius: 8px;
   background-color: v-bind('cssConfiguration.colors.input.main');
@@ -389,6 +412,7 @@ const printSystemMessage = (msg: any) => {
   width: 100%;
   outline: none;
   border: none;
+  margin-left: 12px;
   color: v-bind('cssConfiguration.colors.input.text');
   background-color: v-bind('cssConfiguration.colors.input.main');
 }
@@ -404,6 +428,7 @@ const printSystemMessage = (msg: any) => {
 
 .message-input button {
   margin-left: auto;
+  margin-right: 12px;
 }
 
 .send-button {
@@ -450,12 +475,6 @@ const printSystemMessage = (msg: any) => {
   color: v-bind('cssConfiguration.colors.chat.myMessage.user');
 }
 
-.own-message .grouped-response .message {
-  margin-left: auto;
-  background-color: v-bind('cssConfiguration.colors.chat.myMessage.response.main');
-  color: v-bind('cssConfiguration.colors.chat.myMessage.response.text');
-}
-
 .user-name-baloon {
   font-size: 10px !important;
   line-height: 12px;
@@ -469,21 +488,60 @@ const printSystemMessage = (msg: any) => {
   justify-content: flex-end;
 }
 
+.message {
+  position: relative;
+  line-height: 16px;
+  min-width: 96px;
+  max-width: 67%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background-color: v-bind('cssConfiguration.colors.chat.otherMessage.main');
+  color: v-bind('cssConfiguration.colors.chat.otherMessage.text');
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, v-bind('cssConfiguration.shadows.messageBalloon'));
+}
+
+.grouped-response {
+  background-color: v-bind('cssConfiguration.colors.chat.otherMessage.response.main');
+  color: v-bind('cssConfiguration.colors.chat.otherMessage.response.text');
+  margin-bottom: 8px;
+  border-radius: 4px;
+  padding: 4px 8px 8px 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
 .grouped-response .message {
   background-color: v-bind('cssConfiguration.colors.chat.otherMessage.response.main');
   color: v-bind('cssConfiguration.colors.chat.otherMessage.response.text');
-  padding: 8px;
-  cursor: pointer;
+  padding: 0px;
+}
+
+.own-message .grouped-response {
+  background-color: v-bind('cssConfiguration.colors.chat.myMessage.response.main');
+}
+
+.own-message .grouped-response .message {
+  margin-left: auto;
+  background-color: v-bind('cssConfiguration.colors.chat.myMessage.response.main');
+  color: v-bind('cssConfiguration.colors.chat.myMessage.response.text');
+}
+
+.grouped-response .user-name-baloon {
+  margin-bottom: 8px;
+  margin-left: 0px;
+  color: v-bind('cssConfiguration.colors.chat.otherMessage.response.user');
+}
+
+.own-message .grouped-response .user-name-baloon {
+  color: v-bind('cssConfiguration.colors.chat.myMessage.response.user');
 }
 
 .grouped-message {
   display: flex;
-  width: 100%;
 }
 
-.response-disabled .message {
-  color: v-bind('cssConfiguration.colors.chat.disabledResponse.text') !important;
-  background-color: v-bind('cssConfiguration.colors.chat.disabledResponse.main') !important;
+.response-disabled {
   font-style: italic;
   cursor: default;
 }
@@ -500,7 +558,7 @@ const printSystemMessage = (msg: any) => {
   height: 24px;
 }
 
-.grouped-message:hover > .interact-button:hover {
+.grouped-message:hover>.interact-button:hover {
   stroke: v-bind('cssConfiguration.colors.chat.interactIcons.textHover');
   background-color: v-bind('cssConfiguration.colors.chat.interactIcons.hover');
 }
@@ -510,7 +568,7 @@ const printSystemMessage = (msg: any) => {
   margin-left: 4px;
 }
 
-.grouped-message:hover > .interact-button {
+.grouped-message:hover>.interact-button {
   stroke: v-bind('cssConfiguration.colors.chat.interactIcons.text');
   background-color: v-bind('cssConfiguration.colors.chat.interactIcons.main');
 }
@@ -525,18 +583,6 @@ const printSystemMessage = (msg: any) => {
 .own-message .grouped-message button:first-child {
   margin-left: auto;
   margin-right: 4px;
-}
-
-.message {
-  position: relative;
-  line-height: 16px;
-  min-width: 96px;
-  max-width: 67%;
-  padding: 12px;
-  border-radius: 8px;
-  background-color: v-bind('cssConfiguration.colors.chat.otherMessage.main');
-  color: v-bind('cssConfiguration.colors.chat.otherMessage.text');
-  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, v-bind('cssConfiguration.shadows.messageBalloon'));
 }
 
 .system-message {

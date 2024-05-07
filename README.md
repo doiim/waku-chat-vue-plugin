@@ -230,6 +230,7 @@ Here are the available configuration options:
       - response: (Object) - Allow you to change colors from response preview on input.
         - main: (string) - main color.
         - text: (string) - text color.
+        - user: (string) - user name color.
         - close: (string) - close button color.
         - closeHover: (string) - close button hover color.
     - minimizeBtn: (Object) - Allow you to change colors from minimize button.
@@ -242,6 +243,7 @@ Here are the available configuration options:
         - text: (string) - text color.
         - response: (Object) - Allow you to change colors from response.
           - main: (string) - main color.
+          - user: (string) - user name color.
           - text: (string) - text color.
       - otherMessage: (Object) - Allow you to change colors from others messages.
         - main: (string) - main color.
@@ -249,14 +251,12 @@ Here are the available configuration options:
         - text: (string) - text color.
         - response: (Object) - Allow you to change colors from response.
           - main: (string) - main color.
+          - user: (string) - user name color.
           - text: (string) - text color.
       - systemMessage: (Object) - Allow you to change colors from system messages.
         - main: (string) - main color.
         - text: (string) - text color.
       - reaction: (Object) - Allow you to change colors from reaction.
-        - main: (string) - main color.
-        - text: (string) - text color.
-      - disabledResponse: (Object) - Allow you to change colors from disabled messages.
         - main: (string) - main color.
         - text: (string) - text color.
       - timestamp: (string) - timestamp text color.

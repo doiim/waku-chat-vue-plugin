@@ -60,8 +60,9 @@ export const defaultCss: WakuChatConfigCss = {
             text: 'rgba(31, 41, 55, 1)',
             disabled: 'rgba(229, 231, 235, 1)',
             response: {
-                main: 'rgba(229, 231, 235, 1)',
-                text: 'rgba(31, 41, 55, 1)',
+                main: 'rgba(30, 64, 175, 1)',
+                user: 'rgba(147, 197, 253, 1)',
+                text: 'rgba(209, 213, 219, 1)',
                 close: 'rgba(107, 114, 128, 1)',
                 closeHover: 'rgba(30, 64, 175, 1)',
             }
@@ -70,14 +71,19 @@ export const defaultCss: WakuChatConfigCss = {
             main: 'rgba(107, 114, 128, 1)',
             hover: 'rgba(30, 64, 175, 1)',
         },
+        footer: {
+            main: 'rgba(249, 250, 251, 1)',
+            response: 'rgba(239, 246, 255, 1)'
+        },
         chat: {
             myMessage: {
                 main: 'rgba(37, 99, 235, 1)',
                 user: 'rgba(37, 99, 235, 1)',
                 text: 'rgba(249, 250, 251, 1)',
                 response: {
-                    main: 'rgb(104 144 231)',
-                    text: 'rgba(249, 250, 251, 1)',
+                    user: 'rgba(147, 197, 253, 1)',
+                    main: 'rgba(30, 64, 175, 1)',
+                    text: 'rgba(209, 213, 219, 1)',
                 }
             },
             otherMessage: {
@@ -85,13 +91,10 @@ export const defaultCss: WakuChatConfigCss = {
                 user: 'rgba(156, 163, 175, 1)',
                 text: 'rgba(31, 41, 55, 1)',
                 response: {
-                    main: 'rgb(180 199 235)',
-                    text: 'rgba(31, 41, 55, 1)',
+                    user: 'rgba(209, 213, 219, 1)',
+                    main: 'rgba(107, 114, 128, 1)',
+                    text: 'rgba(229, 231, 235, 1)',
                 }
-            },
-            disabledResponse: {
-                text: 'rgba(249, 250, 251, 1)',
-                main: 'rgba(156, 163, 175, 1)',
             },
             systemMessage: {
                 main: 'rgba(229, 231, 235, 1)',

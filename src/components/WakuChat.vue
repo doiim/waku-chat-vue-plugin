@@ -352,7 +352,6 @@ const closeChat = () => {
 
 .chat-container {
   width: 360px;
-  height: 600px;
   position: fixed;
   bottom: 16px;
   right: 16px;
@@ -388,6 +387,7 @@ const closeChat = () => {
 }
 
 .chat-header {
+  height: 19px;
   background-color: v-bind('cssConfiguration.colors.header.main');
   color: v-bind('cssConfiguration.colors.header.text');
   padding: 12px 16px;

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, watchEffect, defineProps, computed, watch, onBeforeUnmount } from "vue";
-
 import {
   sendMessage,
   loadChat,
@@ -22,6 +21,18 @@ const props = defineProps<{
   externalUserName?: string;
 }>()
 
+const isChatOpen = ref<boolean>(false);
+const settingsMenu = ref<boolean>(false);
+const loadingRoom = ref<boolean>(false);
+const showSettings = ref<boolean>(false);
+const showSystemMessages = ref<boolean>(false);
+const userShowSystemMessages = ref<boolean>(false);
+const editMode = ref(false);
+const editedUserName = ref('');
+const roomDropdownOpened = ref<boolean>(false);
+var cssConfiguration = ref<any>(defaultCss);
+const idleTimeout = ref<NodeJS.Timeout>()
+
 const propUserId = computed(() => {
   return props.externalUserId
 });
@@ -30,26 +41,40 @@ const propUserName = computed(() => {
   return props.externalUserName
 });
 
-const isChatOpen = ref<boolean>(false);
-const settingsMenu = ref<boolean>(false);
-const loadingRoom = ref<boolean>(false);
+watch([propUserId], () => {
+  if (propUserId.value) {
+    setMyID(propUserId.value)
+  }
+});
 
-const showSettings = ref<boolean>(false);
-const showSystemMessages = ref<boolean>(false);
-const userShowSystemMessages = ref<boolean>(false);
+watch([propUserName], () => {
+  setMyName(propUserName.value)
+});
 
-const editMode = ref(false);
-const editedUserName = ref('');
+watchEffect(() => {
+  const options = getOptions();
+  const colorConfig = options?.cssConfig as Record<string, any> | undefined;;
 
-const roomDropdownOpened = ref<boolean>(false);
+  if (!colorConfig) return;
 
-const handleToggleRoomDropdown = () => {
-  roomDropdownOpened.value = !roomDropdownOpened.value
-}
+  cssConfiguration.value = mergeCssConfiguration(cssConfiguration.value, colorConfig);
+});
 
 onBeforeUnmount(() => {
   onDestroyWaku();
 });
+
+const handleToggleRoomDropdown = () => {
+  roomDropdownOpened.value = !roomDropdownOpened.value
+};
+
+const changeRoomDropdown = async (selectedRoom: string) => {
+  handleToggleRoomDropdown()
+  if (selectedRoom === getRoom()) return
+  loadingRoom.value = true
+  await setRoom(selectedRoom);
+  loadingRoom.value = false
+};
 
 const enterEditMode = () => {
   editMode.value = true;
@@ -66,16 +91,6 @@ const saveEditedUserName = () => {
   sendMessage('changeName:' + myName, 'system')
   exitEditMode()
 };
-
-const changeRoomDropdown = async (selectedRoom: string) => {
-  handleToggleRoomDropdown()
-  if (selectedRoom === getRoom()) return
-  loadingRoom.value = true
-  await setRoom(selectedRoom);
-  loadingRoom.value = false
-};
-
-const idleTimeout = ref<NodeJS.Timeout>()
 
 const openChat = async () => {
   clearTimeout(idleTimeout.value)
@@ -98,27 +113,6 @@ const closeChat = () => {
   const disconnectDelay = getOptions()?.disconnectDelay
   idleTimeout.value = setTimeout(disconnectChat, disconnectDelay ? disconnectDelay : 5 * 60 * 1000)
 }
-
-watch([propUserId], () => {
-  if (propUserId.value) {
-    setMyID(propUserId.value)
-  }
-});
-
-watch([propUserName], () => {
-  setMyName(propUserName.value)
-});
-
-var cssConfiguration: any = defaultCss
-
-watchEffect(() => {
-  const options = getOptions();
-  const colorConfig = options?.cssConfig as Record<string, any> | undefined;;
-
-  if (!colorConfig) return;
-
-  cssConfiguration = mergeCssConfiguration(cssConfiguration, colorConfig);
-});
 
 </script>
 

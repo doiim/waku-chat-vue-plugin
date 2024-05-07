@@ -260,7 +260,11 @@ Here are the available configuration options:
         - main: (string) - main color.
         - text: (string) - text color.
       - timestamp: (string) - timestamp text color.
-      - interactIcons: (string) - interaction icons color.
+      - interactIcons: (Object) - Allow you to change colors from interact buttons (like and reply).
+        - main: (string) - main color.
+        - text: (string) - text color.
+        - hover: (string) - hover color.
+        - textHover: (string) - text hover color.
     - background: (string) - Allow you to change background color.
     - border: (string) - Allow you to change border color.
   - shadows: allow you change shadows from component

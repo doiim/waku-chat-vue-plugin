@@ -19,6 +19,10 @@ import ChatContainer from "./ChatContainer.vue";
 const props = defineProps<{
   externalUserId?: string;
   externalUserName?: string;
+  onOpen?: () => void;
+  onClose?: () => void;
+  onConnect?: () => void;
+  onDisconnect?: () => void;
 }>()
 
 const isChatOpen = ref<boolean>(false);
@@ -104,6 +108,12 @@ const openChat = async () => {
       setMyName(propUserName.value)
     }
     await loadChat()
+    if (props.onConnect) {
+      props.onConnect()
+    }
+  }
+  if (props.onOpen) {
+    props.onOpen()
   }
   isChatOpen.value = true
 }
@@ -111,7 +121,10 @@ const openChat = async () => {
 const closeChat = () => {
   isChatOpen.value = false
   const disconnectDelay = getOptions()?.disconnectDelay
-  idleTimeout.value = setTimeout(disconnectChat, disconnectDelay ? disconnectDelay : 5 * 60 * 1000)
+  idleTimeout.value = setTimeout(disconnectChat.bind(undefined, props.onDisconnect), disconnectDelay ? disconnectDelay : 5 * 60 * 1000)
+  if (props.onClose) {
+    props.onClose()
+  }
 }
 
 </script>
@@ -135,66 +148,68 @@ const closeChat = () => {
             </div>
           </Transition>
           <div class="chat-header">
-            <div class="room-section">
-              <div class="room-info">
-                Room
-              </div>
-              <div class="room-dropdown">
-                <button class="dropdown-button" @click="handleToggleRoomDropdown">
-                  <div>{{ getRoom() }}</div>
-                  <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 6.5L8 10.5L12 6.5" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                </button>
-                <div v-if="roomDropdownOpened" class="dropdown-content">
-                  <div v-for="availableRoom in getOptions()?.availableRooms" :key="availableRoom">
-                    <button :class="availableRoom === getRoom() ? 'selected' : ''"
-                      @click="changeRoomDropdown(availableRoom)">
-                      {{ availableRoom }}
-                    </button>
+            <div>
+              <div class="room-section">
+                <div class="room-info">
+                  Room
+                </div>
+                <div class="room-dropdown">
+                  <button class="dropdown-button" @click="handleToggleRoomDropdown">
+                    <div>{{ getRoom() }}</div>
+                    <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M4 6.5L8 10.5L12 6.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                  <div v-if="roomDropdownOpened" class="dropdown-content">
+                    <div v-for="availableRoom in getOptions()?.availableRooms" :key="availableRoom">
+                      <button :class="availableRoom === getRoom() ? 'selected' : ''"
+                        @click="changeRoomDropdown(availableRoom)">
+                        {{ availableRoom }}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
+              <div v-if="showSettings" class="settings-section">
+                <button @click="settingsMenu = !settingsMenu" class="settings-button">Settings</button>
+              </div>
+              <button @click="closeChat" class="minimize-button">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M11.5 0.5L0.5 11.5M0.5 0.5L11.5 11.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
             </div>
-            <div v-if="showSettings" class="settings-section">
-              <button @click="settingsMenu = !settingsMenu" class="settings-button">Settings</button>
-            </div>
-            <button @click="closeChat" class="minimize-button">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M11.5 0.5L0.5 11.5M0.5 0.5L11.5 11.5" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </button>
-          </div>
-          <Transition name="fade">
-            <div v-if="settingsMenu" class="chat-subHeader">
-              <div class="user-section">
-                <div v-if="getOptions()?.userChangeNick" class="user-name-input">
-                  <div v-if="!editMode">
-                    <span>{{ getMyName() }}</span>
-                    <svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg"
-                      @click="enterEditMode">
-                      <path
-                        d="M7 12.3333H13M10 1.33334C10.2652 1.06813 10.6249 0.919128 11 0.919128C11.1857 0.919128 11.3696 0.955708 11.5412 1.02678C11.7128 1.09785 11.8687 1.20202 12 1.33334C12.1313 1.46466 12.2355 1.62057 12.3066 1.79215C12.3776 1.96373 12.4142 2.14762 12.4142 2.33334C12.4142 2.51906 12.3776 2.70296 12.3066 2.87454C12.2355 3.04612 12.1313 3.20202 12 3.33334L3.66667 11.6667L1 12.3333L1.66667 9.66668L10 1.33334Z"
-                        stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
+            <Transition name="fade">
+              <div v-if="settingsMenu" class="chat-subHeader">
+                <div class="user-section">
+                  <div v-if="getOptions()?.userChangeNick" class="user-name-input">
+                    <div v-if="!editMode">
+                      <span>{{ getMyName() }}</span>
+                      <svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg"
+                        @click="enterEditMode">
+                        <path
+                          d="M7 12.3333H13M10 1.33334C10.2652 1.06813 10.6249 0.919128 11 0.919128C11.1857 0.919128 11.3696 0.955708 11.5412 1.02678C11.7128 1.09785 11.8687 1.20202 12 1.33334C12.1313 1.46466 12.2355 1.62057 12.3066 1.79215C12.3776 1.96373 12.4142 2.14762 12.4142 2.33334C12.4142 2.51906 12.3776 2.70296 12.3066 2.87454C12.2355 3.04612 12.1313 3.20202 12 3.33334L3.66667 11.6667L1 12.3333L1.66667 9.66668L10 1.33334Z"
+                          stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                    </div>
+                    <div v-else>
+                      <input v-model="editedUserName" @keypress.enter="saveEditedUserName" class="edit-user-input" />
+                      <button class="change-name-btn" @click="saveEditedUserName">OK</button>
+                      <button class="cancel-change-name-btn" @click="exitEditMode">Cancel</button>
+                    </div>
                   </div>
                   <div v-else>
-                    <input v-model="editedUserName" @keypress.enter="saveEditedUserName" class="edit-user-input" />
-                    <button class="change-name-btn" @click="saveEditedUserName">OK</button>
-                    <button class="cancel-change-name-btn" @click="exitEditMode">Cancel</button>
+                    <span>{{ getMyName() }}</span>
                   </div>
                 </div>
-                <div v-else>
-                  <span>{{ getMyName() }}</span>
+                <div v-if="showSystemMessages" class="system-message-section">
+                  <input id="showSystemMEssages" type="checkbox" v-model="userShowSystemMessages">
+                  <label for="showSystemMEssages">Show system messages</label>
                 </div>
               </div>
-              <div v-if="showSystemMessages" class="system-message-section">
-                <input id="showSystemMEssages" type="checkbox" v-model="userShowSystemMessages">
-                <label for="showSystemMEssages">Show system messages</label>
-              </div>
-            </div>
-          </Transition>
-          <ChatContainer :cssConfiguration="cssConfiguration" :open="isChatOpen"/>
+            </Transition>
+          </div>
+          <ChatContainer :cssConfiguration="cssConfiguration" :open="isChatOpen" />
         </div>
       </Transition>
       <Transition name="fastFade" mode="out-in">
@@ -391,11 +406,14 @@ const closeChat = () => {
   background-color: v-bind('cssConfiguration.colors.header.main');
   color: v-bind('cssConfiguration.colors.header.text');
   padding: 12px 16px;
-  display: flex;
   justify-content: space-between;
   align-items: center;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
+}
+
+.chat-header>div {
+  display: flex;
 }
 
 .settings-section {
@@ -420,14 +438,12 @@ const closeChat = () => {
 .user-section {
   display: flex;
   font-size: 12px !important;
-  width: 100%;
   justify-content: space-between;
 }
 
 .system-message-section {
   display: flex;
   font-size: 12px !important;
-  width: 100%;
 }
 
 .system-message-section input {
@@ -447,14 +463,24 @@ const closeChat = () => {
 
 .chat-subHeader {
   display: flex;
+  z-index: 1;
+  position: absolute;
   flex-direction: column;
   align-items: normal;
-  padding: 16px;
+  padding: 16px 0px;
   min-height: 48px;
   font-size: 12px !important;
   gap: 8px;
+  width: 100%;
+  margin-left: -16px;
+  margin-top: 12px;
   background-color: v-bind('cssConfiguration.colors.subHeader.main');
   color: v-bind('cssConfiguration.colors.subHeader.text');
+}
+
+.chat-subHeader>div {
+  padding: 0px 16px;
+  width: auto;
 }
 
 .edit-user-input {

@@ -276,7 +276,7 @@ const printSystemMessage = (msg: any) => {
               <TransitionGroup name="fade">
                 <div v-for="(message, idMsg) in groupedMsgs" class="message-content" :key="idMsg">{{
                   printSystemMessage(message)
-                }}
+                  }}
                 </div>
               </TransitionGroup>
             </div>
@@ -299,7 +299,7 @@ const printSystemMessage = (msg: any) => {
             <TransitionGroup name="fade">
               <div v-for="(message, idMsg) in groupedMessages[responseTo].slice(0, 1)" :key="idMsg">{{
                 message.data
-              }}
+                }}
               </div>
               <div v-if="groupedMessages[responseTo].length > 1">...</div>
             </TransitionGroup>
@@ -353,6 +353,8 @@ const printSystemMessage = (msg: any) => {
   flex-direction: column;
   align-items: center;
   padding: 24px 16px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
   background-color: v-bind('cssConfiguration.colors.footer.main');
 }
 

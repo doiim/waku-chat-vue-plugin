@@ -191,13 +191,16 @@ export const loadChat = (async () => {
     chatState.value.status = "connected";
 });
 
-export const disconnectChat = async () => {
+export const disconnectChat = async (onDisconnect?: () => void) => {
     if (wakuData.stopWaku) {
         sendMessage('leave', 'system')
         clearInterval(wakuData.pingInterval)
         await wakuData.subscription.unsubscribeAll();
         await wakuData.stopWaku(wakuData.lightNode)
         chatState.value.status = 'disconnected'
+        if (onDisconnect) {
+            onDisconnect()
+        }
     }
 }
 

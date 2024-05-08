@@ -160,15 +160,17 @@ Follow these steps to install and use the package in your project:
 4. Instantiate the componente inside your template.
 
     ```js
-      <WakuChatVuePlugin :externalUserId="externalId" :externalUserName="externalName" />
+      <WakuChatVuePlugin :externalUserId="externalId" :externalUserName="externalName" 
+      :onOpen="externalOnOpen" :onClose="externalOnClose"
+      :onConnect="externalOnConnect" :onDisconnect="externalOnDisconnect" />
     ```
   The configurations available are:
-    - externalUserId: (string) - The user id for identification of message owners
-    - externalUserName: (string) (optional) - The user name for displaying on messages, after sending a message cannot be changed on that message. If not provided, the user name will be generated using the id.
-    - onOpen: (() => void) (optional) - A function called everytime user opens the chat window.
-    - onClose: (() => void) (optional) - A function called everytime user closes the chat window.
-    - onConnect: (() => void) (optional) - A function called when chat connects from peers.
-    - onDisconnect: (() => void) (optional) - A function called when chat disconnects from peers, usually when chat is closed and 'disconnectDelay' time passes.
+    - `externalUserId`: (string) - The user id for identification of message owners
+    - `externalUserName`: (string) (optional) - The user name for displaying on messages, after sending a message cannot be changed on that message. If not provided, the user name will be generated using the id.
+    - `onOpen`: (() => void) (optional) - A function called everytime user opens the chat window.
+    - `onClose`: (() => void) (optional) - A function called everytime user closes the chat window.
+    - `onConnect`: (() => void) (optional) - A function called when chat connects from peers.
+    - `onDisconnect`: (() => void) (optional) - A function called when chat disconnects from peers, usually when chat is closed and 'disconnectDelay' time passes.
 
 ### Configuration Options
 

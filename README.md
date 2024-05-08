@@ -230,6 +230,7 @@ Here are the available configuration options:
       - response: (Object) - Allow you to change colors from response preview on input.
         - main: (string) - main color.
         - text: (string) - text color.
+        - user: (string) - user name color.
         - close: (string) - close button color.
         - closeHover: (string) - close button hover color.
     - minimizeBtn: (Object) - Allow you to change colors from minimize button.
@@ -242,6 +243,7 @@ Here are the available configuration options:
         - text: (string) - text color.
         - response: (Object) - Allow you to change colors from response.
           - main: (string) - main color.
+          - user: (string) - user name color.
           - text: (string) - text color.
       - otherMessage: (Object) - Allow you to change colors from others messages.
         - main: (string) - main color.
@@ -249,6 +251,7 @@ Here are the available configuration options:
         - text: (string) - text color.
         - response: (Object) - Allow you to change colors from response.
           - main: (string) - main color.
+          - user: (string) - user name color.
           - text: (string) - text color.
       - systemMessage: (Object) - Allow you to change colors from system messages.
         - main: (string) - main color.
@@ -256,11 +259,12 @@ Here are the available configuration options:
       - reaction: (Object) - Allow you to change colors from reaction.
         - main: (string) - main color.
         - text: (string) - text color.
-      - disabledResponse: (Object) - Allow you to change colors from disabled messages.
+      - timestamp: (string) - timestamp text color.
+      - interactIcons: (Object) - Allow you to change colors from interact buttons (like and reply).
         - main: (string) - main color.
         - text: (string) - text color.
-      - timestamp: (string) - timestamp text color.
-      - interactIcons: (string) - interaction icons color.
+        - hover: (string) - hover color.
+        - textHover: (string) - text hover color.
     - background: (string) - Allow you to change background color.
     - border: (string) - Allow you to change border color.
   - shadows: allow you change shadows from component

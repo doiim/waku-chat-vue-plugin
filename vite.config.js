@@ -34,7 +34,7 @@ export default defineConfig({
 
                     replaceStyleContent(jsFilePath);
                     replaceStyleContent(umdFilePath);
-                }, 5000);
+                }, 2500);
             }
         }
     ],

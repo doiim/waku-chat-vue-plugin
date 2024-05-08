@@ -87,6 +87,7 @@ export interface WakuChatConfigCss {
             response: {
                 main: string,
                 text: string,
+                user:string,
                 close: string,
                 closeHover: string,
             }
@@ -102,6 +103,7 @@ export interface WakuChatConfigCss {
                 user: string,
                 response: {
                     main: string,
+                    user:string,
                     text: string,
                 }
             },
@@ -111,12 +113,9 @@ export interface WakuChatConfigCss {
                 user: string,
                 response: {
                     main: string,
+                    user:string,
                     text: string,
                 }
-            },
-            disabledResponse: {
-                text: string,
-                main: string,
             },
             systemMessage: {
                 main: string,
@@ -127,7 +126,16 @@ export interface WakuChatConfigCss {
                 text: string
             }
             timestamp: string,
-            interactIcons: string
+            interactIcons: {
+                main: string,
+                hover: string,
+                text: string,
+                textHover: string,
+            }
+        },
+        footer: {
+            main: string,
+            response: string
         },
         background: string,
         border: string,
@@ -139,4 +147,5 @@ export interface WakuChatConfigCss {
     border: {
         size: string
     }
+    [key: string]: Object | string;
 }

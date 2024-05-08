@@ -5,6 +5,10 @@ import WakuChat from "./WakuChat.vue"
 const props = defineProps<{
     externalUserId?: string;
     externalUserName?: string;
+    onOpen?: () => void;
+    onClose?: () => void;
+    onConnect?: () => void;
+    onDisconnect?: () => void;
 }>()
 
 const pluginHead = ref<HTMLHeadElement | null>(null);
@@ -31,7 +35,9 @@ onMounted(() => {
         </head>
 
         <body>
-            <WakuChat :externalUserId="props.externalUserId" :externalUserName="props.externalUserName" />
+            <WakuChat :externalUserId="props.externalUserId" :externalUserName="props.externalUserName"
+                :onConnect="props.onConnect" :onDisconnect="props.onDisconnect" :onOpen="props.onOpen"
+                :onClose="props.onClose" />
         </body>
     </shadow-root>
 </template>

@@ -601,6 +601,7 @@ const printSystemMessage = (msg: any) => {
   margin: 8px 0px 8px 0px;
   font-size: 9px !important;
   line-height: 9px;
+  margin-bottom: 16px;
 }
 
 .message-content {

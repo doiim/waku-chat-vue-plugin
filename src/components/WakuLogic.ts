@@ -272,8 +272,6 @@ const pingAndReinitiateSubscription = async () => {
         ) {
             wakuData.subscription = await wakuData.lightNode.filter.createSubscription();
             await wakuData.subscription.subscribe([wakuData.ChatDecoder], messageCallback);
-        } else {
-            throw error;
-        }
+        } 
     }
 };

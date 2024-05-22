@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, TransitionGroup, onBeforeUnmount, watch, onMounted } from "vue";
+import { ref, computed, TransitionGroup, watch, onMounted } from "vue";
 import {
   sendMessage,
   getMessageList,
   getRoom,
   getMyID,
   getOptions,
-  onDestroyWaku,
 } from "../components/WakuLogic"
 import { formatTimestamp } from "../utils/formatation";
 import { scrollToBottom, scrollToMessage } from "../utils/animation";
@@ -96,10 +95,6 @@ onMounted(() => {
     scrollToBottom(messageContainerRef.value)
   }, 0);
 })
-
-onBeforeUnmount(() => {
-  onDestroyWaku();
-});
 
 const handleSendMessage = () => {
   if (messageInput.value) {

@@ -11,13 +11,21 @@ import { formatTimestamp } from "../utils/formatation";
 import { scrollToBottom, scrollToMessage } from "../utils/animation";
 
 const props = defineProps<{
-  cssConfiguration: any;
+  styleConfig: any;
+  colors: {
+    primary: string,
+    secondary: string,
+    tertiary: string,
+    quaternary: string,
+    grayScale: string[],
+  };
   open: boolean;
 }>()
 
 const propsOpen = computed(() => {
   return props.open
 });
+
 
 const loadingRoom = ref<boolean>(false);
 const messageInput = ref<string>('');
@@ -27,8 +35,8 @@ const messageContainerRef = ref<HTMLElement | null>(null);
 const waitingMessage = ref<boolean>(false);
 const responseTo = ref<number | undefined>(undefined);
 
-const cssConfiguration = computed(() => {
-  return props.cssConfiguration
+const styleConfig = computed(() => {
+  return props.styleConfig
 });
 
 const groupedMessages = computed(() => {
@@ -325,6 +333,7 @@ const printSystemMessage = (msg: any) => {
   display: flex;
   flex-direction: column;
   height: 557px;
+  background-color:v-bind('colors.grayScale[0]');
 }
 
 .chat-body {
@@ -339,7 +348,7 @@ const printSystemMessage = (msg: any) => {
 }
 
 .chat-body::-webkit-scrollbar-thumb {
-  background-color: v-bind('cssConfiguration.colors.border');
+  background-color: v-bind('colors.secondary');
   border-radius: 5px;
 }
 
@@ -350,11 +359,11 @@ const printSystemMessage = (msg: any) => {
   padding: 24px 16px;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
-  background-color: v-bind('cssConfiguration.colors.footer.main');
+  background-color: v-bind('colors.grayScale[0]');
 }
 
 .footer-response {
-  background-color: v-bind('cssConfiguration.colors.footer.response');
+  background-color: v-bind('colors.quaternary');
 }
 
 .response-input {
@@ -365,15 +374,15 @@ const printSystemMessage = (msg: any) => {
 
 .response-input .user-name-baloon {
   margin-left: auto;
-  color: v-bind('cssConfiguration.colors.input.response.user');
+  color: v-bind('colors.tertiary');
 }
 
 .response-input>div {
   padding: 4px 8px;
   border-radius: 8px;
   max-width: 67%;
-  background-color: v-bind('cssConfiguration.colors.input.response.main');
-  color: v-bind('cssConfiguration.colors.input.response.text');
+  background-color: v-bind('colors.secondary');
+  color: rgba(209, 213, 219, 1);
 }
 
 .response-input>div>div {
@@ -383,7 +392,7 @@ const printSystemMessage = (msg: any) => {
 }
 
 .response-input button {
-  stroke: v-bind('cssConfiguration.colors.input.response.close');
+  stroke: v-bind('colors.grayScale[3]');
   align-self: center;
   margin-left: auto;
   background: transparent;
@@ -393,7 +402,7 @@ const printSystemMessage = (msg: any) => {
 }
 
 .response-input button:hover {
-  stroke: v-bind('cssConfiguration.colors.input.response.closeHover');
+  stroke: v-bind('colors.secondary');
 }
 
 .message-input {
@@ -402,7 +411,7 @@ const printSystemMessage = (msg: any) => {
   height: 48px;
   line-height: 16px;
   border-radius: 8px;
-  background-color: v-bind('cssConfiguration.colors.input.main');
+  background-color: v-bind('colors.grayScale[1]');
 }
 
 .message-input input {
@@ -410,17 +419,17 @@ const printSystemMessage = (msg: any) => {
   outline: none;
   border: none;
   margin-left: 12px;
-  color: v-bind('cssConfiguration.colors.input.text');
-  background-color: v-bind('cssConfiguration.colors.input.main');
+  color: rgba(31, 41, 55, 1);
+  background-color: v-bind('colors.grayScale[1]');
 }
 
 .message-input input::placeholder {
-  color: v-bind('cssConfiguration.colors.input.placeholder');
+  color: v-bind('colors.grayScale[2]');
   opacity: 1;
 }
 
 .message-input input::-ms-input-placeholder {
-  color: v-bind('cssConfiguration.colors.input.placeholder');
+  color: v-bind('colors.grayScale[2]');
 }
 
 .message-input button {
@@ -439,13 +448,13 @@ const printSystemMessage = (msg: any) => {
 }
 
 .send-button svg {
-  fill: v-bind('cssConfiguration.colors.sendBtn.main');
-  color: v-bind('cssConfiguration.colors.sendBtn.text');
+  fill: v-bind('colors.primary');
+  color: v-bind('colors.primary');
 }
 
 .send-button:hover svg {
-  fill: v-bind('cssConfiguration.colors.sendBtn.hover');
-  color: v-bind('cssConfiguration.colors.sendBtn.textHover');
+  fill: v-bind('colors.secondary');
+  color: v-bind('colors.grayScale[1]');
 }
 
 .send-button:disabled {
@@ -453,14 +462,14 @@ const printSystemMessage = (msg: any) => {
 }
 
 .send-button:disabled svg {
-  fill: v-bind('cssConfiguration.colors.sendBtn.disabled');
-  color: v-bind('cssConfiguration.colors.sendBtn.text');
+  fill: v-bind('colors.grayScale[4]');
+  color: v-bind('colors.grayScale[4]');
 }
 
 .own-message .message {
-  background-color: v-bind('cssConfiguration.colors.chat.myMessage.main');
+  background-color: v-bind('colors.primary');
   font-weight: 400;
-  color: v-bind('cssConfiguration.colors.chat.myMessage.text');
+  color: v-bind('colors.grayScale[1]');
 }
 
 .own-message .timestamp {
@@ -469,14 +478,14 @@ const printSystemMessage = (msg: any) => {
 
 .own-message .user-name-baloon {
   margin-left: auto;
-  color: v-bind('cssConfiguration.colors.chat.myMessage.user');
+  color: v-bind('colors.primary');
 }
 
 .user-name-baloon {
   font-size: 10px !important;
   line-height: 12px;
   margin-bottom: 4px;
-  color: v-bind('cssConfiguration.colors.chat.otherMessage.user');
+  color: v-bind('colors.grayScale[4]');
 }
 
 .message-container {
@@ -492,14 +501,14 @@ const printSystemMessage = (msg: any) => {
   max-width: 67%;
   padding: 8px 12px;
   border-radius: 8px;
-  background-color: v-bind('cssConfiguration.colors.chat.otherMessage.main');
-  color: v-bind('cssConfiguration.colors.chat.otherMessage.text');
-  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, v-bind('cssConfiguration.shadows.messageBalloon'));
+  background-color: v-bind('colors.grayScale[1]');
+  color: v-bind('colors.grayScale[5]');
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, v-bind('styleConfig.shadows.messageBalloon'));
 }
 
 .grouped-response {
-  background-color: v-bind('cssConfiguration.colors.chat.otherMessage.response.main');
-  color: v-bind('cssConfiguration.colors.chat.otherMessage.response.text');
+  background-color: v-bind('colors.grayScale[3]');
+  color: v-bind('colors.grayScale[1]');
   margin-bottom: 8px;
   border-radius: 4px;
   padding: 4px 8px 8px 8px;
@@ -509,29 +518,29 @@ const printSystemMessage = (msg: any) => {
 }
 
 .grouped-response .message {
-  background-color: v-bind('cssConfiguration.colors.chat.otherMessage.response.main');
-  color: v-bind('cssConfiguration.colors.chat.otherMessage.response.text');
+  background-color: v-bind('colors.grayScale[3]');
+  color: v-bind('colors.grayScale[1]');
   padding: 0px;
 }
 
 .own-message .grouped-response {
-  background-color: v-bind('cssConfiguration.colors.chat.myMessage.response.main');
+  background-color: v-bind('colors.secondary');
 }
 
 .own-message .grouped-response .message {
   margin-left: auto;
-  background-color: v-bind('cssConfiguration.colors.chat.myMessage.response.main');
-  color: v-bind('cssConfiguration.colors.chat.myMessage.response.text');
+  background-color: v-bind('colors.secondary');
+  color: rgba(209, 213, 219, 1);
 }
 
 .grouped-response .user-name-baloon {
   margin-bottom: 8px;
   margin-left: 0px;
-  color: v-bind('cssConfiguration.colors.chat.otherMessage.response.user');
+  color: rgba(209, 213, 219, 1);
 }
 
 .own-message .grouped-response .user-name-baloon {
-  color: v-bind('cssConfiguration.colors.chat.myMessage.response.user');
+  color: v-bind('colors.tertiary');
 }
 
 .grouped-message {
@@ -556,8 +565,8 @@ const printSystemMessage = (msg: any) => {
 }
 
 .grouped-message:hover>.interact-button:hover {
-  stroke: v-bind('cssConfiguration.colors.chat.interactIcons.textHover');
-  background-color: v-bind('cssConfiguration.colors.chat.interactIcons.hover');
+  stroke: v-bind('colors.grayScale[1]');
+  background-color: v-bind('colors.secondary');
 }
 
 .grouped-message button:first-child {
@@ -566,8 +575,8 @@ const printSystemMessage = (msg: any) => {
 }
 
 .grouped-message:hover>.interact-button {
-  stroke: v-bind('cssConfiguration.colors.chat.interactIcons.text');
-  background-color: v-bind('cssConfiguration.colors.chat.interactIcons.main');
+  stroke: rgba(31, 41, 55, 1);
+  background-color: v-bind('colors.grayScale[1]');
 }
 
 .own-message .interact-button {
@@ -591,13 +600,13 @@ const printSystemMessage = (msg: any) => {
   border-radius: 4px;
   align-self: center !important;
   text-align: center;
-  background-color: v-bind('cssConfiguration.colors.chat.systemMessage.main');
-  color: v-bind('cssConfiguration.colors.chat.systemMessage.text');
-  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, v-bind('cssConfiguration.shadows.messageBalloon'));
+  background-color: v-bind('colors.grayScale[1]');
+  color: v-bind('colors.primary');
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, v-bind('styleConfig.shadows.messageBalloon'));
 }
 
 .timestamp {
-  color: v-bind('cssConfiguration.colors.chat.timestamp');
+  color: v-bind('colors.grayScale[4]');
   margin: 8px 0px 8px 0px;
   font-size: 9px !important;
   line-height: 9px;
@@ -622,12 +631,12 @@ const printSystemMessage = (msg: any) => {
 .message-react button {
   padding: 4px 8px 4px 8px;
   display: inline-flex;
-  background: v-bind('cssConfiguration.colors.chat.reaction.main');
+  background: v-bind('colors.secondary');
   border-radius: 12px;
   border: none;
   cursor: pointer;
-  color: v-bind('cssConfiguration.colors.chat.reaction.text');
-  stroke: v-bind('cssConfiguration.colors.chat.reaction.text');
+  color: v-bind('colors.grayScale[1]');
+  stroke: v-bind('colors.grayScale[1]');
 }
 
 .message-react button div {

@@ -46,104 +46,20 @@ Follow these steps to install and use the package in your project:
         availableRooms: ["General", "Off"],
         wakuPeers: ["your/waku/peer/string/address/here"],
         changeNickMode: "message",
-        cssConfig: {
+        styleConfig: {
           colors: {
-            header: {
-              main: 'rgba(219, 234, 254, 1)',
-              text: 'rgba(107, 114, 128, 1)',
-              btn: 'rgba(37, 99, 235, 1)',
-              btnHover: 'rgba(30, 64, 175, 1)',
+            light:{
+              primary:"rgba(41, 79, 204, 1)",
+              secondary:"rgba(8, 45, 166, 1)",
+              tertiary:"rgba(182, 201, 242, 1)",
+              quaternary:"rgba(217, 229, 255, 1)"
             },
-            room: {
-              btn: {
-                text: 'rgba(37, 99, 235, 1)',
-                textHover: 'rgba(30, 64, 175, 1)',
-              },
-              dropdown: {
-                main: 'rgba(255, 255, 255, 1)',
-                text: 'rgba(31, 41, 55, 1)',
-                hover: 'rgba(243, 244, 246, 1)',
-                selected: 'rgba(29, 78, 216, 1)'
-              }
+            dark: {
+              primary:"rgba(214, 227, 255, 1)",
+              secondary:"rgba(168, 191, 240, 1)",
+              tertiary:"rgba(26, 73, 229, 1)",
+              quaternary:"rgba(18, 51, 161, 1)"
             },
-            subHeader: {
-              main: 'rgba(239, 246, 255, 1)',
-              text: 'rgba(37, 99, 235, 1)',
-              textHover: 'rgba(30, 64, 175, 1)',
-              editName: {
-                main: 'rgba(229, 231, 235, 1)',
-                placeholder: 'rgba(156, 163, 175, 1)',
-                text: 'rgba(31, 41, 55, 1)',
-                disabled: 'rgba(229, 231, 235, 1)',
-              }
-            },
-            loadBtn: {
-              main: 'rgba(37, 99, 235, 1)',
-              hover: 'rgba(30, 64, 175, 1)',
-              text: 'rgba(249, 250, 251, 1)',
-              textHover: 'rgba(249, 250, 251, 1)',
-            },
-            loadingBtn: {
-              main: 'rgba(37, 99, 235, 1)',
-              text: 'rgba(249, 250, 251, 1)',
-            },
-            openBtn: {
-              main: 'rgba(37, 99, 235, 1)',
-              hover: 'rgba(30, 64, 175, 1)',
-              text: 'rgba(249, 250, 251, 1)',
-              textHover: 'rgba(249, 250, 251, 1)',
-            },
-            sendBtn: {
-              main: 'rgba(37, 99, 235, 1)',
-              hover: 'rgba(30, 64, 175, 1)',
-              text: 'rgba(249, 250, 251, 1)',
-              textHover: 'rgba(249, 250, 251, 1)',
-              disabled: 'rgba(75, 85, 99, 1)',
-            },
-            input: {
-              main: 'rgba(229, 231, 235, 1)',
-              placeholder: 'rgba(156, 163, 175, 1)',
-              text: 'rgba(31, 41, 55, 1)',
-              disabled: 'rgba(229, 231, 235, 1)',
-              response: {
-                main: 'rgba(229, 231, 235, 1)',
-                text: 'rgba(31, 41, 55, 1)',
-                close: 'rgba(107, 114, 128, 1)',
-                closeHover: 'rgba(30, 64, 175, 1)',
-              }
-            },
-            minimizeBtn: {
-              main: 'rgba(107, 114, 128, 1)',
-              hover: 'rgba(30, 64, 175, 1)',
-            },
-            chat: {
-              myMessage: {
-                main: 'rgba(37, 99, 235, 1)',
-                user: 'rgba(37, 99, 235, 1)',
-                text: 'rgba(249, 250, 251, 1)',
-                response: {
-                  main: 'rgb(104 144 231)',
-                  text: 'rgba(249, 250, 251, 1)',
-                }
-              },
-              otherMessage: {
-                main: 'rgba(229, 231, 235, 1)',
-                user: 'rgba(156, 163, 175, 1)',
-                text: 'rgba(31, 41, 55, 1)',
-                response: {
-                  main: 'rgb(180 199 235)',
-                  text: 'rgba(31, 41, 55, 1)',
-                }
-              },
-              systemMessage: {
-                main: 'rgba(229, 231, 235, 1)',
-                text: 'rgba(37, 99, 235, 1)',
-              },
-              timestamp: 'rgba(156, 163, 175, 1)',
-              responseIcon: 'rgba(37, 99, 235, 1)'
-            },
-            background: 'rgba(249, 250, 251, 1)',
-            border: 'rgba(37, 99, 235, 1)',
           },
           shadows: {
             openedComponent: 0.1,
@@ -187,95 +103,19 @@ Here are the available configuration options:
 - `messageAgeToDownload`: (number) (optional) - Max age of messages in milisseconds which messages would be downloaded when user connects to chat. Default not considering age of messages.
 - `showSystemMessages`: (boolean) (optional) - Show or not system messages. Default not show.
 - `userChangeNick`: (boolean) (optional) - Allow users to change their nicknames.
-- `cssConfig`:(Object) (optional) - Allow you to change css. ALl of them are optional, if you don’t set any of them, a default value will be applied. They are:
+- `theme`: ('light' | 'dark') (optional) - Choose a theme, it will affect colors. if none is chosen light it will be chosen
+- `styleConfig`:(Object) (optional) - Allow you to change css. ALl of them are optional, if you don’t set any of them, a default value will be applied. They are:
   - colors:(Object) - Allow you to change colors of components.
-    - header: (Object) - Allow you to change colors from header.
-      - main: (string) - main color.
-      - text: (string) - text color
-      - btn: (string) - buttons color
-      - btnHover: (string) - buttons hover color.
-    - room: (Object) - Allow you to change colors from room components.
-      - btn: (Object) - Allow you to change colors from room button.
-        - text: (string) - text color.
-        - textHover: (string) - text hover color.
-      - dropdown: (Object) - Allow you to change colors from room dropdown.
-        - main: (string) - main color.
-        - text: (string) - text color.
-        - hover: (string) - hover option color.
-        - selected: (string) - selected option color.
-    - subHeader: (Object) - Allow you to change colors from sub header.
-      - main: (string) - main color.
-      - text: (string) - text color.
-      - textHover: (string) - text hover color.
-      - editName - Change color for change name input
-          - main - main color
-          - placeholder - placeholder text color
-          - text - text color
-          - disabled - disabled color
-    - loadBtn: (Object) - Allow you to change colors from load button.
-      - main: (string) - main color.
-      - hover: (string) - hover color.
-      - text: (string) - text color.
-      - textHover: (string) - text hover color.
-    - loadingBtn: (Object) - Allow you to change colors from loading spinner.
-      - main: (string) - main color.
-      - text: (string) - text color.
-    - openBtn: (Object) - Allow you to change colors from open button.
-      - main: (string) - main color.
-      - hover: (string) - hover color.
-      - text: (string) - text color.
-      - textHover: (string) - text hover color.
-    - sendBtn: (Object) - Allow you to change colors from send button.
-      - main: (string) - main color.
-      - hover: (string) - hover color.
-      - text: (string) - text color.
-      - textHover: (string) - text hover color.
-      - disabled: (string) - disabled color.
-    - input: (Object) - Allow you to change colors from message input.
-      - main: (string) - main color.
-      - placeholder: (string) - placeholder text color.
-      - text: (string) - text color.
-      - disabled: (string) - disabled background color.
-      - response: (Object) - Allow you to change colors from response preview on input.
-        - main: (string) - main color.
-        - text: (string) - text color.
-        - user: (string) - user name color.
-        - close: (string) - close button color.
-        - closeHover: (string) - close button hover color.
-    - minimizeBtn: (Object) - Allow you to change colors from minimize button.
-      - main: (string) - main color.
-      - hover: (string) - hover button color.
-    - chat: (Object) - Allow you to change colors from chat content.
-      - myMessage: (Object) - Allow you to change colors from use messages.
-        - main: (string) - main color.
-        - user: (string) - user name color.
-        - text: (string) - text color.
-        - response: (Object) - Allow you to change colors from response.
-          - main: (string) - main color.
-          - user: (string) - user name color.
-          - text: (string) - text color.
-      - otherMessage: (Object) - Allow you to change colors from others messages.
-        - main: (string) - main color.
-        - user: (string) - user name color.
-        - text: (string) - text color.
-        - response: (Object) - Allow you to change colors from response.
-          - main: (string) - main color.
-          - user: (string) - user name color.
-          - text: (string) - text color.
-      - systemMessage: (Object) - Allow you to change colors from system messages.
-        - main: (string) - main color.
-        - text: (string) - text color.
-      - reaction: (Object) - Allow you to change colors from reaction.
-        - main: (string) - main color.
-        - text: (string) - text color.
-      - timestamp: (string) - timestamp text color.
-      - interactIcons: (Object) - Allow you to change colors from interact buttons (like and reply).
-        - main: (string) - main color.
-        - text: (string) - text color.
-        - hover: (string) - hover color.
-        - textHover: (string) - text hover color.
-    - background: (string) - Allow you to change background color.
-    - border: (string) - Allow you to change border color.
+    - light: (Object) - Allow you to change colors of light theme.
+      - primary: (string) - main color. If not set it will be blue [rgba(41, 79, 204, 1)]
+      - secondary: (string) - second color. If not set it will derive from primary color.
+      - tertiary: (string) - third color. If not set it will derive from primary color.
+      - quaternary: (string) - forth color. If not set it will derive from primary color.
+    - dark: (Object) - Allow you to change colors of dark theme.
+      - primary: (string) - main color. If not set it will derive from light primary color.
+      - secondary: (string) - second color. If not set it will derive from primary color.
+      - tertiary: (string) - third color. If not set it will derive from primary color.
+      - quaternary: (string) - forth color. If not set it will derive from primary color.
   - shadows: allow you change shadows from component
     - openedComponent: (number) - shadow from the hole chat
     - messageBalloon: (number) - shadow from the message balloon

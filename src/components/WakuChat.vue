@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watchEffect, defineProps, computed, watch, onBeforeUnmount } from "vue";
+import TinyColor from 'tinycolor2'
 import {
   sendMessage,
   loadChat,
@@ -13,7 +14,7 @@ import {
   onDestroyWaku,
   disconnectChat
 } from "../components/WakuLogic"
-import { defaultCss, mergeCssConfiguration } from "../utils/defaultStyle";
+import { defaultCss, applyDefaultStyle } from "../utils/defaultStyle";
 import ChatContainer from "./ChatContainer.vue";
 
 const props = defineProps<{
@@ -34,7 +35,7 @@ const userShowSystemMessages = ref<boolean>(false);
 const editMode = ref(false);
 const editedUserName = ref('');
 const roomDropdownOpened = ref<boolean>(false);
-var cssConfiguration = ref<any>(defaultCss);
+var styleConfig = ref<any>();
 const idleTimeout = ref<NodeJS.Timeout>()
 
 const propUserId = computed(() => {
@@ -55,13 +56,66 @@ watch([propUserName], () => {
   setMyName(propUserName.value)
 });
 
+const colors = ref({
+  primary: 'none',
+  secondary: 'none',
+  tertiary: 'none',
+  quaternary: 'none',
+  grayScale: [
+    'rgba(249, 250, 251, 1)',
+    'rgba(229, 231, 235, 1)',
+    'rgba(156, 163, 175, 1)',
+    'rgba(107, 114, 128, 1)',
+    'rgba(75, 85, 99, 1)',
+    'rgba(31, 41, 55, 1)'
+  ]
+})
+
+const processFilters = () => {
+  const theme = getOptions()?.theme;
+  const primaryColor = TinyColor(styleConfig.value.colors.light.primary)
+  if (theme === 'Dark') {
+    colors.value.grayScale.reverse()
+
+    if (styleConfig.value.colors.dark) {
+      colors.value = { ...colors.value, ...styleConfig.value.colors.dark }
+    }
+
+    if (!styleConfig.value.colors.dark?.primary) {
+      colors.value.primary = primaryColor.clone().saturate(13).lighten(2).toRgbString()
+    }
+    if (!styleConfig.value.colors.dark?.secondary) {
+      colors.value.secondary = primaryColor.clone().saturate(34).lighten(44).toRgbString()
+    }
+    if (!styleConfig.value.colors.dark?.tertiary) {
+      colors.value.tertiary = primaryColor.clone().saturate(3).lighten(32).toRgbString()
+    }
+    if (!styleConfig.value.colors.dark?.quaternary) {
+      colors.value.quaternary = primaryColor.clone().saturate(13).darken(13).toRgbString()
+    }
+  } else {
+    colors.value = { ...colors.value, ...styleConfig.value.colors.light }
+    colors.value.primary = primaryColor.toRgbString()
+    if (!styleConfig.value.colors.light.secondary) {
+      colors.value.secondary = primaryColor.clone().saturate(23).darken(14).toRgbString()
+    }
+    if (!styleConfig.value.colors.light.tertiary) {
+      colors.value.tertiary = primaryColor.clone().saturate(3).lighten(35).toRgbString()
+    }
+    if (!styleConfig.value.colors.light.quaternary) {
+      colors.value.quaternary = primaryColor.clone().saturate(34).lighten(45).toRgbString()
+    }
+  }
+}
+
 watchEffect(() => {
   const options = getOptions();
-  const colorConfig = options?.cssConfig as Record<string, any> | undefined;;
+  styleConfig.value = options?.styleConfig as Record<string, any> | undefined;;
 
-  if (!colorConfig) return;
+  if (!styleConfig || !styleConfig.value) return;
 
-  cssConfiguration.value = mergeCssConfiguration(cssConfiguration.value, colorConfig);
+  styleConfig.value = applyDefaultStyle(defaultCss, styleConfig.value);
+  processFilters();
 });
 
 onBeforeUnmount(() => {
@@ -148,25 +202,25 @@ const closeChat = () => {
             </div>
           </Transition>
           <div class="chat-header">
-            <div>
+            <div class="visible-section">
               <div class="room-section">
                 <div class="room-info">
                   Room
                 </div>
                 <div class="room-dropdown">
                   <button class="dropdown-button" @click="handleToggleRoomDropdown">
-                    <div>{{ getRoom() }}</div>
+                    <div class="room-text">{{ getRoom() }}</div>
                     <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M4 6.5L8 10.5L12 6.5" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                   </button>
-                  <div v-if="roomDropdownOpened" class="dropdown-content">
-                    <div v-for="availableRoom in getOptions()?.availableRooms" :key="availableRoom">
-                      <button :class="availableRoom === getRoom() ? 'selected' : ''"
-                        @click="changeRoomDropdown(availableRoom)">
-                        {{ availableRoom }}
-                      </button>
-                    </div>
+                </div>
+                <div v-if="roomDropdownOpened" class="dropdown-content">
+                  <div v-for="availableRoom in getOptions()?.availableRooms" :key="availableRoom">
+                    <button :class="availableRoom === getRoom() ? 'selected' : ''"
+                      @click="changeRoomDropdown(availableRoom)">
+                      {{ availableRoom }}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -209,7 +263,7 @@ const closeChat = () => {
               </div>
             </Transition>
           </div>
-          <ChatContainer :cssConfiguration="cssConfiguration" :open="isChatOpen" />
+          <ChatContainer :styleConfig="styleConfig" :colors="colors" :open="isChatOpen" />
         </div>
       </Transition>
       <Transition name="fastFade" mode="out-in">
@@ -255,8 +309,8 @@ const closeChat = () => {
   width: 50%;
   outline: none;
   padding-left: 8px;
-  color: v-bind('cssConfiguration.colors.subHeader.editName.text');
-  background-color: v-bind('cssConfiguration.colors.subHeader.editName.main');
+  color: v-bind('colors.grayScale[5]');
+  background-color: v-bind('colors.grayScale[1]');
 }
 
 .user-name-input div span {
@@ -268,7 +322,7 @@ const closeChat = () => {
 
 .user-name-input svg {
   cursor: pointer;
-  stroke: v-bind('cssConfiguration.colors.subHeader.editName.text');
+  stroke: v-bind('colors.grayScale[5]');
   margin-left: 8px;
 }
 
@@ -280,25 +334,25 @@ const closeChat = () => {
 .change-name-btn {
   cursor: pointer;
   margin-left: 8px;
-  color: v-bind('cssConfiguration.colors.subHeader.text');
+  color: v-bind('colors.primary');
   background: transparent;
   border: none;
 }
 
 .change-name-btn:hover {
-  color: v-bind('cssConfiguration.colors.subHeader.textHover');
+  color: v-bind('colors.secondary');
 }
 
 .cancel-change-name-btn {
   cursor: pointer;
   margin-left: auto;
-  color: v-bind('cssConfiguration.colors.subHeader.text');
+  color: v-bind('colors.primary');
   background: transparent;
   border: none;
 }
 
 .cancel-change-name-btn:hover {
-  color: v-bind('cssConfiguration.colors.subHeader.textHover');
+  color: v-bind('colors.secondary');
 }
 
 .room-dropdown {
@@ -308,20 +362,22 @@ const closeChat = () => {
 
 .dropdown-content {
   display: block;
-  left: -62px;
+  left: 16px;
+  top: 36px;
   position: absolute;
-  background-color: v-bind('cssConfiguration.colors.room.dropdown.main');
+  background-color: v-bind('colors.grayScale[0]');
   min-width: 136px;
-  z-index: 1;
+  z-index: 20;
   max-width: 344px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   border-radius: 8px;
+  border: v-bind('styleConfig.border.size') solid v-bind('colors.primary');
 }
 
 .dropdown-content button {
-  color: v-bind('cssConfiguration.colors.room.dropdown.text');
+  color: v-bind('colors.grayScale[5]');
   padding: 12px 16px;
   text-decoration: none;
   display: block;
@@ -336,11 +392,11 @@ const closeChat = () => {
 }
 
 .dropdown-content .selected {
-  color: v-bind('cssConfiguration.colors.room.dropdown.selected');
+  color: v-bind('colors.primary');
 }
 
 .dropdown-content button:hover {
-  background-color: v-bind('cssConfiguration.colors.room.dropdown.hover');
+  background-color: v-bind('colors.tertiary');
 }
 
 .dropdown-button {
@@ -351,8 +407,15 @@ const closeChat = () => {
   font-weight: 600;
   line-height: 14px;
   align-items: center;
-  color: v-bind('cssConfiguration.colors.room.btn.text');
-  stroke: v-bind('cssConfiguration.colors.room.btn.text');
+  color: v-bind('colors.primary');
+  stroke: v-bind('colors.primary');
+}
+
+.room-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
 }
 
 .dropdown-button svg {
@@ -360,8 +423,8 @@ const closeChat = () => {
 }
 
 .dropdown-button:hover {
-  color: v-bind('cssConfiguration.colors.room.btn.textHover');
-  stroke: v-bind('cssConfiguration.colors.room.btn.textHover');
+  color: v-bind('colors.secondary');
+  stroke: v-bind('colors.secondary');
   text-decoration: underline;
 }
 
@@ -370,13 +433,13 @@ const closeChat = () => {
   position: fixed;
   bottom: 16px;
   right: 16px;
-  background-color: v-bind('cssConfiguration.colors.background');
-  border: v-bind('cssConfiguration.border.size') solid v-bind('cssConfiguration.colors.border');
+  background-color: v-bind('colors.grayScale[1]');
+  border: v-bind('styleConfig.border.size') solid v-bind('colors.primary');
   border-radius: 8px;
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease-in-out;
-  box-shadow: 0px 10px 25px -5px rgba(0, 0, 0, v-bind('cssConfiguration.shadows.openedComponent'));
+  box-shadow: 0px 10px 25px -5px rgba(0, 0, 0, v-bind('styleConfig.shadows.openedComponent'));
 }
 
 .chat-container.open {
@@ -391,10 +454,10 @@ const closeChat = () => {
   height: 100%;
   border-radius: 8px;
   background-color: rgba(0, 0, 0, 0.2);
-  stroke: v-bind('cssConfiguration.colors.border');
+  stroke: v-bind('colors.secondary');
   text-align: center;
   align-content: center;
-  z-index: 1000;
+  z-index: 100;
 }
 
 .change-room-overlay svg {
@@ -403,8 +466,8 @@ const closeChat = () => {
 
 .chat-header {
   height: 19px;
-  background-color: v-bind('cssConfiguration.colors.header.main');
-  color: v-bind('cssConfiguration.colors.header.text');
+  background-color: v-bind('colors.quaternary');
+  color: v-bind('colors.grayScale[3]');
   padding: 12px 16px;
   justify-content: space-between;
   align-items: center;
@@ -423,14 +486,14 @@ const closeChat = () => {
 }
 
 .settings-button {
-  color: v-bind('cssConfiguration.colors.header.btn');
+  color: v-bind('colors.primary');
   background: transparent;
   line-height: 14px;
   border: none;
 }
 
 .settings-button:hover {
-  color: v-bind('cssConfiguration.colors.header.btnHover');
+  color: v-bind('colors.secondary');
   text-decoration: underline;
   cursor: pointer;
 }
@@ -456,14 +519,22 @@ const closeChat = () => {
   cursor: pointer;
 }
 
+.visible-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .room-section {
   display: flex;
-  width: 100%;
+  align-items: center;
+  flex: 1;
+  overflow: hidden;
 }
 
 .chat-subHeader {
   display: flex;
-  z-index: 1;
+  z-index: 10;
   position: absolute;
   flex-direction: column;
   align-items: normal;
@@ -474,8 +545,8 @@ const closeChat = () => {
   width: 100%;
   margin-left: -16px;
   margin-top: 12px;
-  background-color: v-bind('cssConfiguration.colors.subHeader.main');
-  color: v-bind('cssConfiguration.colors.subHeader.text');
+  background-color: v-bind('colors.quaternary');
+  color: v-bind('colors.primary');
 }
 
 .chat-subHeader>div {
@@ -495,7 +566,7 @@ const closeChat = () => {
   margin-right: 10px;
   line-height: 16px;
   font-size: 12px !important;
-  color: v-bind('cssConfiguration.colors.header.text');
+  color: rgba(107, 114, 128, 1);
 }
 
 .open-button,
@@ -521,38 +592,38 @@ const closeChat = () => {
 }
 
 .load-button {
-  background-color: v-bind('cssConfiguration.colors.loadBtn.main');
-  color: v-bind('cssConfiguration.colors.loadBtn.text');
-  fill: v-bind('cssConfiguration.colors.loadBtn.text');
+  background-color: v-bind('colors.primary');
+  color: v-bind('colors.grayScale[1]');
+  fill: v-bind('colors.grayScale[1]');
 }
 
 .load-button:hover {
-  background-color: v-bind('cssConfiguration.colors.loadBtn.hover');
-  color: v-bind('cssConfiguration.colors.loadBtn.textHover');
-  fill: v-bind('cssConfiguration.colors.loadBtn.textHover');
+  background-color: v-bind('colors.secondary');
+  color: v-bind('colors.grayScale[1]');
+  fill: v-bind('colors.grayScale[1]');
 }
 
 .open-button {
-  background-color: v-bind('cssConfiguration.colors.openBtn.main');
-  color: v-bind('cssConfiguration.colors.openBtn.text');
-  fill: v-bind('cssConfiguration.colors.openBtn.text');
+  background-color: v-bind('colors.primary');
+  color: v-bind('colors.grayScale[1]');
+  fill: v-bind('colors.grayScale[1]');
 }
 
 .open-button:hover {
-  background-color: v-bind('cssConfiguration.colors.openBtn.hover');
-  color: v-bind('cssConfiguration.colors.openBtn.textHover');
-  fill: v-bind('cssConfiguration.colors.openBtn.textHover');
+  background-color: v-bind('colors.secondary');
+  color: v-bind('colors.grayScale[1]');
+  fill: v-bind('colors.grayScale[1]');
 }
 
 .spinner {
-  background-color: v-bind('cssConfiguration.colors.loadingBtn.main');
-  color: v-bind('cssConfiguration.colors.loadingBtn.text');
-  stroke: v-bind('cssConfiguration.colors.loadingBtn.text');
+  background-color: v-bind('colors.primary');
+  color: v-bind('colors.grayScale[1]');
+  stroke: v-bind('colors.grayScale[1]');
 }
 
 .minimize-button {
   margin-left: 32px;
-  stroke: v-bind('cssConfiguration.colors.minimizeBtn.main');
+  stroke: v-bind('colors.grayScale[3]');
   background: transparent;
 }
 
@@ -561,7 +632,7 @@ const closeChat = () => {
 }
 
 .minimize-button:hover {
-  stroke: v-bind('cssConfiguration.colors.minimizeBtn.hover');
+  stroke: v-bind('colors.grayScale[1]');
 }
 
 .spinner svg {

@@ -15,7 +15,8 @@ export interface WakuChatVuePluginOptions {
     wakuPeers?: string[],
     availableRooms: string[],
     allowPrivateChat: boolean,
-    cssConfig?: WakuChatConfigCss,
+    styleConfig?: WakuChatConfigCss,
+    theme?:'Dark'|'Light'
     showSettings?: boolean
     disconnectDelay?: number
     groupMessagesTime?: number
@@ -25,121 +26,23 @@ export interface WakuChatVuePluginOptions {
     userChangeNick?: boolean
 }
 
-export interface WakuChatConfigCss {
-    colors: {
-        header: {
-            main: string,
-            text: string,
-            btn: string,
-            btnHover: string,
-        },
-        room: {
-            btn: {
-                text: string,
-                textHover: string,
-            },
-            dropdown: {
-                main: string,
-                text: string,
-                hover: string,
-                selected: string,
-            }
-        },
-        subHeader: {
-            main: string,
-            text: string,
-            textHover: string,
-            editName: {
-                main: string,
-                placeholder: string,
-                text: string,
-                disabled: string,
-            }
-        },
-        loadBtn: {
-            main: string,
-            hover: string,
-            text: string,
-            textHover: string,
-        },
-        loadingBtn: {
-            main: string,
-            text: string,
-        },
-        openBtn: {
-            main: string,
-            hover: string,
-            text: string,
-            textHover: string,
-        },
-        sendBtn: {
-            main: string,
-            hover: string,
-            text: string,
-            textHover: string,
-            disabled: string,
-        },
-        input: {
-            main: string,
-            placeholder: string,
-            text: string,
-            disabled: string,
-            response: {
-                main: string,
-                text: string,
-                user:string,
-                close: string,
-                closeHover: string,
-            }
-        },
-        minimizeBtn: {
-            main: string,
-            hover: string,
-        },
-        chat: {
-            myMessage: {
-                main: string,
-                text: string,
-                user: string,
-                response: {
-                    main: string,
-                    user:string,
-                    text: string,
-                }
-            },
-            otherMessage: {
-                main: string,
-                text: string,
-                user: string,
-                response: {
-                    main: string,
-                    user:string,
-                    text: string,
-                }
-            },
-            systemMessage: {
-                main: string,
-                text: string
-            },
-            reaction: {
-                main: string,
-                text: string
-            }
-            timestamp: string,
-            interactIcons: {
-                main: string,
-                hover: string,
-                text: string,
-                textHover: string,
-            }
-        },
-        footer: {
-            main: string,
-            response: string
-        },
-        background: string,
-        border: string,
+export interface WakuChatColorConfig {
+    light:{
+        primary:string,
+        secondary?:string,
+        tertiary?:string,
+        quaternary?:string,
     },
+    dark?: {
+        primary:string,
+        secondary?:string,
+        tertiary?:string,
+        quaternary?:string,
+    }
+}
+
+export interface WakuChatConfigCss {
+    colors: WakuChatColorConfig,
     shadows: {
         openedComponent: number,
         messageBalloon: number

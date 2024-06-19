@@ -34,9 +34,11 @@
   },
   "dependencies": {
     "@libp2p/bootstrap": "^10.0.16",
+    "@types/tinycolor2": "^1.4.6",
     "@waku/sdk": "0.0.23",
     "protobufjs": "^7.2.6",
     "random-words": "^2.0.1",
+    "tinycolor2": "^1.6.0",
     "vue": "^3.4.15",
     "vue-shadow-dom": "^4.2.0"
   },

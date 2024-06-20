@@ -24,6 +24,7 @@ const props = defineProps<{
   onClose?: () => void;
   onConnect?: () => void;
   onDisconnect?: () => void;
+  theme?: string;
 }>()
 
 const isChatOpen = ref<boolean>(false);
@@ -46,6 +47,10 @@ const propUserName = computed(() => {
   return props.externalUserName
 });
 
+const isDark = computed(() => {
+  return props.theme === 'dark'
+});
+
 watch([propUserId], () => {
   if (propUserId.value) {
     setMyID(propUserId.value)
@@ -56,7 +61,7 @@ watch([propUserName], () => {
   setMyName(propUserName.value)
 });
 
-const colors = ref({
+const lightColors = ref({
   primary: 'none',
   secondary: 'none',
   tertiary: 'none',
@@ -71,41 +76,57 @@ const colors = ref({
   ]
 })
 
+const darkColors = ref({
+  primary: 'none',
+  secondary: 'none',
+  tertiary: 'none',
+  quaternary: 'none',
+  grayScale: [
+    'rgba(17, 24, 39, 1)',
+    'rgba(31, 41, 55, 1)',
+    'rgba(55, 65, 81, 1)',
+    'rgba(55, 65, 81, 1)',
+    'rgba(209, 213, 219, 1)',
+    'rgba(229, 231, 235, 1)'
+  ]
+})
+
 const processFilters = () => {
-  const theme = getOptions()?.theme;
-  const primaryColor = TinyColor(styleConfig.value.colors.light.primary)
-  if (theme === 'Dark') {
-    colors.value.grayScale.reverse()
+  const primaryLightColor = new TinyColor(styleConfig.value.colors.light.primary)
 
-    if (styleConfig.value.colors.dark) {
-      colors.value = { ...colors.value, ...styleConfig.value.colors.dark }
-    }
-
-    if (!styleConfig.value.colors.dark?.primary) {
-      colors.value.primary = primaryColor.clone().saturate(13).lighten(2).toRgbString()
-    }
-    if (!styleConfig.value.colors.dark?.secondary) {
-      colors.value.secondary = primaryColor.clone().saturate(34).lighten(44).toRgbString()
-    }
-    if (!styleConfig.value.colors.dark?.tertiary) {
-      colors.value.tertiary = primaryColor.clone().saturate(3).lighten(32).toRgbString()
-    }
-    if (!styleConfig.value.colors.dark?.quaternary) {
-      colors.value.quaternary = primaryColor.clone().saturate(13).darken(13).toRgbString()
-    }
-  } else {
-    colors.value = { ...colors.value, ...styleConfig.value.colors.light }
-    colors.value.primary = primaryColor.toRgbString()
-    if (!styleConfig.value.colors.light.secondary) {
-      colors.value.secondary = primaryColor.clone().saturate(23).darken(14).toRgbString()
-    }
-    if (!styleConfig.value.colors.light.tertiary) {
-      colors.value.tertiary = primaryColor.clone().saturate(3).lighten(35).toRgbString()
-    }
-    if (!styleConfig.value.colors.light.quaternary) {
-      colors.value.quaternary = primaryColor.clone().saturate(34).lighten(45).toRgbString()
-    }
+  //light
+  lightColors.value = { ...lightColors.value, ...styleConfig.value.colors.light }
+  lightColors.value.primary = primaryLightColor.toRgbString()
+  if (!styleConfig.value.colors.light.secondary) {
+    lightColors.value.secondary = primaryLightColor.clone().saturate(23).darken(14).toRgbString()
   }
+  if (!styleConfig.value.colors.light.tertiary) {
+    lightColors.value.tertiary = primaryLightColor.clone().saturate(3).lighten(35).toRgbString()
+  }
+  if (!styleConfig.value.colors.light.quaternary) {
+    lightColors.value.quaternary = primaryLightColor.clone().saturate(34).lighten(45).toRgbString()
+  }
+
+  //dark
+  if (styleConfig.value.colors.dark) {
+    darkColors.value = { ...darkColors.value, ...styleConfig.value.colors.dark }
+  }
+
+  if (!styleConfig.value.colors.dark?.primary) {
+    darkColors.value.primary = primaryLightColor.clone().saturate(13).lighten(2).toRgbString()
+  }
+  const primaryDarkColor = new TinyColor(darkColors.value.primary)
+
+  if (!styleConfig.value.colors.dark?.secondary) {
+    darkColors.value.secondary = primaryDarkColor.clone().saturate(20).lighten(42).toRgbString()
+  }
+  if (!styleConfig.value.colors.dark?.tertiary) {
+    darkColors.value.tertiary = primaryDarkColor.clone().desaturate(10).lighten(30).toRgbString()
+  }
+  if (!styleConfig.value.colors.dark?.quaternary) {
+    darkColors.value.quaternary = primaryDarkColor.clone().darken(15).toRgbString()
+  }
+
 }
 
 watchEffect(() => {
@@ -187,9 +208,9 @@ const closeChat = () => {
   <div class="waku-chat-vue-plugin">
     <div v-if="getStatus() === 'connected'" key="connected">
       <Transition name="slide" mode="out-in">
-        <div v-if="isChatOpen" class="chat-container">
+        <div v-if="isChatOpen" class="chat-container" :class="{ 'dark': isDark }">
           <Transition name="fade" mode="out-in">
-            <div v-if="loadingRoom" class="change-room-overlay">
+            <div v-if="loadingRoom" class="change-room-overlay" :class="{ 'dark': isDark }">
               <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="12" cy="12" r="10" stroke-opacity="0.4" stroke-width="4" />
                 <path
@@ -201,21 +222,21 @@ const closeChat = () => {
               </svg>
             </div>
           </Transition>
-          <div class="chat-header">
+          <div class="chat-header" :class="{ 'dark': isDark }">
             <div class="visible-section">
               <div class="room-section">
-                <div class="room-info">
+                <div class="room-info" :class="{ 'dark': isDark }">
                   Room
                 </div>
                 <div class="room-dropdown">
-                  <button class="dropdown-button" @click="handleToggleRoomDropdown">
+                  <button class="dropdown-button" :class="{ 'dark': isDark }" @click="handleToggleRoomDropdown">
                     <div class="room-text">{{ getRoom() }}</div>
                     <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M4 6.5L8 10.5L12 6.5" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                   </button>
                 </div>
-                <div v-if="roomDropdownOpened" class="dropdown-content">
+                <div v-if="roomDropdownOpened" class="dropdown-content" :class="{ 'dark': isDark }">
                   <div v-for="availableRoom in getOptions()?.availableRooms" :key="availableRoom">
                     <button :class="availableRoom === getRoom() ? 'selected' : ''"
                       @click="changeRoomDropdown(availableRoom)">
@@ -225,18 +246,19 @@ const closeChat = () => {
                 </div>
               </div>
               <div v-if="showSettings" class="settings-section">
-                <button @click="settingsMenu = !settingsMenu" class="settings-button">Settings</button>
+                <button @click="settingsMenu = !settingsMenu" class="settings-button"
+                  :class="{ 'dark': isDark }">Settings</button>
               </div>
-              <button @click="closeChat" class="minimize-button">
+              <button @click="closeChat" class="minimize-button" :class="{ 'dark': isDark }">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M11.5 0.5L0.5 11.5M0.5 0.5L11.5 11.5" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </button>
             </div>
             <Transition name="fade">
-              <div v-if="settingsMenu" class="chat-subHeader">
+              <div v-if="settingsMenu" class="chat-subHeader" :class="{ 'dark': isDark }">
                 <div class="user-section">
-                  <div v-if="getOptions()?.userChangeNick" class="user-name-input">
+                  <div v-if="getOptions()?.userChangeNick" class="user-name-input" :class="{ 'dark': isDark }">
                     <div v-if="!editMode">
                       <span>{{ getMyName() }}</span>
                       <svg width="14" height="13" viewBox="0 0 14 13" fill="none" xmlns="http://www.w3.org/2000/svg"
@@ -248,8 +270,10 @@ const closeChat = () => {
                     </div>
                     <div v-else>
                       <input v-model="editedUserName" @keypress.enter="saveEditedUserName" class="edit-user-input" />
-                      <button class="change-name-btn" @click="saveEditedUserName">OK</button>
-                      <button class="cancel-change-name-btn" @click="exitEditMode">Cancel</button>
+                      <button class="change-name-btn" :class="{ 'dark': isDark }"
+                        @click="saveEditedUserName">OK</button>
+                      <button class="cancel-change-name-btn" :class="{ 'dark': isDark }"
+                        @click="exitEditMode">Cancel</button>
                     </div>
                   </div>
                   <div v-else>
@@ -263,11 +287,12 @@ const closeChat = () => {
               </div>
             </Transition>
           </div>
-          <ChatContainer :styleConfig="styleConfig" :colors="colors" :open="isChatOpen" />
+          <ChatContainer :styleConfig="styleConfig" :lightColors="lightColors" :darkColors="darkColors"
+            :open="isChatOpen" :theme="theme" />
         </div>
       </Transition>
       <Transition name="fastFade" mode="out-in">
-        <button v-if="!isChatOpen" @click="openChat" class="open-button">
+        <button v-if="!isChatOpen" @click="openChat" class="open-button" :class="{ 'dark': isDark }">
           <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z"
@@ -276,7 +301,7 @@ const closeChat = () => {
         </button>
       </Transition>
     </div>
-    <div v-else-if="getStatus() === 'connecting'" class="spinner" key="conecting">
+    <div v-else-if="getStatus() === 'connecting'" class="spinner" :class="{ 'dark': isDark }" key="conecting">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="12" r="10" stroke-opacity="0.4" stroke-width="4" />
         <path
@@ -288,7 +313,7 @@ const closeChat = () => {
       </svg>
     </div>
     <div v-else key="disconnected">
-      <button @click="openChat" class="load-button">
+      <button @click="openChat" class="load-button" :class="{ 'dark': isDark }">
         <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z"
@@ -309,8 +334,13 @@ const closeChat = () => {
   width: 50%;
   outline: none;
   padding-left: 8px;
-  color: v-bind('colors.grayScale[5]');
-  background-color: v-bind('colors.grayScale[1]');
+  color: v-bind('lightColors.grayScale[5]');
+  background-color: v-bind('lightColors.grayScale[1]');
+}
+
+.user-name-input.dark input {
+  color: v-bind('darkColors.grayScale[5]');
+  background-color: v-bind('darkColors.grayScale[1]');
 }
 
 .user-name-input div span {
@@ -322,7 +352,13 @@ const closeChat = () => {
 
 .user-name-input svg {
   cursor: pointer;
-  stroke: v-bind('colors.grayScale[5]');
+  stroke: v-bind('lightColors.grayScale[5]');
+  margin-left: 8px;
+}
+
+.user-name-input.dark svg {
+  cursor: pointer;
+  stroke: v-bind('darkColors.grayScale[5]');
   margin-left: 8px;
 }
 
@@ -334,25 +370,41 @@ const closeChat = () => {
 .change-name-btn {
   cursor: pointer;
   margin-left: 8px;
-  color: v-bind('colors.primary');
+  color: v-bind('lightColors.primary');
   background: transparent;
   border: none;
 }
 
+.change-name-btn.dark {
+  color: v-bind('darkColors.secondary');
+}
+
 .change-name-btn:hover {
-  color: v-bind('colors.secondary');
+  color: v-bind('lightColors.secondary');
+}
+
+.change-name-btn.dark:hover {
+  color: v-bind('darkColors.tertiary');
 }
 
 .cancel-change-name-btn {
   cursor: pointer;
   margin-left: auto;
-  color: v-bind('colors.primary');
+  color: v-bind('lightColors.primary');
   background: transparent;
   border: none;
 }
 
+.cancel-change-name-btn.dark {
+  color: v-bind('darkColors.secondary');
+}
+
 .cancel-change-name-btn:hover {
-  color: v-bind('colors.secondary');
+  color: v-bind('lightColors.secondary');
+}
+
+.cancel-change-name-btn.dark:hover {
+  color: v-bind('darkColors.tertiary');
 }
 
 .room-dropdown {
@@ -365,7 +417,7 @@ const closeChat = () => {
   left: 16px;
   top: 36px;
   position: absolute;
-  background-color: v-bind('colors.grayScale[0]');
+  background-color: v-bind('lightColors.grayScale[0]');
   min-width: 136px;
   z-index: 20;
   max-width: 344px;
@@ -373,11 +425,16 @@ const closeChat = () => {
   text-overflow: ellipsis;
   white-space: nowrap;
   border-radius: 8px;
-  border: v-bind('styleConfig.border.size') solid v-bind('colors.primary');
+  border: v-bind('styleConfig.border.size') solid v-bind('lightColors.primary');
+}
+
+.dropdown-content.dark {
+  background-color: v-bind('darkColors.grayScale[0]');
+  border: v-bind('styleConfig.border.size') solid v-bind('darkColors.primary');
 }
 
 .dropdown-content button {
-  color: v-bind('colors.grayScale[5]');
+  color: v-bind('lightColors.grayScale[5]');
   padding: 12px 16px;
   text-decoration: none;
   display: block;
@@ -391,12 +448,24 @@ const closeChat = () => {
   border-radius: 8px;
 }
 
+.dropdown-content.dark button {
+  color: v-bind('darkColors.grayScale[5]');
+}
+
 .dropdown-content .selected {
-  color: v-bind('colors.primary');
+  color: v-bind('lightColors.primary');
+}
+
+.dropdown-content.dark .selected {
+  color: v-bind('darkColors.primary');
 }
 
 .dropdown-content button:hover {
-  background-color: v-bind('colors.tertiary');
+  background-color: v-bind('lightColors.tertiary');
+}
+
+.dropdown-content.dark button:hover {
+  background-color: v-bind('darkColors.tertiary');
 }
 
 .dropdown-button {
@@ -407,8 +476,13 @@ const closeChat = () => {
   font-weight: 600;
   line-height: 14px;
   align-items: center;
-  color: v-bind('colors.primary');
-  stroke: v-bind('colors.primary');
+  color: v-bind('lightColors.primary');
+  stroke: v-bind('lightColors.primary');
+}
+
+.dropdown-button.dark {
+  color: v-bind('darkColors.secondary');
+  stroke: v-bind('darkColors.secondary');
 }
 
 .room-text {
@@ -423,9 +497,14 @@ const closeChat = () => {
 }
 
 .dropdown-button:hover {
-  color: v-bind('colors.secondary');
-  stroke: v-bind('colors.secondary');
+  color: v-bind('lightColors.secondary');
+  stroke: v-bind('lightColors.secondary');
   text-decoration: underline;
+}
+
+.dropdown-button.dark:hover {
+  color: v-bind('darkColors.tertiary');
+  stroke: v-bind('darkColors.tertiary');
 }
 
 .chat-container {
@@ -433,13 +512,18 @@ const closeChat = () => {
   position: fixed;
   bottom: 16px;
   right: 16px;
-  background-color: v-bind('colors.grayScale[1]');
-  border: v-bind('styleConfig.border.size') solid v-bind('colors.primary');
+  background-color: v-bind('lightColors.grayScale[1]');
+  border: v-bind('styleConfig.border.size') solid v-bind('lightColors.primary');
   border-radius: 8px;
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease-in-out;
   box-shadow: 0px 10px 25px -5px rgba(0, 0, 0, v-bind('styleConfig.shadows.openedComponent'));
+}
+
+.chat-container.dark {
+  background-color: v-bind('darkColors.grayScale[1]');
+  border: v-bind('styleConfig.border.size') solid v-bind('darkColors.primary');
 }
 
 .chat-container.open {
@@ -454,10 +538,14 @@ const closeChat = () => {
   height: 100%;
   border-radius: 8px;
   background-color: rgba(0, 0, 0, 0.2);
-  stroke: v-bind('colors.secondary');
+  stroke: v-bind('lightColors.secondary');
   text-align: center;
   align-content: center;
   z-index: 100;
+}
+
+.change-room-overlay.dark {
+  stroke: v-bind('darkColors.secondary');
 }
 
 .change-room-overlay svg {
@@ -466,13 +554,18 @@ const closeChat = () => {
 
 .chat-header {
   height: 19px;
-  background-color: v-bind('colors.quaternary');
-  color: v-bind('colors.grayScale[3]');
+  background-color: v-bind('lightColors.quaternary');
+  color: v-bind('lightColors.grayScale[3]');
   padding: 12px 16px;
   justify-content: space-between;
   align-items: center;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
+}
+
+.chat-header.dark {
+  background-color: v-bind('darkColors.quaternary');
+  color: v-bind('darkColors.grayScale[3]');
 }
 
 .chat-header>div {
@@ -486,16 +579,24 @@ const closeChat = () => {
 }
 
 .settings-button {
-  color: v-bind('colors.primary');
+  color: v-bind('lightColors.primary');
   background: transparent;
   line-height: 14px;
   border: none;
 }
 
+.settings-button.dark {
+  color: v-bind('darkColors.secondary');
+}
+
 .settings-button:hover {
-  color: v-bind('colors.secondary');
+  color: v-bind('lightColors.secondary');
   text-decoration: underline;
   cursor: pointer;
+}
+
+.settings-button.dark:hover {
+  color: v-bind('darkColors.tertiary');
 }
 
 .user-section {
@@ -545,8 +646,13 @@ const closeChat = () => {
   width: 100%;
   margin-left: -16px;
   margin-top: 12px;
-  background-color: v-bind('colors.quaternary');
-  color: v-bind('colors.primary');
+  background-color: v-bind('lightColors.quaternary');
+  color: v-bind('lightColors.primary');
+}
+
+.chat-subHeader.dark {
+  background-color: v-bind('darkColors.quaternary');
+  color: v-bind('darkColors.secondary');
 }
 
 .chat-subHeader>div {
@@ -566,7 +672,11 @@ const closeChat = () => {
   margin-right: 10px;
   line-height: 16px;
   font-size: 12px !important;
-  color: rgba(107, 114, 128, 1);
+  color: v-bind('lightColors.grayScale[3]');
+}
+
+.room-info.dark {
+  color: v-bind('darkColors.grayScale[4]');
 }
 
 .open-button,
@@ -575,7 +685,7 @@ const closeChat = () => {
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  transition: background-color 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -592,39 +702,73 @@ const closeChat = () => {
 }
 
 .load-button {
-  background-color: v-bind('colors.primary');
-  color: v-bind('colors.grayScale[1]');
-  fill: v-bind('colors.grayScale[1]');
+  background-color: v-bind('lightColors.primary');
+  color: v-bind('lightColors.grayScale[1]');
+  fill: v-bind('lightColors.grayScale[1]');
+}
+
+.load-button.dark {
+  background-color: v-bind('darkColors.primary');
+  color: v-bind('darkColors.grayScale[4]');
+  fill: v-bind('darkColors.grayScale[4]');
 }
 
 .load-button:hover {
-  background-color: v-bind('colors.secondary');
-  color: v-bind('colors.grayScale[1]');
-  fill: v-bind('colors.grayScale[1]');
+  background-color: v-bind('lightColors.secondary');
+  color: v-bind('lightColors.quaternary');
+  fill: v-bind('lightColors.quaternary');
+}
+
+.load-button.dark:hover {
+  background-color: v-bind('darkColors.tertiary');
+  color: v-bind('darkColors.primary');
+  fill: v-bind('darkColors.primary');
 }
 
 .open-button {
-  background-color: v-bind('colors.primary');
-  color: v-bind('colors.grayScale[1]');
-  fill: v-bind('colors.grayScale[1]');
+  background-color: v-bind('lightColors.primary');
+  color: v-bind('lightColors.grayScale[1]');
+  fill: v-bind('lightColors.grayScale[1]');
+}
+
+.open-button.dark {
+  background-color: v-bind('darkColors.primary');
+  color: v-bind('darkColors.grayScale[4]');
+  fill: v-bind('darkColors.grayScale[4]');
 }
 
 .open-button:hover {
-  background-color: v-bind('colors.secondary');
-  color: v-bind('colors.grayScale[1]');
-  fill: v-bind('colors.grayScale[1]');
+  background-color: v-bind('lightColors.secondary');
+  color: v-bind('lightColors.quaternary');
+  fill: v-bind('lightColors.quaternary');
+}
+
+.open-button.dark:hover {
+  background-color: v-bind('darkColors.tertiary');
+  color: v-bind('darkColors.primary');
+  fill: v-bind('darkColors.primary');
 }
 
 .spinner {
-  background-color: v-bind('colors.primary');
-  color: v-bind('colors.grayScale[1]');
-  stroke: v-bind('colors.grayScale[1]');
+  background-color: v-bind('lightColors.primary');
+  color: v-bind('lightColors.quaternary');
+  stroke: v-bind('lightColors.quaternary');
+}
+
+.spinner.dark {
+  background-color: v-bind('darkColors.primary');
+  color: v-bind('darkColors.tertiary');
+  stroke: v-bind('darkColors.tertiary');
 }
 
 .minimize-button {
   margin-left: 32px;
-  stroke: v-bind('colors.grayScale[3]');
+  stroke: v-bind('lightColors.grayScale[3]');
   background: transparent;
+}
+
+.minimize-button.dark {
+  stroke: v-bind('darkColors.grayScale[4]');
 }
 
 .minimize-button svg {
@@ -632,7 +776,11 @@ const closeChat = () => {
 }
 
 .minimize-button:hover {
-  stroke: v-bind('colors.grayScale[1]');
+  stroke: v-bind('lightColors.secondary');
+}
+
+.minimize-button.dark:hover {
+  stroke: v-bind('darkColors.tertiary');
 }
 
 .spinner svg {

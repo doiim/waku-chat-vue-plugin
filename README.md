@@ -78,7 +78,7 @@ Follow these steps to install and use the package in your project:
     ```js
       <WakuChatVuePlugin :externalUserId="externalId" :externalUserName="externalName" 
       :onOpen="externalOnOpen" :onClose="externalOnClose"
-      :onConnect="externalOnConnect" :onDisconnect="externalOnDisconnect" />
+      :onConnect="externalOnConnect" :onDisconnect="externalOnDisconnect" :theme="dark"/>
     ```
 
   The configurations available are:
@@ -89,6 +89,7 @@ Follow these steps to install and use the package in your project:
 - `onClose`: (() => void) (optional) - A function called everytime user closes the chat window.
 - `onConnect`: (() => void) (optional) - A function called when chat connects from peers.
 - `onDisconnect`: (() => void) (optional) - A function called when chat disconnects from peers, usually when chat is closed and 'disconnectDelay' time passes.
+- `theme`: ('light' | 'dark') (optional) - Choose a theme, it will affect colors. if none is chosen light it will be chosen
 
 ### Configuration Options
 
@@ -103,7 +104,6 @@ Here are the available configuration options:
 - `messageAgeToDownload`: (number) (optional) - Max age of messages in milisseconds which messages would be downloaded when user connects to chat. Default not considering age of messages.
 - `showSystemMessages`: (boolean) (optional) - Show or not system messages. Default not show.
 - `userChangeNick`: (boolean) (optional) - Allow users to change their nicknames.
-- `theme`: ('light' | 'dark') (optional) - Choose a theme, it will affect colors. if none is chosen light it will be chosen
 - `styleConfig`:(Object) (optional) - Allow you to change css. ALl of them are optional, if you don’t set any of them, a default value will be applied. They are:
   - colors:(Object) - Allow you to change colors of components.
     - light: (Object) - Allow you to change colors of light theme.

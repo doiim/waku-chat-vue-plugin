@@ -9,6 +9,7 @@ const props = defineProps<{
     onClose?: () => void;
     onConnect?: () => void;
     onDisconnect?: () => void;
+    theme?: string;
 }>()
 
 const pluginHead = ref<HTMLHeadElement | null>(null);
@@ -37,7 +38,7 @@ onMounted(() => {
         <body>
             <WakuChat :externalUserId="props.externalUserId" :externalUserName="props.externalUserName"
                 :onConnect="props.onConnect" :onDisconnect="props.onDisconnect" :onOpen="props.onOpen"
-                :onClose="props.onClose" />
+                :onClose="props.onClose" :theme="props.theme" />
         </body>
     </shadow-root>
 </template>

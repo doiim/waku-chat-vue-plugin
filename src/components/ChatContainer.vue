@@ -12,7 +12,15 @@ import { scrollToBottom, scrollToMessage } from "../utils/animation";
 
 const props = defineProps<{
   styleConfig: any;
-  colors: {
+  theme?: string;
+  lightColors: {
+    primary: string,
+    secondary: string,
+    tertiary: string,
+    quaternary: string,
+    grayScale: string[],
+  };
+  darkColors: {
     primary: string,
     secondary: string,
     tertiary: string,
@@ -24,6 +32,10 @@ const props = defineProps<{
 
 const propsOpen = computed(() => {
   return props.open
+});
+
+const isDark = computed(() => {
+  return props.theme === 'dark'
 });
 
 
@@ -186,19 +198,20 @@ const printSystemMessage = (msg: any) => {
 </script>
 
 <template>
-  <div class="main-container">
-    <div class="chat-body" ref="messageContainerRef">
+  <div class="main-container" :class="{ 'dark': isDark }">
+    <div class="chat-body" :class="{ 'dark': isDark }" ref="messageContainerRef">
       <TransitionGroup name="fade">
-        <div v-for="(groupedMsgs, idGroup) in groupedMessages" :key="groupedMsgs[0].id"
-          :class="{ 'own-message': groupedMsgs[0].author.id === getMyID() }" class="message-container"
-          :id="groupedMsgs[0].id">
+        <div v-for="(groupedMsgs, idGroup) in groupedMessages" :key="groupedMsgs[0].id" :class="{
+          'own-message': groupedMsgs[0].author.id === getMyID(),
+          'dark': isDark
+        }" class="message-container" :id="groupedMsgs[0].id">
           <Transition name="fade">
-            <span v-if="groupedMsgs[0].type === 'text' && checkPreviousMsgName(idGroup)" class="user-name-baloon">
+            <span v-if="groupedMsgs[0].type === 'text' && checkPreviousMsgName(idGroup)" class="user-name-baloon" :class="{ 'dark': isDark }">
               {{ groupedMsgs[0].author.name }}
             </span>
           </Transition>
           <Transition name="fade">
-            <div v-if="groupedMsgs[0].type === 'text'" class="grouped-message">
+            <div v-if="groupedMsgs[0].type === 'text'" class="grouped-message" :class="{ 'dark': isDark }">
               <button class="interact-button" v-if="groupedMsgs[0].author.id === getMyID()"
                 @click="setResponse(idGroup)">
                 <svg width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -215,19 +228,19 @@ const printSystemMessage = (msg: any) => {
                     stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </button>
-              <div class="message">
+              <div class="message" :class="{ 'dark': isDark }">
                 <TransitionGroup name="fade">
                   <div v-if="groupedMsgs[0].responseTo && groupedResponse(groupedMsgs[0].responseTo).length <= 0"
-                    class="grouped-message grouped-response response-disabled">
+                    class="grouped-message grouped-response response-disabled" :class="{ 'dark': isDark }">
                     Couldn&apos;t load the message
                   </div>
                   <div v-else-if="groupedMsgs[0].responseTo"
                     @click="scrollToMessage(groupedMsgs[0].responseTo, messageContainerRef)"
-                    class="grouped-message grouped-response">
-                    <span class="user-name-baloon">
+                    class="grouped-message grouped-response" :class="{ 'dark': isDark }">
+                    <span class="user-name-baloon" :class="{ 'dark': isDark }">
                       {{ groupedResponse(groupedMsgs[0].responseTo)[0].author.name }}
                     </span>
-                    <div class="message">
+                    <div class="message" :class="{ 'dark': isDark }">
                       <div v-for="(message, idMsg) in groupedResponse(groupedMsgs[0].responseTo).slice(0, 4)"
                         :key="idMsg" class="message-content">{{
                           message.data
@@ -243,7 +256,7 @@ const printSystemMessage = (msg: any) => {
                     {{ message.data }}
                   </div>
                   <div v-for="(msgReact, idxReact) in getMessageReactions(groupedMsgs[0].id)" class="message-react"
-                    :key="idxReact">
+                    :class="{ 'dark': isDark }" :key="idxReact">
                     <button v-if="msgReact.reaction === 'like'" @click="reactMessage(idGroup, 'none')">
                       <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -275,34 +288,34 @@ const printSystemMessage = (msg: any) => {
               </TransitionGroup>
             </div>
             <div v-else-if="showSystemMessages && userShowSystemMessages && groupedMsgs[0].type === 'system'"
-              class="system-message">
+              class="system-message" :class="{ 'dark': isDark }">
               <TransitionGroup name="fade">
                 <div v-for="(message, idMsg) in groupedMsgs" class="message-content" :key="idMsg">{{
                   printSystemMessage(message)
-                  }}
+                }}
                 </div>
               </TransitionGroup>
             </div>
           </Transition>
           <Transition name="fade">
-            <div v-if="groupedMsgs[0].type === 'text'" class="timestamp">
+            <div v-if="groupedMsgs[0].type === 'text'" class="timestamp" :class="{ 'dark': isDark }">
               {{ formatTimestamp(groupedMsgs[groupedMsgs.length - 1].timestamp) }}
             </div>
           </Transition>
         </div>
       </TransitionGroup>
     </div>
-    <div :class="`chat-footer ${responseTo !== undefined ? 'footer-response' : ''}`">
+    <div :class="`chat-footer ${responseTo !== undefined ? 'footer-response' : ''} ${isDark ? 'dark' : ''}`">
       <Transition name="fade">
-        <div v-if="responseTo !== undefined" class="response-input">
+        <div v-if="responseTo !== undefined" :class="`response-input ${isDark ? 'dark' : ''}`">
           <div>
-            <span class="user-name-baloon">
+            <span class="user-name-baloon" :class="{ 'dark': isDark }">
               {{ groupedMessages[responseTo][0].author.name }}
             </span>
             <TransitionGroup name="fade">
               <div v-for="(message, idMsg) in groupedMessages[responseTo].slice(0, 1)" :key="idMsg">{{
                 message.data
-                }}
+              }}
               </div>
               <div v-if="groupedMessages[responseTo].length > 1">...</div>
             </TransitionGroup>
@@ -314,10 +327,10 @@ const printSystemMessage = (msg: any) => {
           </button>
         </div>
       </Transition>
-      <div class="message-input">
+      <div class="message-input" :class="{ 'dark': isDark }">
         <input v-model="messageInput" placeholder="Type your message..." @keypress.enter="handleSendMessage"
           :disabled="loadingRoom" />
-        <button @click="handleSendMessage" class="send-button" :disabled="loadingRoom || !messageInput">
+        <button @click="handleSendMessage" class="send-button" :class="{ 'dark': isDark }" :disabled="loadingRoom || !messageInput">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="current">
             <path
               d="M20.3534 10.9267C21.2378 11.3689 21.2378 12.6311 20.3534 13.0733L4.61964 20.9402C3.59859 21.4507 2.50875 20.3816 2.99955 19.351L6.25432 12.5159C6.40974 12.1895 6.40974 11.8105 6.25432 11.4841L2.99955 4.64905C2.50875 3.61837 3.59859 2.54929 4.61964 3.05982L20.3534 10.9267Z" />
@@ -333,7 +346,12 @@ const printSystemMessage = (msg: any) => {
   display: flex;
   flex-direction: column;
   height: 557px;
-  background-color:v-bind('colors.grayScale[0]');
+  border-radius: 8px;
+  background-color: v-bind('lightColors.grayScale[0]');
+}
+
+.main-container.dark {
+  background-color: v-bind('darkColors.grayScale[0]');
 }
 
 .chat-body {
@@ -348,8 +366,12 @@ const printSystemMessage = (msg: any) => {
 }
 
 .chat-body::-webkit-scrollbar-thumb {
-  background-color: v-bind('colors.secondary');
+  background-color: v-bind('lightColors.secondary');
   border-radius: 5px;
+}
+
+.chat-body.dark::-webkit-scrollbar-thumb {
+  background-color: v-bind('darkColors.secondary');
 }
 
 .chat-footer {
@@ -359,11 +381,19 @@ const printSystemMessage = (msg: any) => {
   padding: 24px 16px;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
-  background-color: v-bind('colors.grayScale[0]');
+  background-color: v-bind('lightColors.grayScale[0]');
+}
+
+.chat-footer.dark {
+  background-color: v-bind('darkColors.grayScale[0]');
 }
 
 .footer-response {
-  background-color: v-bind('colors.quaternary');
+  background-color: v-bind('lightColors.quaternary');
+}
+
+.footer-response.dark {
+  background-color: v-bind('darkColors.primary');
 }
 
 .response-input {
@@ -374,15 +404,24 @@ const printSystemMessage = (msg: any) => {
 
 .response-input .user-name-baloon {
   margin-left: auto;
-  color: v-bind('colors.tertiary');
+  color: v-bind('lightColors.tertiary');
+}
+
+.response-input.dark .user-name-baloon {
+  color: v-bind('darkColors.tertiary');
 }
 
 .response-input>div {
   padding: 4px 8px;
   border-radius: 8px;
   max-width: 67%;
-  background-color: v-bind('colors.secondary');
-  color: rgba(209, 213, 219, 1);
+  background-color: v-bind('lightColors.secondary');
+  color: v-bind('lightColors.grayScale[1]');
+}
+
+.response-input.dark>div {
+  background-color: v-bind('darkColors.quaternary');
+  color: v-bind('darkColors.grayScale[4]');
 }
 
 .response-input>div>div {
@@ -392,7 +431,7 @@ const printSystemMessage = (msg: any) => {
 }
 
 .response-input button {
-  stroke: v-bind('colors.grayScale[3]');
+  stroke: v-bind('lightColors.grayScale[3]');
   align-self: center;
   margin-left: auto;
   background: transparent;
@@ -401,8 +440,16 @@ const printSystemMessage = (msg: any) => {
   padding: 8px;
 }
 
+.response-input.dark button {
+  stroke: v-bind('darkColors.grayScale[4]');
+}
+
 .response-input button:hover {
-  stroke: v-bind('colors.secondary');
+  stroke: v-bind('lightColors.secondary');
+}
+
+.response-input.dark button:hover {
+  stroke: v-bind('darkColors.quaternary');
 }
 
 .message-input {
@@ -411,7 +458,13 @@ const printSystemMessage = (msg: any) => {
   height: 48px;
   line-height: 16px;
   border-radius: 8px;
-  background-color: v-bind('colors.grayScale[1]');
+  color: v-bind('lightColors.grayScale[5]');
+  background-color: v-bind('lightColors.grayScale[1]');
+}
+
+.message-input.dark {
+  color: v-bind('darkColors.grayScale[5]');
+  background-color: v-bind('darkColors.grayScale[1]');
 }
 
 .message-input input {
@@ -419,17 +472,30 @@ const printSystemMessage = (msg: any) => {
   outline: none;
   border: none;
   margin-left: 12px;
-  color: rgba(31, 41, 55, 1);
-  background-color: v-bind('colors.grayScale[1]');
+  color: v-bind('lightColors.grayScale[5]');
+  background-color: v-bind('lightColors.grayScale[1]');
+}
+
+.message-input.dark input {
+  color: v-bind('darkColors.grayScale[5]');
+  background-color: v-bind('darkColors.grayScale[1]');
 }
 
 .message-input input::placeholder {
-  color: v-bind('colors.grayScale[2]');
+  color: v-bind('lightColors.grayScale[2]');
   opacity: 1;
 }
 
+.message-input.dark input::placeholder {
+  color: v-bind('darkColors.grayScale[2]');
+}
+
 .message-input input::-ms-input-placeholder {
-  color: v-bind('colors.grayScale[2]');
+  color: v-bind('lightColors.grayScale[2]');
+}
+
+.message-input.dark input::-ms-input-placeholder {
+  color: v-bind('darkColors.grayScale[2]');
 }
 
 .message-input button {
@@ -448,13 +514,23 @@ const printSystemMessage = (msg: any) => {
 }
 
 .send-button svg {
-  fill: v-bind('colors.primary');
-  color: v-bind('colors.primary');
+  fill: v-bind('lightColors.primary');
+  color: v-bind('lightColors.primary');
+}
+
+.send-button.dark svg {
+  fill: v-bind('darkColors.primary');
+  color: v-bind('darkColors.primary');
 }
 
 .send-button:hover svg {
-  fill: v-bind('colors.secondary');
-  color: v-bind('colors.grayScale[1]');
+  fill: v-bind('lightColors.secondary');
+  color: v-bind('lightColors.grayScale[1]');
+}
+
+.send-button.dark:hover svg {
+  fill: v-bind('darkColors.secondary');
+  color: v-bind('darkColors.grayScale[1]');
 }
 
 .send-button:disabled {
@@ -462,14 +538,24 @@ const printSystemMessage = (msg: any) => {
 }
 
 .send-button:disabled svg {
-  fill: v-bind('colors.grayScale[4]');
-  color: v-bind('colors.grayScale[4]');
+  fill: v-bind('lightColors.grayScale[4]');
+  color: v-bind('lightColors.grayScale[4]');
+}
+
+.send-button.dark:disabled svg {
+  fill: v-bind('darkColors.grayScale[4]');
+  color: v-bind('darkColors.grayScale[4]');
 }
 
 .own-message .message {
-  background-color: v-bind('colors.primary');
+  background-color: v-bind('lightColors.primary');
   font-weight: 400;
-  color: v-bind('colors.grayScale[1]');
+  color: v-bind('lightColors.grayScale[1]');
+}
+
+.own-message.dark .message {
+  background-color: v-bind('darkColors.primary');
+  color: v-bind('darkColors.grayScale[5]');
 }
 
 .own-message .timestamp {
@@ -478,14 +564,22 @@ const printSystemMessage = (msg: any) => {
 
 .own-message .user-name-baloon {
   margin-left: auto;
-  color: v-bind('colors.primary');
+  color: v-bind('lightColors.primary');
+}
+
+.own-message.dark .user-name-baloon {
+  color: v-bind('darkColors.secondary');
 }
 
 .user-name-baloon {
   font-size: 10px !important;
   line-height: 12px;
   margin-bottom: 4px;
-  color: v-bind('colors.grayScale[4]');
+  color: v-bind('lightColors.grayScale[4]');
+}
+
+.user-name-baloon.dark {
+  color: v-bind('darkColors.grayScale[4]');
 }
 
 .message-container {
@@ -501,14 +595,19 @@ const printSystemMessage = (msg: any) => {
   max-width: 67%;
   padding: 8px 12px;
   border-radius: 8px;
-  background-color: v-bind('colors.grayScale[1]');
-  color: v-bind('colors.grayScale[5]');
+  background-color: v-bind('lightColors.grayScale[1]');
+  color: v-bind('lightColors.grayScale[5]');
   box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, v-bind('styleConfig.shadows.messageBalloon'));
 }
 
+.message.dark {
+  background-color: v-bind('darkColors.grayScale[1]');
+  color: v-bind('darkColors.grayScale[5]');
+}
+
 .grouped-response {
-  background-color: v-bind('colors.grayScale[3]');
-  color: v-bind('colors.grayScale[1]');
+  background-color: v-bind('lightColors.grayScale[3]');
+  color: v-bind('lightColors.grayScale[1]');
   margin-bottom: 8px;
   border-radius: 4px;
   padding: 4px 8px 8px 8px;
@@ -517,30 +616,58 @@ const printSystemMessage = (msg: any) => {
   flex-direction: column;
 }
 
+.grouped-response.dark {
+  background-color: v-bind('darkColors.grayScale[3]');
+  color: v-bind('darkColors.grayScale[1]');
+}
+
 .grouped-response .message {
-  background-color: v-bind('colors.grayScale[3]');
-  color: v-bind('colors.grayScale[1]');
+  background-color: v-bind('lightColors.grayScale[3]');
+  color: v-bind('lightColors.grayScale[1]');
+  box-shadow: none;
   padding: 0px;
 }
 
+.grouped-response.dark .message {
+  background-color: v-bind('darkColors.grayScale[3]');
+  color: v-bind('darkColors.grayScale[5]');
+}
+
 .own-message .grouped-response {
-  background-color: v-bind('colors.secondary');
+  background-color: v-bind('lightColors.secondary');
+}
+
+.own-message.dark .grouped-response {
+  background-color: v-bind('darkColors.quaternary');
 }
 
 .own-message .grouped-response .message {
   margin-left: auto;
-  background-color: v-bind('colors.secondary');
-  color: rgba(209, 213, 219, 1);
+  background-color: v-bind('lightColors.secondary');
+  color: v-bind('lightColors.grayScale[1]');
+}
+
+.own-message.dark .grouped-response .message {
+  background-color: v-bind('darkColors.quaternary');
+  color: v-bind('darkColors.grayScale[4]');
 }
 
 .grouped-response .user-name-baloon {
   margin-bottom: 8px;
   margin-left: 0px;
-  color: rgba(209, 213, 219, 1);
+  color: v-bind('lightColors.grayScale[1]');
+}
+
+.grouped-response.dark .user-name-baloon {
+  color: v-bind('darkColors.grayScale[4]');
 }
 
 .own-message .grouped-response .user-name-baloon {
-  color: v-bind('colors.tertiary');
+  color: v-bind('lightColors.tertiary');
+}
+
+.own-message.dark .grouped-response .user-name-baloon {
+  color: v-bind('darkColors.tertiary');
 }
 
 .grouped-message {
@@ -565,8 +692,13 @@ const printSystemMessage = (msg: any) => {
 }
 
 .grouped-message:hover>.interact-button:hover {
-  stroke: v-bind('colors.grayScale[1]');
-  background-color: v-bind('colors.secondary');
+  stroke: v-bind('lightColors.grayScale[1]');
+  background-color: v-bind('lightColors.secondary');
+}
+
+.grouped-message.dark:hover>.interact-button:hover {
+  stroke: v-bind('darkColors.grayScale[1]');
+  background-color: v-bind('darkColors.tertiary');
 }
 
 .grouped-message button:first-child {
@@ -575,8 +707,13 @@ const printSystemMessage = (msg: any) => {
 }
 
 .grouped-message:hover>.interact-button {
-  stroke: rgba(31, 41, 55, 1);
-  background-color: v-bind('colors.grayScale[1]');
+  stroke: v-bind('lightColors.grayScale[5]');
+  background-color: v-bind('lightColors.grayScale[1]');
+}
+
+.grouped-message.dark:hover>.interact-button {
+  stroke: v-bind('darkColors.grayScale[5]');
+  background-color: v-bind('darkColors.grayScale[1]');
 }
 
 .own-message .interact-button {
@@ -600,17 +737,26 @@ const printSystemMessage = (msg: any) => {
   border-radius: 4px;
   align-self: center !important;
   text-align: center;
-  background-color: v-bind('colors.grayScale[1]');
-  color: v-bind('colors.primary');
+  background-color: v-bind('lightColors.grayScale[1]');
+  color: v-bind('lightColors.primary');
   box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, v-bind('styleConfig.shadows.messageBalloon'));
 }
 
+.system-message.dark {
+  background-color: v-bind('darkColors.grayScale[1]');
+  color: v-bind('darkColors.primary');
+}
+
 .timestamp {
-  color: v-bind('colors.grayScale[4]');
+  color: v-bind('lightColors.grayScale[4]');
   margin: 8px 0px 8px 0px;
   font-size: 9px !important;
   line-height: 9px;
   margin-bottom: 16px;
+}
+
+.timestamp.dark {
+  color: v-bind('darkColors.grayScale[4]');
 }
 
 .message-content {
@@ -631,12 +777,18 @@ const printSystemMessage = (msg: any) => {
 .message-react button {
   padding: 4px 8px 4px 8px;
   display: inline-flex;
-  background: v-bind('colors.secondary');
+  background: v-bind('lightColors.secondary');
   border-radius: 12px;
   border: none;
   cursor: pointer;
-  color: v-bind('colors.grayScale[1]');
-  stroke: v-bind('colors.grayScale[1]');
+  color: v-bind('lightColors.grayScale[1]');
+  stroke: v-bind('lightColors.grayScale[1]');
+}
+
+.message-react.dark button {
+  background: v-bind('darkColors.secondary');
+  color: v-bind('darkColors.grayScale[1]');
+  stroke: v-bind('darkColors.grayScale[1]');
 }
 
 .message-react button div {

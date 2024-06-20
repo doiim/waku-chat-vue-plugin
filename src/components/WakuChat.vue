@@ -91,7 +91,7 @@ const darkColors = ref({
   ]
 })
 
-const processFilters = () => {
+const processColors = () => {
   const primaryLightColor = new TinyColor(styleConfig.value.colors.light.primary)
 
   //light
@@ -133,10 +133,8 @@ watchEffect(() => {
   const options = getOptions();
   styleConfig.value = options?.styleConfig as Record<string, any> | undefined;;
 
-  if (!styleConfig || !styleConfig.value) return;
-
   styleConfig.value = applyDefaultStyle(defaultCss, styleConfig.value);
-  processFilters();
+  processColors();
 });
 
 onBeforeUnmount(() => {

@@ -48,41 +48,41 @@ Follow these steps to install and use the package in your project:
         changeNickMode: "message",
         styleConfig: {
           colors: {
-            light:{
-              primary:"rgba(41, 79, 204, 1)",
-              secondary:"rgba(8, 45, 166, 1)",
-              tertiary:"rgba(182, 201, 242, 1)",
-              quaternary:"rgba(217, 229, 255, 1)"
+            light: {
+              primary: "rgba(41, 79, 204, 1)",
+              secondary: "rgba(8, 45, 166, 1)",
+              tertiary: "rgba(182, 201, 242, 1)",
+              quaternary: "rgba(217, 229, 255, 1)",
             },
             dark: {
-              primary:"rgba(214, 227, 255, 1)",
-              secondary:"rgba(168, 191, 240, 1)",
-              tertiary:"rgba(26, 73, 229, 1)",
-              quaternary:"rgba(18, 51, 161, 1)"
+              primary: "rgba(214, 227, 255, 1)",
+              secondary: "rgba(168, 191, 240, 1)",
+              tertiary: "rgba(26, 73, 229, 1)",
+              quaternary: "rgba(18, 51, 161, 1)",
             },
           },
           shadows: {
             openedComponent: 0.1,
-            messageBalloon: 0.1
+            messageBalloon: 0.1,
           },
           border: {
-            size: '1px'
-          }
+            size: "1px",
+          },
         },
       })
       .mount("#app");
     ```
 
-4. Instantiate the componente inside your template.
+4.  Instantiate the componente inside your template.
 
     ```js
-      <WakuChatVuePlugin :externalUserId="externalId" :externalUserName="externalName" 
+      <WakuChatVuePlugin :externalUserId="externalId" :externalUserName="externalName"
       :onOpen="externalOnOpen" :onClose="externalOnClose"
       :onConnect="externalOnConnect" :onDisconnect="externalOnDisconnect" :theme="dark"/>
     ```
 
-  The configurations available are:
-  
+The configurations available are:
+
 - `externalUserId`: (string) - The user id for identification of message owners
 - `externalUserName`: (string) (optional) - The user name for displaying on messages, after sending a message cannot be changed on that message. If not provided, the user name will be generated using the id.
 - `onOpen`: (() => void) (optional) - A function called everytime user opens the chat window.
@@ -90,6 +90,16 @@ Follow these steps to install and use the package in your project:
 - `onConnect`: (() => void) (optional) - A function called when chat connects from peers.
 - `onDisconnect`: (() => void) (optional) - A function called when chat disconnects from peers, usually when chat is closed and 'disconnectDelay' time passes.
 - `theme`: ('light' | 'dark') (optional) - Choose a theme, it will affect colors. if none is chosen light it will be chosen
+- `chatPos`: (Object) (optional) - Choose the chat position, default is {bottom:'16px',right:'16px'}. You can use any css unit (px, %, etc)
+  - `top`: (string) (optional) - Choose top position or let it undefined if you want to set bottom
+  - `left`: (string) (optional) - Choose left position or let it undefined if you want to set right
+  - `bottom`: (string) (optional) - Choose bottom position or let it undefined if you want to set top
+  - `right`: (string) (optional) - Choose right position or let it undefined if you want to set left
+- `balloonPos`: (Object) (optional) - Choose ballon buttons position, default is {bottom:'36px',right:'34px'}. You can use any css unit (px, %, etc)
+  - `top`: (string) (optional) - Choose top position or let it undefined if you want to set bottom
+  - `left`: (string) (optional) - Choose left position or let it undefined if you want to set right
+  - `bottom`: (string) (optional) - Choose bottom position or let it undefined if you want to set top
+  - `right`: (string) (optional) - Choose right position or let it undefined if you want to set left
 
 ### Configuration Options
 

@@ -94,7 +94,11 @@ const reactions = computed(() => {
   });
 });
 
-watch([propsOpen], () => {
+const room = computed(() => {
+  return getRoom();
+});
+
+watch([propsOpen, room], () => {
   if (propsOpen) {
     setTimeout(() => {
       scrollToBottom(messageContainerRef.value);

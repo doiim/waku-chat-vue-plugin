@@ -89,8 +89,10 @@ export const setRoom = async (_room: string) => {
     await wakuData.lightNode.filter.createSubscription({
       contentTopics: [decoder.contentTopic],
     });
-  if (error) return;
-  else {
+  if (error) {
+    console.error(error);
+    return;
+  } else {
     wakuData.subscription = subscription;
   }
   await retrieveMessages(channelName, _room, messageCallback);

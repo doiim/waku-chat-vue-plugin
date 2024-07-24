@@ -19,16 +19,18 @@ const plugin = {
         if (stoppedNode) {
           node = stoppedNode;
         } else {
-          node = await createLightNode({
-            defaultBootstrap:
-              !ChatOptions.wakuPeers || ChatOptions.wakuPeers.length <= 0,
-            bootstrapPeers: ChatOptions.wakuPeers ? ChatOptions.wakuPeers : [],
+          let createNodeOptions: any = {
+            defaultBootstrap: !ChatOptions?.wakuPeers?.length,
             contentTopics: ChatOptions.availableRooms.map((room: string) => {
               return `/${channel}/1/${room
                 .toLowerCase()
                 .replace(/\s/g, "")}/proto`;
             }),
-          });
+          };
+          if (!createNodeOptions.defaultBootstrap) {
+            createNodeOptions.bootstrapPeers = ChatOptions.wakuPeers;
+          }
+          node = await createLightNode(createNodeOptions);
         }
         await node.start();
 

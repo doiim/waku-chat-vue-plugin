@@ -26,6 +26,9 @@ const plugin = {
                 .toLowerCase()
                 .replace(/\s/g, "")}/proto`;
             }),
+            libp2p: {
+              hideWebSocketInfo: true,
+            },
           };
           if (!createNodeOptions.defaultBootstrap) {
             createNodeOptions.bootstrapPeers = ChatOptions.wakuPeers;

@@ -2,7 +2,7 @@
   "name": "@doiim/waku-chat-vue-plugin",
   "type": "module",
   "homepage": "https://doiim.github.io/waku-chat-vue-plugin/",
-  "version": "0.8.17",
+  "version": "0.8.18",
   "main": "./dist/waku-chat-vue-plugin.umd.cjs",
   "module": "./dist/waku-chat-vue-plugin.js",
   "keywords": [
@@ -35,7 +35,7 @@
   "dependencies": {
     "@libp2p/bootstrap": "^10.0.16",
     "@types/tinycolor2": "^1.4.6",
-    "@waku/sdk": "^0.0.27-ce62600.0",
+    "@waku/sdk": "^0.0.26",
     "protobufjs": "^7.2.6",
     "random-words": "^2.0.1",
     "tinycolor2": "^1.6.0",

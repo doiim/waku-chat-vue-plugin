@@ -101,6 +101,21 @@ The configurations available are:
   - `bottom`: (string) (optional) - Choose bottom position or let it undefined if you want to set top
   - `right`: (string) (optional) - Choose right position or let it undefined if you want to set left
 
+5.  Define process global variable.
+
+Because of some updates on current nwaku-sdk version, you need to define globally the variable process on your application:
+On vite this can be made with:
+
+    ```js
+      import { defineConfig } from "vite";
+      import vue from "@vitejs/plugin-vue";
+      export default defineConfig({
+        plugins: [vue()],
+        base: "/waku-chat-vue/",
+        define: { process: "window.process" }
+      });
+    ```
+
 ### Configuration Options
 
 Here are the available configuration options:
@@ -154,3 +169,7 @@ This will generate the compiled project in the dist folder.
 - [Waku](https://github.com/waku-org/awesome-waku)
 - [VueJS](https://vuejs.org/)
 - [Other Doiim projects](https://github.com/doiim)
+
+```
+
+```

@@ -16,10 +16,6 @@ const plugin = {
         const channel = ChatOptions.wakuChannelName
           .toLowerCase()
           .replace(/\s/g, "");
-        // Temporarily set the process object
-        const oldProcess = global.process;
-        // @ts-ignore
-        global.process = undefined;
         if (stoppedNode) {
           node = stoppedNode;
         } else {
@@ -40,8 +36,6 @@ const plugin = {
           node = await createLightNode(createNodeOptions);
         }
         await node.start();
-        // Restore the original process object
-        global.process = oldProcess;
         await waitForRemotePeer(node, [Protocols.Store]);
         return node;
       };
@@ -125,7 +119,7 @@ export const upgradeMessage = (messageObj: any) => {
 
 export default plugin;
 
-export let loadPlugin: () => any = async () => { };
+export let loadPlugin: () => any = async () => {};
 
 export const changeTopic = async (_channel: string, _topic: string) => {
   const topic = _topic.toLowerCase().replace(/\s/g, "");

@@ -8,7 +8,7 @@ export type Message = {
   responseTo?: string;
 };
 
-export type Participant = { id: string; name: string };
+export type Participant = { id: string; name: string; type: string };
 
 export interface WakuChatVuePluginOptions {
   wakuChannelName: string;

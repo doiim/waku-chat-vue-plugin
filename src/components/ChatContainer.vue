@@ -141,7 +141,9 @@ const checkPreviousMsgName = (idx: number) => {
     groupedMessages.value[idx][0].author.id ===
       groupedMessages.value[idx - 1][0].author.id &&
     groupedMessages.value[idx][0].author.name ===
-      groupedMessages.value[idx - 1][0].author.name
+      groupedMessages.value[idx - 1][0].author.name &&
+    groupedMessages.value[idx][0].author.type ===
+      groupedMessages.value[idx - 1][0].author.type
   );
 };
 
@@ -235,7 +237,11 @@ const printSystemMessage = (msg: any) => {
               class="user-name-baloon"
               :class="{ dark: isDark }"
             >
-              {{ groupedMsgs[0].author.name }}
+              {{
+                groupedMsgs[0].author.type
+                  ? groupedMsgs[0].author.type + ": "
+                  : ""
+              }}{{ groupedMsgs[0].author.name }}
             </span>
           </Transition>
           <Transition name="fade">
@@ -309,6 +315,13 @@ const printSystemMessage = (msg: any) => {
                     :class="{ dark: isDark }"
                   >
                     <span class="user-name-baloon" :class="{ dark: isDark }">
+                      {{
+                        groupedResponse(groupedMsgs[0].responseTo)[0].author
+                          .type
+                          ? groupedResponse(groupedMsgs[0].responseTo)[0].author
+                              .type + ": "
+                          : ""
+                      }}
                       {{
                         groupedResponse(groupedMsgs[0].responseTo)[0].author
                           .name
@@ -463,6 +476,11 @@ const printSystemMessage = (msg: any) => {
         >
           <div>
             <span class="user-name-baloon" :class="{ dark: isDark }">
+              {{
+                groupedMessages[responseTo][0].author.type
+                  ? groupedMessages[responseTo][0].author.type + ": "
+                  : ""
+              }}
               {{ groupedMessages[responseTo][0].author.name }}
             </span>
             <TransitionGroup name="fade">

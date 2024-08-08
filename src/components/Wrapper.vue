@@ -5,6 +5,7 @@ import WakuChat from "./WakuChat.vue";
 const props = defineProps<{
   externalUserId?: string;
   externalUserName?: string;
+  externalUserType?: string;
   onOpen?: () => void;
   onClose?: () => void;
   onConnect?: () => void;
@@ -53,6 +54,7 @@ onMounted(() => {
       <WakuChat
         :externalUserId="props.externalUserId"
         :externalUserName="props.externalUserName"
+        :externalUserType="props.externalUserType"
         :onConnect="props.onConnect"
         :onDisconnect="props.onDisconnect"
         :onOpen="props.onOpen"

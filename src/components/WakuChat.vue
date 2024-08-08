@@ -16,6 +16,8 @@ import {
   getRoom,
   setMyName,
   getMyName,
+  setMyType,
+  getMyType,
   setMyID,
   getOptions,
   onDestroyWaku,
@@ -28,6 +30,7 @@ import { WakuChatConfigCss } from "../types/ChatTypes";
 const props = defineProps<{
   externalUserId?: string;
   externalUserName?: string;
+  externalUserType?: string;
   onOpen?: () => void;
   onClose?: () => void;
   onConnect?: () => void;
@@ -95,6 +98,10 @@ const propUserName = computed(() => {
   return props.externalUserName;
 });
 
+const propUserType = computed(() => {
+  return props.externalUserType;
+});
+
 const isDark = computed(() => {
   return props.theme === "dark";
 });
@@ -107,6 +114,10 @@ watch([propUserId], () => {
 
 watch([propUserName], () => {
   setMyName(propUserName.value);
+});
+
+watch([propUserType], () => {
+  setMyType(propUserType.value);
 });
 
 const lightColors = ref({
@@ -263,6 +274,9 @@ const openChat = async () => {
     if (propUserName.value) {
       setMyName(propUserName.value);
     }
+    if (propUserType.value) {
+      setMyType(propUserType.value);
+    }
     await loadChat();
     if (props.onConnect) {
       props.onConnect();
@@ -407,11 +421,14 @@ const closeChat = () => {
                 <div class="user-section">
                   <div
                     v-if="getOptions()?.userChangeNick"
-                    class="user-name-input"
+                    class="user-name-input-holder"
                     :class="{ dark: isDark }"
                   >
                     <div v-if="!editMode">
-                      <span>{{ getMyName() }}</span>
+                      <div class="user-name-input">
+                        <b v-if="getMyType()">{{ getMyType() }} :</b>
+                        <span>{{ getMyName() }}</span>
+                      </div>
                       <svg
                         width="14"
                         height="13"
@@ -449,7 +466,8 @@ const closeChat = () => {
                       </button>
                     </div>
                   </div>
-                  <div v-else>
+                  <div class="user-name-input" v-else>
+                    <b v-if="getMyType()">{{ getMyType() }} :</b>
                     <span>{{ getMyName() }}</span>
                   </div>
                 </div>
@@ -541,44 +559,49 @@ const closeChat = () => {
 </template>
 
 <style scoped lang="css">
-.user-name-input {
+.user-name-input-holder {
   width: 100%;
 }
 
-.user-name-input input {
+.user-name-input-holder input {
   line-height: 16px;
-  width: 50%;
+  width: 70%;
   outline: none;
   padding-left: 8px;
   color: v-bind("lightColors.grayScale[5]");
   background-color: v-bind("lightColors.grayScale[1]");
 }
 
-.user-name-input.dark input {
+.user-name-input-holder.dark input {
   color: v-bind("darkColors.grayScale[5]");
   background-color: v-bind("darkColors.grayScale[1]");
 }
 
-.user-name-input div span {
-  max-width: 50%;
+.user-name-input {
+  max-width: 70%;
+  display: flex;
+  align-items: self-end;
+}
+
+.user-name-input span {
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 12px !important;
 }
 
-.user-name-input svg {
+.user-name-input-holder svg {
   cursor: pointer;
   stroke: v-bind("lightColors.grayScale[5]");
   margin-left: 8px;
 }
 
-.user-name-input.dark svg {
+.user-name-input-holder.dark svg {
   cursor: pointer;
   stroke: v-bind("darkColors.grayScale[5]");
   margin-left: 8px;
 }
 
-.user-name-input > div {
+.user-name-input-holder > div {
   display: flex;
   width: 100%;
 }

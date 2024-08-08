@@ -104,7 +104,34 @@ const populateChatInterfaces = () => {
     return ChatInterface;
   };
 
-  return [version1(), version2()];
+  //VERSION 2
+  //Added type:string on Participant 3
+  const version3 = () => {
+    const ParticipantInterface = new Type("Participant")
+      .add(new Field("id", 1, "string"))
+      .add(new Field("name", 2, "string"))
+      .add(new Field("type", 3, "string"));
+
+    const ChatInterface = new Type("ChatInterface").add(
+      new Field("id", 1, "string")
+    );
+    const versionField = new Field("version", 2, "uint64");
+    versionField.defaultValue = 2;
+    ChatInterface.add(versionField)
+      .add(new Field("author", 3, "Participant"))
+      .add(new Field("type", 4, "string"))
+      .add(new Field("timestamp", 5, "uint64"))
+      .add(new Field("data", 6, "string"))
+      .add(new Field("room", 7, "string"));
+    const responseToField = new Field("responseTo", 8, "string");
+    responseToField.optional = true;
+    ChatInterface.add(responseToField);
+
+    ChatInterface.add(ParticipantInterface);
+    return ChatInterface;
+  };
+
+  return [version1(), version2(), version3()];
 };
 
 export const upgradeMessage = (messageObj: any) => {
@@ -112,6 +139,9 @@ export const upgradeMessage = (messageObj: any) => {
     case 0:
       messageObj.version++;
       return { ...messageObj, responseTo: undefined };
+    case 1:
+      messageObj.version++;
+      return { ...messageObj, author: { ...messageObj.author, type: "" } };
     default:
       return messageObj;
   }

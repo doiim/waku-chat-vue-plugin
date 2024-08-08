@@ -32,7 +32,7 @@ let sendMessageToServer = async (msg: Message) => {
   console.log(msg);
 };
 
-const myInfo = ref<Participant>({ id: "", name: "" });
+const myInfo = ref<Participant>({ id: "", name: "", type: "" });
 
 const retrieveMessages = async (
   _channel: string,
@@ -147,6 +147,18 @@ export const setMyName = (_newName?: string) => {
   } else {
     myInfo.value.name = _newName;
   }
+};
+
+export const setMyType = (_newType?: string) => {
+  if (_newType) {
+    myInfo.value.type = _newType;
+  } else {
+    myInfo.value.type = "";
+  }
+};
+
+export const getMyType = () => {
+  return myInfo.value.type;
 };
 
 export const getMyName = () => {

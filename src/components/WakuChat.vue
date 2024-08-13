@@ -299,6 +299,8 @@ const closeChat = () => {
     props.onClose();
   }
 };
+
+defineExpose({ openChat, closeChat });
 </script>
 
 <template>

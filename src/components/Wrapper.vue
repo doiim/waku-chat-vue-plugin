@@ -2,6 +2,8 @@
 import { defineProps, onMounted, ref } from "vue";
 import WakuChat from "./WakuChat.vue";
 
+const wakuChatRef = ref<typeof WakuChat | null>(null);
+
 const props = defineProps<{
   externalUserId?: string;
   externalUserName?: string;
@@ -26,6 +28,20 @@ const props = defineProps<{
 }>();
 
 const pluginHead = ref<HTMLHeadElement | null>(null);
+
+const openChat = () => {
+  if (wakuChatRef.value) {
+    wakuChatRef.value.openChat();
+  }
+};
+
+const closeChat = () => {
+  if (wakuChatRef.value) {
+    wakuChatRef.value.closeChat();
+  }
+};
+
+defineExpose({ openChat, closeChat });
 
 onMounted(() => {
   const style = document.createElement("style");
@@ -52,6 +68,7 @@ onMounted(() => {
 
     <body>
       <WakuChat
+        ref="wakuChatRef"
         :externalUserId="props.externalUserId"
         :externalUserName="props.externalUserName"
         :externalUserType="props.externalUserType"

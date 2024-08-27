@@ -238,10 +238,8 @@ const printSystemMessage = (msg: any) => {
               :class="{ dark: isDark }"
             >
               <div>{{ groupedMsgs[0].author.name }}</div>
-              <div class="user-type">
-                {{
-                  groupedMsgs[0].author.type ? groupedMsgs[0].author.type : ""
-                }}
+              <div v-if="groupedMsgs[0].author.type" class="user-type">
+                {{ groupedMsgs[0].author.type }}
               </div>
             </div>
           </Transition>
@@ -322,13 +320,16 @@ const printSystemMessage = (msg: any) => {
                             .name
                         }}
                       </div>
-                      <div class="user-type">
+                      <div
+                        v-if="
+                          groupedResponse(groupedMsgs[0].responseTo)[0].author
+                            .type
+                        "
+                        class="user-type"
+                      >
                         {{
                           groupedResponse(groupedMsgs[0].responseTo)[0].author
                             .type
-                            ? groupedResponse(groupedMsgs[0].responseTo)[0]
-                                .author.type
-                            : ""
                         }}
                       </div>
                     </div>
@@ -484,12 +485,11 @@ const printSystemMessage = (msg: any) => {
               <div>
                 {{ groupedMessages[responseTo][0].author.name }}
               </div>
-              <div class="user-type">
-                {{
-                  groupedMessages[responseTo][0].author.type
-                    ? groupedMessages[responseTo][0].author.type
-                    : ""
-                }}
+              <div
+                v-if="groupedMessages[responseTo][0].author.type"
+                class="user-type"
+              >
+                {{ groupedMessages[responseTo][0].author.type }}
               </div>
             </div>
             <TransitionGroup name="fade">

@@ -230,19 +230,20 @@ const printSystemMessage = (msg: any) => {
           :id="groupedMsgs[0].id"
         >
           <Transition name="fade">
-            <span
+            <div
               v-if="
                 groupedMsgs[0].type === 'text' && checkPreviousMsgName(idGroup)
               "
               class="user-name-baloon"
               :class="{ dark: isDark }"
             >
-              {{
-                groupedMsgs[0].author.type
-                  ? groupedMsgs[0].author.type + ": "
-                  : ""
-              }}{{ groupedMsgs[0].author.name }}
-            </span>
+              <div>{{ groupedMsgs[0].author.name }}</div>
+              <div class="user-type">
+                {{
+                  groupedMsgs[0].author.type ? groupedMsgs[0].author.type : ""
+                }}
+              </div>
+            </div>
           </Transition>
           <Transition name="fade">
             <div
@@ -314,19 +315,23 @@ const printSystemMessage = (msg: any) => {
                     class="grouped-message grouped-response"
                     :class="{ dark: isDark }"
                   >
-                    <span class="user-name-baloon" :class="{ dark: isDark }">
-                      {{
-                        groupedResponse(groupedMsgs[0].responseTo)[0].author
-                          .type
-                          ? groupedResponse(groupedMsgs[0].responseTo)[0].author
-                              .type + ": "
-                          : ""
-                      }}
-                      {{
-                        groupedResponse(groupedMsgs[0].responseTo)[0].author
-                          .name
-                      }}
-                    </span>
+                    <div class="user-name-baloon" :class="{ dark: isDark }">
+                      <div>
+                        {{
+                          groupedResponse(groupedMsgs[0].responseTo)[0].author
+                            .name
+                        }}
+                      </div>
+                      <div class="user-type">
+                        {{
+                          groupedResponse(groupedMsgs[0].responseTo)[0].author
+                            .type
+                            ? groupedResponse(groupedMsgs[0].responseTo)[0]
+                                .author.type
+                            : ""
+                        }}
+                      </div>
+                    </div>
                     <div class="message" :class="{ dark: isDark }">
                       <div
                         v-for="(message, idMsg) in groupedResponse(
@@ -475,14 +480,18 @@ const printSystemMessage = (msg: any) => {
           :class="`response-input ${isDark ? 'dark' : ''}`"
         >
           <div>
-            <span class="user-name-baloon" :class="{ dark: isDark }">
-              {{
-                groupedMessages[responseTo][0].author.type
-                  ? groupedMessages[responseTo][0].author.type + ": "
-                  : ""
-              }}
-              {{ groupedMessages[responseTo][0].author.name }}
-            </span>
+            <div class="user-name-baloon" :class="{ dark: isDark }">
+              <div>
+                {{ groupedMessages[responseTo][0].author.name }}
+              </div>
+              <div class="user-type">
+                {{
+                  groupedMessages[responseTo][0].author.type
+                    ? groupedMessages[responseTo][0].author.type
+                    : ""
+                }}
+              </div>
+            </div>
             <TransitionGroup name="fade">
               <div
                 v-for="(message, idMsg) in groupedMessages[responseTo].slice(
@@ -775,6 +784,8 @@ const printSystemMessage = (msg: any) => {
 
 .user-name-baloon {
   font-size: 10px !important;
+  display: flex;
+  align-items: center;
   line-height: 12px;
   margin-bottom: 4px;
   color: v-bind("lightColors.grayScale[4]");
@@ -782,6 +793,14 @@ const printSystemMessage = (msg: any) => {
 
 .user-name-baloon.dark {
   color: v-bind("darkColors.grayScale[4]");
+}
+
+.user-name-baloon .user-type {
+  border-radius: 12px;
+  background: v-bind("lightColors.quaternary");
+  color: v-bind("lightColors.grayScale[5]");
+  padding: 4px 8px;
+  margin-left: 4px;
 }
 
 .message-container {

@@ -48,6 +48,7 @@ const props = defineProps<{
     bottom?: string;
     right?: string;
   };
+  animationDirection?: string;
 }>();
 
 const isChatOpen = ref<boolean>(false);
@@ -300,13 +301,28 @@ const closeChat = () => {
   }
 };
 
+const animDirection = () => {
+  const animDirection = props.animationDirection;
+
+  if (animDirection === "down") {
+    return "slideDown";
+  } else if (animDirection === "up") {
+    return "slideUp";
+  } else if (animDirection === "right") {
+    return "slideRight";
+  } else if (animDirection === "left") {
+    return "slideLeft";
+  }
+  return "slideUp";
+};
+
 defineExpose({ openChat, closeChat });
 </script>
 
 <template>
   <div class="waku-chat-vue-plugin">
     <div v-if="getStatus() === 'connected'" key="connected">
-      <Transition name="slide" mode="out-in">
+      <Transition :name="animDirection()" mode="out-in">
         <div v-if="isChatOpen" class="chat-container" :class="{ dark: isDark }">
           <Transition name="fade" mode="out-in">
             <div
@@ -1049,21 +1065,75 @@ defineExpose({ openChat, closeChat });
   font-size: 14px;
 }
 
-.slide-enter-active {
-  animation: translate-out 0.5s reverse;
+.slideUp-enter-active {
+  animation: translate-up 0.5s reverse;
 }
 
-.slide-leave-active {
-  animation: translate-out 0.5s;
+.slideUp-leave-active {
+  animation: translate-up 0.5s;
 }
 
-@keyframes translate-out {
+@keyframes translate-up {
   0% {
     transform: translateY(0%);
   }
 
   100% {
     transform: translateY(110%);
+  }
+}
+
+.slideDown-enter-active {
+  animation: translate-down 0.5s reverse;
+}
+
+.slideDown-leave-active {
+  animation: translate-down 0.5s;
+}
+
+@keyframes translate-down {
+  0% {
+    transform: translateY(0%);
+  }
+
+  100% {
+    transform: translateY(-110%);
+  }
+}
+
+.slideLeft-enter-active {
+  animation: translate-left 0.5s reverse;
+}
+
+.slideLeft-leave-active {
+  animation: translate-left 0.5s;
+}
+
+@keyframes translate-left {
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(110%);
+  }
+}
+
+.slideRight-enter-active {
+  animation: translate-right 0.5s reverse;
+}
+
+.slideRight-leave-active {
+  animation: translate-right 0.5s;
+}
+
+@keyframes translate-right {
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-110%);
   }
 }
 

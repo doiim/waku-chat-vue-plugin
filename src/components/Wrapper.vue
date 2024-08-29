@@ -25,6 +25,7 @@ const props = defineProps<{
     bottom?: string;
     right?: string;
   };
+  animationDirection?: string;
 }>();
 
 const pluginHead = ref<HTMLHeadElement | null>(null);
@@ -79,6 +80,7 @@ onMounted(() => {
         :theme="props.theme"
         :balloonPos="props.balloonPos"
         :chatPos="props.chatPos"
+        :animationDirection="props.animationDirection"
       />
     </body>
   </shadow-root>

@@ -49,6 +49,10 @@ const props = defineProps<{
     right?: string;
   };
   animationDirection?: string;
+  chatSize?: {
+    width?: string;
+    height?: string;
+  };
 }>();
 
 const isChatOpen = ref<boolean>(false);
@@ -87,6 +91,18 @@ const chatPosition = computed(() => {
   }
   if (!pos?.left && !pos?.right) {
     pos.right = "16px";
+  }
+  return pos;
+});
+
+const chatSize = computed(() => {
+  var pos = props.chatSize;
+  if (!pos) pos = {};
+  if (!pos.width) {
+    pos.width = "360px";
+  }
+  if (!pos.height) {
+    pos.height = "576px";
   }
   return pos;
 });
@@ -506,6 +522,7 @@ defineExpose({ openChat, closeChat });
             :darkColors="darkColors"
             :open="isChatOpen"
             :theme="theme"
+            :height="`calc(${chatSize.height} - 19px)`"
           />
         </div>
       </Transition>
@@ -765,7 +782,7 @@ defineExpose({ openChat, closeChat });
 }
 
 .chat-container {
-  width: 360px;
+  width: v-bind("chatSize.width");
   position: fixed;
   top: v-bind("chatPosition?.top");
   left: v-bind("chatPosition?.left");

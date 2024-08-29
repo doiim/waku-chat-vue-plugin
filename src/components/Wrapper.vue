@@ -26,6 +26,10 @@ const props = defineProps<{
     right?: string;
   };
   animationDirection?: string;
+  chatSize?: {
+    width?: string;
+    height?: string;
+  };
 }>();
 
 const pluginHead = ref<HTMLHeadElement | null>(null);
@@ -81,6 +85,7 @@ onMounted(() => {
         :balloonPos="props.balloonPos"
         :chatPos="props.chatPos"
         :animationDirection="props.animationDirection"
+        :chatSize="props.chatSize"
       />
     </body>
   </shadow-root>

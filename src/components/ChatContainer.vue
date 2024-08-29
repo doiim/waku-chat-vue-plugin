@@ -29,6 +29,7 @@ const props = defineProps<{
     grayScale: string[];
   };
   open: boolean;
+  height: string;
 }>();
 
 const propsOpen = computed(() => {
@@ -37,6 +38,10 @@ const propsOpen = computed(() => {
 
 const isDark = computed(() => {
   return props.theme === "dark";
+});
+
+const height = computed(() => {
+  return props.height;
 });
 
 const loadingRoom = ref<boolean>(false);
@@ -556,7 +561,7 @@ const printSystemMessage = (msg: any) => {
 .main-container {
   display: flex;
   flex-direction: column;
-  height: 557px;
+  height: v-bind("height");
   border-radius: 8px;
   background-color: v-bind("lightColors.grayScale[0]");
 }

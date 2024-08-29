@@ -101,6 +101,10 @@ The configurations available are:
   - `left`: (string) (optional) - Choose left position or let it undefined if you want to set right
   - `bottom`: (string) (optional) - Choose bottom position or let it undefined if you want to set top
   - `right`: (string) (optional) - Choose right position or let it undefined if you want to set left
+- `animationDirection`: ('up' | 'down' | 'left' | 'right') (optional) - Define open/close animation direction
+- `chatSize`: (Object) (optional) - Choose chat size, default is {width:'360px',height:'576px'}. You can use any css unit (px, %, calc(), etc)
+  - `width`: (string) (optional) - Choose width size or let it undefined for '360px'
+  - `height`: (string) (optional) - Choose heigth size or let it undefined for '576px'
 
 5.  Define process global variable.
 

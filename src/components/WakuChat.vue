@@ -107,6 +107,10 @@ const chatSize = computed(() => {
   return pos;
 });
 
+const hideClose = computed(() => {
+  return getOptions()?.hideClose;
+});
+
 const propUserId = computed(() => {
   return props.externalUserId;
 });
@@ -427,6 +431,7 @@ defineExpose({ openChat, closeChat });
                 </button>
               </div>
               <button
+                v-if="!hideClose"
                 @click="closeChat"
                 class="minimize-button"
                 :class="{ dark: isDark }"

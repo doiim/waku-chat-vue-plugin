@@ -24,6 +24,7 @@ export interface WakuChatVuePluginOptions {
   messageAgeToDownload?: number;
   showSystemMessages?: boolean;
   userChangeNick?: boolean;
+  hideClose?: boolean;
 }
 
 export interface WakuChatColorConfig {

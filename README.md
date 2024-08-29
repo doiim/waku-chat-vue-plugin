@@ -46,6 +46,7 @@ Follow these steps to install and use the package in your project:
         availableRooms: ["General", "Off"],
         wakuPeers: ["your/waku/peer/string/address/here"],
         changeNickMode: "message",
+        hideClose: false,
         styleConfig: {
           colors: {
             light: {
@@ -134,6 +135,7 @@ Here are the available configuration options:
 - `messageAgeToDownload`: (number) (optional) - Max age of messages in milisseconds which messages would be downloaded when user connects to chat. Default not considering age of messages.
 - `showSystemMessages`: (boolean) (optional) - Show or not system messages. Default not show.
 - `userChangeNick`: (boolean) (optional) - Allow users to change their nicknames.
+- `hideClose`: (boolean) (optional) - Hides the close button from chat, default is false.
 - `styleConfig`:(Object) (optional) - Allow you to change css. ALl of them are optional, if you don’t set any of them, a default value will be applied. They are:
   - colors:(Object) - Allow you to change colors of components.
     - light: (Object) - Allow you to change colors of light theme.

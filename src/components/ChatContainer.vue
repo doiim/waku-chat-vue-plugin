@@ -827,6 +827,8 @@ const printSystemMessage = (msg: any) => {
   color: v-bind("lightColors.grayScale[5]");
   box-shadow: 0px 1px 3px 0px
     rgba(0, 0, 0, v-bind("styleConfig?.shadows.messageBalloon"));
+  display: flex;  
+  flex-direction: column-reverse;
 }
 
 .message.dark {

@@ -289,7 +289,7 @@ const messageCallback = (wakuMessage: any) => {
   );
   if (existingMessageIndex !== -1) return true;
   const insertIndex = chatState.value.messageList.findIndex(
-    (message) => message.timestamp > messageObj.timestamp
+    (message) => message.timestamp < messageObj.timestamp
   );
   if (insertIndex !== -1) {
     chatState.value.messageList.splice(insertIndex, 0, messageObj);

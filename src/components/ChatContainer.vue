@@ -831,6 +831,10 @@ const printSystemMessage = (msg: any) => {
   flex-direction: column-reverse;
 }
 
+.message-content {
+  order: -1;
+}
+
 .message.dark {
   background-color: v-bind("darkColors.grayScale[1]");
   color: v-bind("darkColors.grayScale[5]");

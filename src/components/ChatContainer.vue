@@ -857,6 +857,8 @@ const printSystemMessage = (msg: any) => {
 }
 
 .grouped-response .message {
+  max-width: 100%;
+  margin-left: 0;
   background-color: v-bind("lightColors.grayScale[3]");
   color: v-bind("lightColors.grayScale[1]");
   box-shadow: none;
@@ -877,7 +879,7 @@ const printSystemMessage = (msg: any) => {
 }
 
 .own-message .grouped-response .message {
-  margin-left: auto;
+  width: 100%;
   background-color: v-bind("lightColors.secondary");
   color: v-bind("lightColors.grayScale[1]");
 }

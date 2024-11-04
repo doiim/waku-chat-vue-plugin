@@ -137,6 +137,7 @@ const handleSendMessage = () => {
   }
   messageInput.value = "";
   waitingMessage.value = true;
+  scrollToBottom(messageContainerRef.value);
 };
 
 const checkPreviousMsgName = (idx: number) => {

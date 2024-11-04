@@ -574,7 +574,9 @@ const printSystemMessage = (msg: any) => {
   flex: 1;
   overflow-y: auto;
   padding: 16px 1px 0px 16px;
-  margin-right: 15px;
+  margin-right: 15px;  
+  display: flex;
+  flex-direction: column-reverse;
 }
 
 .chat-body::-webkit-scrollbar {

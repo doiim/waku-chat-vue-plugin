@@ -66,6 +66,7 @@ const editedUserName = ref("");
 const roomDropdownOpened = ref<boolean>(false);
 var styleConfig = ref<WakuChatConfigCss>();
 const idleTimeout = ref<NodeJS.Timeout>();
+const isLoading = ref(false);
 
 const balloonPosition = computed(() => {
   var pos = props.balloonPos;
@@ -284,11 +285,18 @@ const saveEditedUserName = () => {
   exitEditMode();
 };
 
-const openChat = async () => {
+const openChat = async () => {  
+  // Set loading and open states immediately
+  isLoading.value = true;
+  isChatOpen.value = true;
+
   clearTimeout(idleTimeout.value);
+  
+  // If not connected, start connection process
   if (getStatus() !== "connected") {
     showSettings.value = !!getOptions()?.showSettings;
     showSystemMessages.value = !!getOptions()?.showSystemMessages;
+    
     if (propUserId.value) {
       setMyID(propUserId.value);
     }
@@ -298,15 +306,22 @@ const openChat = async () => {
     if (propUserType.value) {
       setMyType(propUserType.value);
     }
-    await loadChat();
-    if (props.onConnect) {
-      props.onConnect();
+    
+    try {
+      await loadChat();
+      if (props.onConnect) {
+        props.onConnect();
+      }
+    } finally {
+      isLoading.value = false;
     }
+  } else {
+    isLoading.value = false;
   }
+  
   if (props.onOpen) {
     props.onOpen();
   }
-  isChatOpen.value = true;
 };
 
 const closeChat = () => {
@@ -336,12 +351,14 @@ const animDirection = () => {
   return "slideUp";
 };
 
+
 defineExpose({ openChat, closeChat });
+
 </script>
 
 <template>
   <div class="waku-chat-vue-plugin">
-    <div v-if="getStatus() === 'connected'" key="connected">
+    <div v-if="getStatus() === 'connected' || getStatus() === 'connecting'" key="connected">
       <Transition :name="animDirection()" mode="out-in">
         <div v-if="isChatOpen" class="chat-container" :class="{ dark: isDark }">
           <Transition name="fade" mode="out-in">
@@ -528,6 +545,7 @@ defineExpose({ openChat, closeChat });
             :open="isChatOpen"
             :theme="theme"
             :height="`calc(${chatSize.height} - 19px)`"
+            :isLoading="isLoading"
           />
         </div>
       </Transition>
@@ -552,32 +570,6 @@ defineExpose({ openChat, closeChat });
           </svg>
         </button>
       </Transition>
-    </div>
-    <div
-      v-else-if="getStatus() === 'connecting'"
-      class="spinner"
-      :class="{ dark: isDark }"
-      key="conecting"
-    >
-      <svg
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle cx="12" cy="12" r="10" stroke-opacity="0.4" stroke-width="4" />
-        <path
-          d="M12 22C10.6868 22 9.38642 21.7413 8.17317 21.2388C6.95991 20.7362 5.85752 19.9997 4.92893 19.0711C4.00035 18.1425 3.26375 17.0401 2.7612 15.8268C2.25866 14.6136 2 13.3132 2 12"
-          stroke-opacity="0.8"
-          stroke-width="4"
-        />
-        <path
-          d="M12 2C13.3132 2 14.6136 2.25866 15.8268 2.76121C17.0401 3.26375 18.1425 4.00035 19.0711 4.92894C19.9997 5.85752 20.7363 6.95992 21.2388 8.17317C21.7413 9.38643 22 10.6868 22 12"
-          stroke-opacity="0.8"
-          stroke-width="4"
-        />
-      </svg>
     </div>
     <div v-else key="disconnected">
       <button @click="openChat" class="load-button" :class="{ dark: isDark }">

@@ -6,6 +6,7 @@ import {
   getRoom,
   getMyID,
   getOptions,
+  getStatus,
 } from "../components/WakuLogic";
 import { formatTimestamp } from "../utils/formatation";
 import { scrollToBottom, scrollToMessage } from "../utils/animation";
@@ -30,6 +31,7 @@ const props = defineProps<{
   };
   open: boolean;
   height: string;
+  isLoading?: boolean;
 }>();
 
 const propsOpen = computed(() => {
@@ -223,9 +225,41 @@ const printSystemMessage = (msg: any) => {
 
 <template>
   <div class="main-container" :class="{ dark: isDark }">
-    <div class="chat-body" :class="{ dark: isDark }" ref="messageContainerRef">
-      <TransitionGroup name="fade">
-        <div
+    <div class="status-indicator">
+      {{ getStatus() === 'connected' ? '' : getStatus() === 'connecting' ? 'connecting...' : 'disconnected' }}
+    </div>
+          <!-- Skeleton Messages -->
+      <Transition name="fade" mode="out-in">
+        <div v-if="props.isLoading" class="chat-body" :class="{ dark: isDark }" ref="messageContainerRef">
+          <div
+            v-for="i in 3"
+            :key="'skeleton-'+i"
+            class="message-container"
+            :class="{ dark: isDark }"
+          >
+            <!-- Username skeleton -->
+            <div class="user-name-baloon" :class="{ dark: isDark }">
+              <div class="skeleton-content" style="width: 80px"></div>
+            </div>
+
+            <!-- Message bubble skeleton -->
+            <div class="grouped-message" :class="{ dark: isDark }">
+              <div class="message skeleton-content" :class="{ dark: isDark }">
+                <div style="width: 160px; height: 16;"></div>
+                <div style="width: 160px; height: 16;"></div>
+              </div>
+            </div>
+
+            <!-- Timestamp skeleton -->
+            <div class="timestamp" :class="{ dark: isDark }">
+              <div class="skeleton-content" style="width: 60px"></div>
+            </div>
+          </div>
+        </div>
+      <div v-else class="chat-body" :class="{ dark: isDark }" ref="messageContainerRef">
+      <!-- Actual Messages -->
+      <TransitionGroup name="fade" mode="out-in">
+        <div v-if="!props.isLoading"
           v-for="(groupedMsgs, idGroup) in groupedMessages"
           :key="groupedMsgs[0].id"
           :class="{
@@ -235,7 +269,7 @@ const printSystemMessage = (msg: any) => {
           class="message-container"
           :id="groupedMsgs[0].id"
         >
-          <Transition name="fade">
+          <Transition name="fade" mode="out-in">
             <div
               v-if="
                 groupedMsgs[0].type === 'text' && checkPreviousMsgName(idGroup)
@@ -249,7 +283,7 @@ const printSystemMessage = (msg: any) => {
               </div>
             </div>
           </Transition>
-          <Transition name="fade">
+          <Transition name="fade" mode="out-in">
             <div
               v-if="groupedMsgs[0].type === 'text'"
               class="grouped-message"
@@ -462,7 +496,7 @@ const printSystemMessage = (msg: any) => {
               </TransitionGroup>
             </div>
           </Transition>
-          <Transition name="fade">
+          <Transition name="fade" mode="out-in">
             <div
               v-if="groupedMsgs[0].type === 'text'"
               class="timestamp"
@@ -476,6 +510,7 @@ const printSystemMessage = (msg: any) => {
         </div>
       </TransitionGroup>
     </div>
+    </Transition>
     <div
       :class="`chat-footer ${
         responseTo !== undefined ? 'footer-response' : ''
@@ -1101,6 +1136,47 @@ const printSystemMessage = (msg: any) => {
 
   100% {
     opacity: 1;
+  }
+}
+
+.status-indicator{
+  text-align: left;
+  font-size: 10px;
+  color: v-bind("lightColors.grayScale[3]");
+  pointer-events: none;
+  position: absolute;
+  bottom: 5px;
+  right: 20px;
+}
+
+.observer-target {
+  height: 20px;
+  width: 100%;
+}
+
+.loading-indicator {
+  text-align: center;
+  padding: 10px;
+  color: v-bind("lightColors.grayScale[3]");
+}
+
+.skeleton-content {
+  min-height: 16px;
+  background-color: v-bind("lightColors.grayScale[1]");
+  border-radius: 4px;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.dark .skeleton-content {
+  background-color: v-bind("darkColors.grayScale[1]");
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
   }
 }
 </style>

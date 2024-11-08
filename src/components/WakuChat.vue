@@ -22,6 +22,7 @@ import {
   getOptions,
   onDestroyWaku,
   disconnectChat,
+  chatState,
 } from "../components/WakuLogic";
 import { defaultCss, applyDefaultStyle } from "../utils/defaultStyle";
 import ChatContainer from "./ChatContainer.vue";
@@ -53,6 +54,7 @@ const props = defineProps<{
     width?: string;
     height?: string;
   };
+  fetchMsgsOnScroll?: boolean;
 }>();
 
 const isChatOpen = ref<boolean>(false);
@@ -351,9 +353,16 @@ const animDirection = () => {
   return "slideUp";
 };
 
+const setFetchMsgsOnScroll = (enabled: boolean) => {
+  if (enabled !== props.fetchMsgsOnScroll) {
+    // Reset loading state when toggling
+    chatState.value.isLoadingMore = false;
+    chatState.value.hasMoreMessages = true;
+    chatState.value.lastCursor = undefined;
+  }
+};
 
-defineExpose({ openChat, closeChat });
-
+defineExpose({ openChat, closeChat, setFetchMsgsOnScroll });
 </script>
 
 <template>
@@ -545,6 +554,7 @@ defineExpose({ openChat, closeChat });
             :open="isChatOpen"
             :theme="theme"
             :height="`calc(${chatSize.height} - 19px)`"
+            :fetchMsgsOnScroll="props.fetchMsgsOnScroll"
             :isLoading="isLoading"
           />
         </div>

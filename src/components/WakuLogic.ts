@@ -18,14 +18,19 @@ type WakuData = {
 
 let wakuData: WakuData = {};
 
-const chatState = ref<{
+export const chatState = ref<{
   status: string;
   messageList: Message[];
   room: string;
+  isLoadingMore: boolean;
+  hasMoreMessages: boolean;
+  lastCursor?: number;
 }>({
   status: "idle",
   messageList: [],
   room: "",
+  isLoadingMore: false,
+  hasMoreMessages: true,
 });
 
 let sendMessageToServer = async (msg: Message) => {
@@ -37,40 +42,73 @@ const myInfo = ref<Participant>({ id: "", name: "", type: "" });
 const retrieveMessages = async (
   _channel: string,
   _topic: string,
-  callback: (msg: any) => boolean
+  callback: (msg: any) => boolean,
+  cursor?: number,
+  limit: number = 10
 ) => {
   if (!wakuData.lightNode || !wakuData.ChatDecoder) return;
   const topic = _topic.toLowerCase().replace(/\s/g, "");
   const channel = _channel.toLowerCase().replace(/\s/g, "");
 
-  // Choose a content topic
   const contentTopic = `/${channel}/1/${topic}/proto`;
+  let messagesReceived = 0;
 
-  // Retrieve a week of messages
   const queryOptions: any = {
     contentTopic,
     pageDirection: "backward",
   };
+
+  const endTime = cursor ? new Date(cursor) : new Date();
+  if (cursor) {
+    endTime.setMilliseconds(endTime.getMilliseconds() + 1000);
+  }
+  
   let messageAgeToDownload = getOptions()?.messageAgeToDownload;
 
   if (messageAgeToDownload) {
-    const endTime = new Date();
-    const startTime = new Date();
-    startTime.setMilliseconds(endTime.getMilliseconds() - messageAgeToDownload);
+    if (!cursor) {
+      const startTime = new Date();
+      startTime.setMilliseconds(endTime.getMilliseconds() - messageAgeToDownload);
+      queryOptions.timeFilter = {
+        startTime,
+        endTime,
+      };
+      queryOptions.pageSize = getOptions()?.messagesToDownload || 100;
+    }
+  } else {
     queryOptions.timeFilter = {
-      startTime,
       endTime,
     };
+    queryOptions.pageSize = limit;
   }
 
-  var msgsToDownload = getOptions()?.messagesToDownload;
-  queryOptions.pageSize = msgsToDownload ? msgsToDownload : 100;
+  try {
+    chatState.value.isLoadingMore = true;
+    console.log('Retrieving messages before:', endTime.toISOString());
+    
+    const wrappedCallback = (msg: any) => {
+      const result = callback(msg);
+      if (result) messagesReceived++;
+      return result;
+    };
 
-  await wakuData.lightNode.store.queryWithOrderedCallback(
-    [wakuData.ChatDecoder],
-    callback,
-    queryOptions
-  );
+    await wakuData.lightNode.store.queryWithOrderedCallback(
+      [wakuData.ChatDecoder],
+      wrappedCallback,
+      queryOptions
+    );
+
+    chatState.value.hasMoreMessages = true;
+    
+    console.log('Retrieved messages:', {
+      requested: limit,
+      received: messagesReceived,
+      currentCursor: chatState.value.lastCursor ? new Date(chatState.value.lastCursor).toISOString() : 'none'
+    });
+
+  } finally {
+    chatState.value.isLoadingMore = false;
+  }
 };
 
 export const setRoom = async (_room: string) => {
@@ -288,6 +326,12 @@ const messageCallback = (wakuMessage: any) => {
     (message) => message.id === messageObj.id
   );
   if (existingMessageIndex !== -1) return true;
+
+  if (!chatState.value.lastCursor || messageObj.timestamp < chatState.value.lastCursor) {
+    chatState.value.lastCursor = messageObj.timestamp;
+    console.log('Updated cursor to:', new Date(messageObj.timestamp).toISOString());
+  }
+
   const insertIndex = chatState.value.messageList.findIndex(
     (message) => message.timestamp < messageObj.timestamp
   );
@@ -312,11 +356,9 @@ const pingAndReinitiateSubscription = async () => {
   if (!wakuData.ChatDecoder) return;
   if (!wakuData.subscription) return;
   try {
-    // Ping the subscription
     await wakuData.subscription.ping();
   } catch (error) {
     if (
-      // Check if the error message includes "peer has no subscriptions"
       error instanceof Error &&
       error.message.includes("peer has no subscriptions")
     ) {
@@ -335,3 +377,41 @@ const pingAndReinitiateSubscription = async () => {
     }
   }
 };
+
+export const loadMoreMessages = async () => {
+  console.log('loadMoreMessages called with state:', {
+    hasMore: chatState.value.hasMoreMessages,
+    isLoading: chatState.value.isLoadingMore,
+    lastCursor: chatState.value.lastCursor
+  });
+
+  if (
+    !chatState.value.hasMoreMessages || 
+    chatState.value.isLoadingMore || 
+    !chatState.value.lastCursor
+  ) {
+    console.log('Exiting loadMoreMessages early due to state conditions');
+    return;
+  }
+
+  const options = getOptions();
+  if (!options) {
+    console.log('No options available, exiting loadMoreMessages');
+    return;
+  }
+  
+  const channelName = options.wakuChannelName 
+    ? options.wakuChannelName 
+    : "my-app";
+
+  console.log('Retrieving messages with cursor:', chatState.value.lastCursor);
+  await retrieveMessages(
+    channelName,
+    chatState.value.room,
+    messageCallback,
+    chatState.value.lastCursor
+  );
+};
+
+export const getLoadingState = () => chatState.value.isLoadingMore;
+export const hasMoreMessages = () => chatState.value.hasMoreMessages;

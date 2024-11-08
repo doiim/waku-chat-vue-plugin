@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { ref, computed, TransitionGroup, watch, onMounted } from "vue";
+import { ref, computed, TransitionGroup, watch, onMounted, onBeforeUnmount, nextTick } from "vue";
 import {
   sendMessage,
   getMessageList,
   getRoom,
   getMyID,
   getOptions,
+  loadMoreMessages,
+  getLoadingState,
+  hasMoreMessages,
   getStatus,
 } from "../components/WakuLogic";
 import { formatTimestamp } from "../utils/formatation";
@@ -221,6 +224,65 @@ const printSystemMessage = (msg: any) => {
   }
   return "";
 };
+
+// Add ref for observer
+const observerTarget = ref<HTMLElement | null>(null);
+const observer = ref<IntersectionObserver | null>(null);
+
+const initializeObserver = () => {
+  console.log('Initializing observer');
+  if (!observer.value && observerTarget.value) {
+    observer.value = new IntersectionObserver(
+      async (entries) => {
+        // console.log('Observer callback triggered', {
+        //   entries: entries.map(e => ({
+        //     isIntersecting: e.isIntersecting,
+        //     intersectionRatio: e.intersectionRatio
+        //   }))
+        // });
+        
+        const target = entries[0];
+        if (target.isIntersecting) {
+          console.log('Target is intersecting, checking conditions:', {
+            hasMore: hasMoreMessages(),
+            isLoading: getLoadingState()
+          });
+          
+          if (hasMoreMessages() && !getLoadingState()) {
+            console.log('Loading more messages...');
+            await loadMoreMessages();
+          }
+        }
+      },
+      {
+        root: messageContainerRef.value,
+        threshold: 0.1,
+      }
+    );
+    
+    console.log('Observer target found, starting observation');
+    observer.value.observe(observerTarget.value);
+  }
+};
+
+// Watch for changes in loading state and target element
+watch([() => props.isLoading, observerTarget], ([isLoading, target]) => {
+  if (!isLoading && target) {
+    // Small delay to ensure DOM is ready
+    nextTick(() => {
+      initializeObserver();
+    });
+  }
+});
+
+// Cleanup
+onBeforeUnmount(() => {
+  if (observer.value && observerTarget.value) {
+    console.log('Cleaning up observer');
+    observer.value.unobserve(observerTarget.value);
+    observer.value.disconnect();
+  }
+});
 </script>
 
 <template>
@@ -258,7 +320,7 @@ const printSystemMessage = (msg: any) => {
         </div>
         <div v-else class="chat-body" :class="{ dark: isDark }" ref="messageContainerRef">
         <!-- Actual Messages -->
-        <TransitionGroup name="fade" mode="out-in">
+        <TransitionGroup name="fade">
           <div v-if="!props.isLoading"
             v-for="(groupedMsgs, idGroup) in groupedMessages"
             :key="groupedMsgs[0].id"
@@ -509,6 +571,15 @@ const printSystemMessage = (msg: any) => {
             </Transition>
           </div>
         </TransitionGroup>
+        <div ref="observerTarget" class="observer-target">
+          <div v-if="getLoadingState()" class="loading-indicator">        
+            Please Wait, Loading older messages...
+          </div>
+          <!-- Add a visual indicator when scrolled to target -->
+          <div v-else class="observer-debug">
+            Scroll target ({{ hasMoreMessages() ? 'More messages available' : 'No more messages' }})
+          </div>
+        </div>
       </div>
     </Transition>
     <div
@@ -1152,6 +1223,15 @@ const printSystemMessage = (msg: any) => {
 .observer-target {
   height: 20px;
   width: 100%;
+  background-color: rgba(0,0,0,0.05);
+  margin-bottom: 60px;
+}
+
+.observer-debug {
+  text-align: center;
+  padding: 10px;
+  font-size: 12px;
+  color: #666;
 }
 
 .loading-indicator {

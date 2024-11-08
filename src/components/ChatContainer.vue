@@ -8,7 +8,6 @@ import {
   getOptions,
   loadMoreMessages,
   getLoadingState,
-  hasMoreMessages,
   getStatus,
 } from "../components/WakuLogic";
 import { formatTimestamp } from "../utils/formatation";
@@ -244,11 +243,10 @@ const initializeObserver = () => {
         const target = entries[0];
         if (target.isIntersecting) {
           console.log('Target is intersecting, checking conditions:', {
-            hasMore: hasMoreMessages(),
             isLoading: getLoadingState()
           });
           
-          if (hasMoreMessages() && !getLoadingState()) {
+          if (!getLoadingState()) {
             console.log('Loading more messages...');
             await loadMoreMessages();
           }
@@ -573,11 +571,7 @@ onBeforeUnmount(() => {
         </TransitionGroup>
         <div ref="observerTarget" class="observer-target">
           <div v-if="getLoadingState()" class="loading-indicator">        
-            Please Wait, Loading older messages...
-          </div>
-          <!-- Add a visual indicator when scrolled to target -->
-          <div v-else class="observer-debug">
-            Scroll target ({{ hasMoreMessages() ? 'More messages available' : 'No more messages' }})
+            Searching for older messages...
           </div>
         </div>
       </div>

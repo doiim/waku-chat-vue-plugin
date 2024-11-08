@@ -23,14 +23,12 @@ export const chatState = ref<{
   messageList: Message[];
   room: string;
   isLoadingMore: boolean;
-  hasMoreMessages: boolean;
   lastCursor?: number;
 }>({
   status: "idle",
   messageList: [],
   room: "",
   isLoadingMore: false,
-  hasMoreMessages: true,
 });
 
 let sendMessageToServer = async (msg: Message) => {
@@ -97,8 +95,6 @@ const retrieveMessages = async (
       wrappedCallback,
       queryOptions
     );
-
-    chatState.value.hasMoreMessages = true;
     
     console.log('Retrieved messages:', {
       requested: limit,
@@ -380,13 +376,11 @@ const pingAndReinitiateSubscription = async () => {
 
 export const loadMoreMessages = async () => {
   console.log('loadMoreMessages called with state:', {
-    hasMore: chatState.value.hasMoreMessages,
     isLoading: chatState.value.isLoadingMore,
     lastCursor: chatState.value.lastCursor
   });
 
   if (
-    !chatState.value.hasMoreMessages || 
     chatState.value.isLoadingMore || 
     !chatState.value.lastCursor
   ) {
@@ -414,4 +408,3 @@ export const loadMoreMessages = async () => {
 };
 
 export const getLoadingState = () => chatState.value.isLoadingMore;
-export const hasMoreMessages = () => chatState.value.hasMoreMessages;

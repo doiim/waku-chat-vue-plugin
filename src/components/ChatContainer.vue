@@ -9,6 +9,9 @@ import {
   loadMoreMessages,
   getLoadingState,
   getStatus,
+  getLowResponseCount,
+  getFetchMaxAttempts,
+  hasReachedMessageLimit
 } from "../components/WakuLogic";
 import { formatTimestamp } from "../utils/formatation";
 import { scrollToBottom, scrollToMessage } from "../utils/animation";
@@ -228,28 +231,20 @@ const printSystemMessage = (msg: any) => {
 const observerTarget = ref<HTMLElement | null>(null);
 const observer = ref<IntersectionObserver | null>(null);
 
+// Add a new ref to track visibility
+const isTargetVisible = ref(false);
+
 const initializeObserver = () => {
   console.log('Initializing observer');
   if (!observer.value && observerTarget.value) {
     observer.value = new IntersectionObserver(
       async (entries) => {
-        // console.log('Observer callback triggered', {
-        //   entries: entries.map(e => ({
-        //     isIntersecting: e.isIntersecting,
-        //     intersectionRatio: e.intersectionRatio
-        //   }))
-        // });
-        
         const target = entries[0];
+        isTargetVisible.value = target.isIntersecting;
+        
         if (target.isIntersecting) {
-          console.log('Target is intersecting, checking conditions:', {
-            isLoading: getLoadingState()
-          });
-          
-          if (!getLoadingState()) {
-            console.log('Loading more messages...');
-            await loadMoreMessages();
-          }
+          console.log('Target is intersecting, starting fetch cycle');
+          await tryFetchMessages();
         }
       },
       {
@@ -261,6 +256,35 @@ const initializeObserver = () => {
     console.log('Observer target found, starting observation');
     observer.value.observe(observerTarget.value);
   }
+};
+
+// While obersver (on top of chat) is visible, recursively try to fetch more messages
+const tryFetchMessages = async () => {
+  if (!isTargetVisible.value) return;
+  else setTimeout(tryFetchMessages, 5000);
+  
+  const options = getOptions();
+
+  if (options?.fetchTotalLimit && 
+    getMessageList().length >= options.fetchTotalLimit) {
+    console.log('Reached total message limit, stopping fetch cycle');
+    return; // No setTimeout recursive call here - we're done fetching
+  }
+
+  if(getLowResponseCount() > getFetchMaxAttempts()) {
+    console.log('Pausing fetch cycle due to low response count');
+    setTimeout(tryFetchMessages, 10000); // You got disconnected or there is no messages in any node
+    return;
+  }
+
+  if (getLoadingState()) {
+    console.log('Already loading, waiting...');
+    setTimeout(tryFetchMessages, 2000); // There's already a fetch in progress try again in 2 seconds
+    return;
+  }
+
+  console.log('Attempting to fetch messages...');
+  await loadMoreMessages();
 };
 
 // Watch for changes in loading state and target element
@@ -275,6 +299,7 @@ watch([() => props.isLoading, observerTarget], ([isLoading, target]) => {
 
 // Cleanup
 onBeforeUnmount(() => {
+  isTargetVisible.value = false; // Stop any pending fetch cycles
   if (observer.value && observerTarget.value) {
     console.log('Cleaning up observer');
     observer.value.unobserve(observerTarget.value);
@@ -569,9 +594,20 @@ onBeforeUnmount(() => {
             </Transition>
           </div>
         </TransitionGroup>
-        <div ref="observerTarget" class="observer-target">
-          <div v-if="getLoadingState()" class="loading-indicator">        
+        <div ref="observerTarget" class="observer-target">   
+          <div v-if="getLoadingState()" class="loading-indicator">
+            <div class="spinner"></div>
             Searching for older messages...
+          </div>
+          <div v-else-if="hasReachedMessageLimit()" class="loading-indicator">
+            End of available history
+          </div>
+          <div v-else-if="getLowResponseCount() < getFetchMaxAttempts()" class="loading-indicator">
+            <div class="spinner"></div>
+            Searching (Attempt {{ getLowResponseCount() }}/{{ getFetchMaxAttempts() }})
+          </div>
+          <div v-else class="loading-indicator">
+            Network busy or end of chat history
           </div>
         </div>
       </div>
@@ -1217,8 +1253,7 @@ onBeforeUnmount(() => {
 .observer-target {
   height: 20px;
   width: 100%;
-  background-color: rgba(0,0,0,0.05);
-  margin-bottom: 60px;
+  margin-bottom: 40px;
 }
 
 .observer-debug {
@@ -1232,6 +1267,29 @@ onBeforeUnmount(() => {
   text-align: center;
   padding: 10px;
   color: v-bind("lightColors.grayScale[3]");
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid v-bind("lightColors.grayScale[2]");
+  border-top: 2px solid v-bind("lightColors.primary");
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.dark .spinner {
+  border: 2px solid v-bind("darkColors.grayScale[2]");
+  border-top: 2px solid v-bind("darkColors.primary");
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .skeleton-content {
@@ -1253,4 +1311,22 @@ onBeforeUnmount(() => {
     opacity: .5;
   }
 }
+
+.attempt-counter {
+  text-align: center;
+  padding: 10px;
+  font-size: 12px;
+  color: v-bind("lightColors.grayScale[3]");
+}
+
+.dark .attempt-counter {
+  color: v-bind("darkColors.grayScale[3]");
+}
+
+.retry-message {
+  font-size: 10px;
+  margin-top: 4px;
+  opacity: 0.8;
+}
+
 </style>

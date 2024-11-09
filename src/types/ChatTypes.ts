@@ -25,6 +25,10 @@ export interface WakuChatVuePluginOptions {
   showSystemMessages?: boolean;
   userChangeNick?: boolean;
   hideClose?: boolean;
+  fetchMsgsOnScroll?: boolean;
+  fetchMaxAttempts?: number;
+  fetchTotalLimit?: number;
+  fetchLimit?: number;
 }
 
 export interface WakuChatColorConfig {

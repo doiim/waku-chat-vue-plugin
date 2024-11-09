@@ -24,11 +24,13 @@ export const chatState = ref<{
   room: string;
   isLoadingMore: boolean;
   lastCursor?: number;
+  lowResponseCount: number;
 }>({
   status: "idle",
   messageList: [],
   room: "",
   isLoadingMore: false,
+  lowResponseCount: 0
 });
 
 let sendMessageToServer = async (msg: Message) => {
@@ -37,14 +39,15 @@ let sendMessageToServer = async (msg: Message) => {
 
 const myInfo = ref<Participant>({ id: "", name: "", type: "" });
 
+export const getFetchMaxAttempts = () => getOptions()?.fetchMaxAttempts || 3;
+
 const retrieveMessages = async (
   _channel: string,
   _topic: string,
   callback: (msg: any) => boolean,
   cursor?: number,
-  limit: number = 10
-) => {
-  if (!wakuData.lightNode || !wakuData.ChatDecoder) return;
+): Promise<number> => {
+  if (!wakuData.lightNode || !wakuData.ChatDecoder) return 0;
   const topic = _topic.toLowerCase().replace(/\s/g, "");
   const channel = _channel.toLowerCase().replace(/\s/g, "");
 
@@ -61,28 +64,38 @@ const retrieveMessages = async (
     endTime.setMilliseconds(endTime.getMilliseconds() + 1000);
   }
   
-  let messageAgeToDownload = getOptions()?.messageAgeToDownload;
+  const options = getOptions();
+  const messageAgeToDownload = options?.messageAgeToDownload;
+  const fetchMsgsOnScroll = options?.fetchMsgsOnScroll;
+  const fetchLimit = options?.fetchLimit;
+  const fetchTotalLimit = options?.fetchTotalLimit;
 
-  if (messageAgeToDownload) {
+  console.log('Options in retrieveMessages:', {
+    messageAgeToDownload,
+    fetchMsgsOnScroll,
+    fetchLimit
+  });
+
+  if (messageAgeToDownload && !fetchMsgsOnScroll) {
     if (!cursor) {
       const startTime = new Date();
       startTime.setMilliseconds(endTime.getMilliseconds() - messageAgeToDownload);
-      queryOptions.timeFilter = {
-        startTime,
-        endTime,
-      };
+      queryOptions.timeFilter = { startTime, endTime };
       queryOptions.pageSize = getOptions()?.messagesToDownload || 100;
     }
   } else {
-    queryOptions.timeFilter = {
-      endTime,
-    };
-    queryOptions.pageSize = limit;
+    queryOptions.timeFilter = { endTime };
+    queryOptions.pageSize = fetchLimit || 10;
   }
 
   try {
     chatState.value.isLoadingMore = true;
-    console.log('Retrieving messages before:', endTime.toISOString());
+    console.log('Retrieving messages before:', endTime.toISOString(), {
+      fetchMsgsOnScroll,
+      pageSize: queryOptions.pageSize,
+      fetchLimit: fetchLimit,
+      timeFilter: queryOptions.timeFilter
+    });
     
     const wrappedCallback = (msg: any) => {
       const result = callback(msg);
@@ -96,11 +109,24 @@ const retrieveMessages = async (
       queryOptions
     );
     
+    if (messagesReceived <= 1) {
+      chatState.value.lowResponseCount++;
+      const maxAttempts = getOptions()?.fetchMaxAttempts || 3;
+      console.log(`Low response count: ${chatState.value.lowResponseCount}/${maxAttempts}`);
+    } else {
+      chatState.value.lowResponseCount = 0;
+    }
+
     console.log('Retrieved messages:', {
-      requested: limit,
+      requested: queryOptions.pageSize,
+      fetchLimit: fetchLimit,
+      fetchTotalLimit: fetchTotalLimit,
       received: messagesReceived,
+      lowResponseCount: chatState.value.lowResponseCount,
       currentCursor: chatState.value.lastCursor ? new Date(chatState.value.lastCursor).toISOString() : 'none'
     });
+
+    return messagesReceived;
 
   } finally {
     chatState.value.isLoadingMore = false;
@@ -140,6 +166,7 @@ export const setRoom = async (_room: string) => {
     wakuData.pingInterval = setInterval(pingAndReinitiateSubscription, 10000);
 
   chatState.value.room = _room;
+  chatState.value.lowResponseCount = 0;
   sendMessage("enter", "system");
 };
 
@@ -380,11 +407,8 @@ export const loadMoreMessages = async () => {
     lastCursor: chatState.value.lastCursor
   });
 
-  if (
-    chatState.value.isLoadingMore || 
-    !chatState.value.lastCursor
-  ) {
-    console.log('Exiting loadMoreMessages early due to state conditions');
+  if (chatState.value.isLoadingMore || !chatState.value.lastCursor) {
+    console.log('(Recursive Call Aborted) - Exiting loadMoreMessages earlier due to state conditions');
     return;
   }
 
@@ -393,7 +417,13 @@ export const loadMoreMessages = async () => {
     console.log('No options available, exiting loadMoreMessages');
     return;
   }
-  
+
+  const fetchTotalLimit = options?.fetchTotalLimit || 100;
+  if (fetchTotalLimit && getMessageList().length >= fetchTotalLimit) {
+    console.log('Reached total message limit of:', fetchTotalLimit);
+    return;
+  }
+
   const channelName = options.wakuChannelName 
     ? options.wakuChannelName 
     : "my-app";
@@ -408,3 +438,38 @@ export const loadMoreMessages = async () => {
 };
 
 export const getLoadingState = () => chatState.value.isLoadingMore;
+export const getLowResponseCount = () => chatState.value.lowResponseCount;
+
+export const setFetchLimit = (limit: number) => {
+  const options = getOptions();
+  if (options) {
+    options.fetchLimit = limit;
+  }
+};
+
+export const setFetchMaxAttempts = (attempts: number) => {
+  const options = getOptions();
+  if (options) {
+    options.fetchMaxAttempts = attempts;
+  }
+};
+
+export const setFetchTotalLimit = (max: number) => {
+  const options = getOptions();
+  if (options) {
+    options.fetchTotalLimit = max;
+  }
+};
+
+export const setFetchMsgsOnScroll = (enabled: boolean) => {
+  const options = getOptions();
+  if (options) {
+    options.fetchMsgsOnScroll = enabled;
+  }
+};
+
+export const hasReachedMessageLimit = () => {
+  const options = getOptions();
+  return options?.fetchTotalLimit && 
+         getMessageList().length >= options.fetchTotalLimit;
+};

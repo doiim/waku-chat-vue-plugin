@@ -22,7 +22,11 @@ import {
   getOptions,
   onDestroyWaku,
   disconnectChat,
-  chatState,
+  //chatState,
+  setFetchMsgsOnScroll,
+  setFetchMaxAttempts,
+  setFetchLimit,
+  setFetchTotalLimit,
 } from "../components/WakuLogic";
 import { defaultCss, applyDefaultStyle } from "../utils/defaultStyle";
 import ChatContainer from "./ChatContainer.vue";
@@ -55,6 +59,9 @@ const props = defineProps<{
     height?: string;
   };
   fetchMsgsOnScroll?: boolean;
+  fetchMaxAttempts?: number;
+  fetchLimit?: number;
+  fetchTotalLimit?: number;
 }>();
 
 const isChatOpen = ref<boolean>(false);
@@ -69,6 +76,35 @@ const roomDropdownOpened = ref<boolean>(false);
 var styleConfig = ref<WakuChatConfigCss>();
 const idleTimeout = ref<NodeJS.Timeout>();
 const isLoading = ref(false);
+
+const propFetchOnScroll = computed(() => props.fetchMsgsOnScroll);
+const propFetchLimit = computed(() => props.fetchLimit);
+const propMaxAttempts = computed(() => props.fetchMaxAttempts);
+const propFetchTotalLimit = computed(() => props.fetchTotalLimit);
+
+watch([propMaxAttempts], () => {
+  if (propMaxAttempts.value) {
+    setFetchMaxAttempts(propMaxAttempts.value);
+  }
+});
+
+watch([propFetchLimit], () => {
+  if (propFetchLimit.value) {
+    setFetchLimit(propFetchLimit.value);
+  }
+});
+
+watch([propFetchOnScroll], () => {
+  if (propFetchOnScroll.value !== undefined) {
+    setFetchMsgsOnScroll(propFetchOnScroll.value);
+  }
+});
+
+watch([propFetchTotalLimit], () => {
+  if (propFetchTotalLimit.value) {
+    setFetchTotalLimit(propFetchTotalLimit.value);
+  }
+});
 
 const balloonPosition = computed(() => {
   var pos = props.balloonPos;
@@ -353,16 +389,7 @@ const animDirection = () => {
   return "slideUp";
 };
 
-const setFetchMsgsOnScroll = (enabled: boolean) => {
-  if (enabled !== props.fetchMsgsOnScroll) {
-    // Reset loading state when toggling
-    chatState.value.isLoadingMore = false;
-    chatState.value.hasMoreMessages = true;
-    chatState.value.lastCursor = undefined;
-  }
-};
-
-defineExpose({ openChat, closeChat, setFetchMsgsOnScroll });
+defineExpose({openChat, closeChat});
 </script>
 
 <template>

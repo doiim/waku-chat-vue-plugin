@@ -234,6 +234,9 @@ const observer = ref<IntersectionObserver | null>(null);
 // Add a new ref to track visibility
 const isTargetVisible = ref(false);
 
+// Add a ref for the timeout
+const fetchTimeout = ref<NodeJS.Timeout | null>(null);
+
 const initializeObserver = () => {
   console.log('Initializing observer');
   if (!observer.value && observerTarget.value) {
@@ -260,26 +263,39 @@ const initializeObserver = () => {
 
 // While obersver (on top of chat) is visible, recursively try to fetch more messages
 const tryFetchMessages = async () => {
-  if (!isTargetVisible.value) return;
-  else setTimeout(tryFetchMessages, 5000);
+  if (!isTargetVisible.value || getLoadingState()) return;
+  
+  // Clear any existing timeout
+  if (fetchTimeout.value) {
+    clearTimeout(fetchTimeout.value);
+    fetchTimeout.value = null;
+  }
+  
+  // Set new timeout
+  fetchTimeout.value = setTimeout(tryFetchMessages, 5000);
   
   const options = getOptions();
 
   if (options?.fetchTotalLimit && 
     getMessageList().length >= options.fetchTotalLimit) {
     console.log('Reached total message limit, stopping fetch cycle');
-    return; // No setTimeout recursive call here - we're done fetching
+    // Clear timeout since we're done
+    if (fetchTimeout.value) {
+      clearTimeout(fetchTimeout.value);
+      fetchTimeout.value = null;
+    }
+    return;
   }
 
   if(getLowResponseCount() > getFetchMaxAttempts()) {
     console.log('Pausing fetch cycle due to low response count');
-    setTimeout(tryFetchMessages, 10000); // You got disconnected or there is no messages in any node
-    return;
-  }
-
-  if (getLoadingState()) {
-    console.log('Already loading, waiting...');
-    setTimeout(tryFetchMessages, 2000); // There's already a fetch in progress try again in 2 seconds
+    // Clear existing timeout
+    if (fetchTimeout.value) {
+      clearTimeout(fetchTimeout.value);
+      fetchTimeout.value = null;
+    }
+    // Set longer timeout for retry
+    fetchTimeout.value = setTimeout(tryFetchMessages, 10000);
     return;
   }
 
@@ -300,6 +316,10 @@ watch([() => props.isLoading, observerTarget], ([isLoading, target]) => {
 // Cleanup
 onBeforeUnmount(() => {
   isTargetVisible.value = false; // Stop any pending fetch cycles
+  if (fetchTimeout.value) {
+    clearTimeout(fetchTimeout.value);
+    fetchTimeout.value = null;
+  }
   if (observer.value && observerTarget.value) {
     console.log('Cleaning up observer');
     observer.value.unobserve(observerTarget.value);

@@ -68,12 +68,13 @@ const retrieveMessages = async (
   const messageAgeToDownload = options?.messageAgeToDownload;
   const fetchMsgsOnScroll = options?.fetchMsgsOnScroll;
   const fetchLimit = options?.fetchLimit;
-  const fetchTotalLimit = options?.fetchTotalLimit;
+  const fetchTotalLimit = options?.fetchTotalLimit || 0;
 
   console.log('Options in retrieveMessages:', {
     messageAgeToDownload,
     fetchMsgsOnScroll,
-    fetchLimit
+    fetchLimit,
+    fetchTotalLimit
   });
 
   if (messageAgeToDownload && !fetchMsgsOnScroll) {
@@ -94,7 +95,9 @@ const retrieveMessages = async (
       fetchMsgsOnScroll,
       pageSize: queryOptions.pageSize,
       fetchLimit: fetchLimit,
-      timeFilter: queryOptions.timeFilter
+      timeFilter: queryOptions.timeFilter,
+      fetchTotalLimit: fetchTotalLimit,
+      currentMessageCount: getMessageList().length
     });
     
     const wrappedCallback = (msg: any) => {
@@ -418,8 +421,8 @@ export const loadMoreMessages = async () => {
     return;
   }
 
-  const fetchTotalLimit = options?.fetchTotalLimit || 100;
-  if (fetchTotalLimit && getMessageList().length >= fetchTotalLimit) {
+  const fetchTotalLimit = options?.fetchTotalLimit || 0;
+  if (fetchTotalLimit > 0 && getMessageList().length >= fetchTotalLimit) {
     console.log('Reached total message limit of:', fetchTotalLimit);
     return;
   }
@@ -470,6 +473,7 @@ export const setFetchMsgsOnScroll = (enabled: boolean) => {
 
 export const hasReachedMessageLimit = () => {
   const options = getOptions();
-  return options?.fetchTotalLimit && 
-         getMessageList().length >= options.fetchTotalLimit;
+  return options?.fetchTotalLimit ? 
+         getMessageList().length >= options.fetchTotalLimit : 
+         false;
 };

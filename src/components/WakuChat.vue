@@ -80,7 +80,7 @@ const isLoading = ref(false);
 const propFetchOnScroll = computed(() => props.fetchMsgsOnScroll);
 const propFetchLimit = computed(() => props.fetchLimit);
 const propMaxAttempts = computed(() => props.fetchMaxAttempts);
-const propFetchTotalLimit = computed(() => props.fetchTotalLimit);
+const propFetchTotalLimit = computed(() => props.fetchTotalLimit || 0);
 
 watch([propMaxAttempts], () => {
   if (propMaxAttempts.value) {
@@ -101,7 +101,7 @@ watch([propFetchOnScroll], () => {
 });
 
 watch([propFetchTotalLimit], () => {
-  if (propFetchTotalLimit.value) {
+  if (propFetchTotalLimit.value !== undefined) {
     setFetchTotalLimit(propFetchTotalLimit.value);
   }
 });

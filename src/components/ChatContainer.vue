@@ -6,7 +6,7 @@ import {
   getRoom,
   getMyID,
   getOptions,
-  loadMoreMessages,
+  tryFetchMessages,
   getLoadingState,
   getStatus,
   getLowResponseCount,
@@ -259,48 +259,6 @@ const initializeObserver = () => {
     console.log('Observer target found, starting observation');
     observer.value.observe(observerTarget.value);
   }
-};
-
-// While obersver (on top of chat) is visible, recursively try to fetch more messages
-const tryFetchMessages = async () => {
-  if (!isTargetVisible.value || getLoadingState()) return;
-  
-  // Clear any existing timeout
-  if (fetchTimeout.value) {
-    clearTimeout(fetchTimeout.value);
-    fetchTimeout.value = null;
-  }
-  
-  // Set new timeout
-  fetchTimeout.value = setTimeout(tryFetchMessages, 5000);
-  
-  const options = getOptions();
-
-  if (options?.fetchTotalLimit && 
-    getMessageList().length >= options.fetchTotalLimit) {
-    console.log('Reached total message limit, stopping fetch cycle');
-    // Clear timeout since we're done
-    if (fetchTimeout.value) {
-      clearTimeout(fetchTimeout.value);
-      fetchTimeout.value = null;
-    }
-    return;
-  }
-
-  if(getLowResponseCount() > getFetchMaxAttempts()) {
-    console.log('Pausing fetch cycle due to low response count');
-    // Clear existing timeout
-    if (fetchTimeout.value) {
-      clearTimeout(fetchTimeout.value);
-      fetchTimeout.value = null;
-    }
-    // Set longer timeout for retry
-    fetchTimeout.value = setTimeout(tryFetchMessages, 10000);
-    return;
-  }
-
-  console.log('Attempting to fetch messages...');
-  await loadMoreMessages();
 };
 
 // Watch for changes in loading state and target element

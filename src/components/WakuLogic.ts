@@ -47,6 +47,12 @@ const retrieveMessages = async (
   callback: (msg: any) => boolean,
   cursor?: number,
 ): Promise<number> => {
+  const options = getOptions();
+  const messageAgeToDownload = options?.messageAgeToDownload;
+  const fetchMsgsOnScroll = options?.fetchMsgsOnScroll;
+  const fetchLimit = options?.fetchLimit;
+  const fetchTotalLimit = options?.fetchTotalLimit || 0;
+
   if (!wakuData.lightNode || !wakuData.ChatDecoder) return 0;
   const topic = _topic.toLowerCase().replace(/\s/g, "");
   const channel = _channel.toLowerCase().replace(/\s/g, "");
@@ -59,17 +65,10 @@ const retrieveMessages = async (
     pageDirection: "backward",
   };
 
-  const endTime = cursor ? new Date(cursor) : new Date();
-  if (cursor) {
-    endTime.setMilliseconds(endTime.getMilliseconds() + 1000);
-  }
-  
-  const options = getOptions();
-  const messageAgeToDownload = options?.messageAgeToDownload;
-  const fetchMsgsOnScroll = options?.fetchMsgsOnScroll;
-  const fetchLimit = options?.fetchLimit;
-  const fetchTotalLimit = options?.fetchTotalLimit || 0;
 
+
+  let endTime = new Date();
+  let startTime = new Date();
   console.log('Options in retrieveMessages:', {
     messageAgeToDownload,
     fetchMsgsOnScroll,
@@ -77,14 +76,15 @@ const retrieveMessages = async (
     fetchTotalLimit
   });
 
-  if (messageAgeToDownload && !fetchMsgsOnScroll) {
-    if (!cursor) {
-      const startTime = new Date();
+  if (messageAgeToDownload && !fetchMsgsOnScroll && !cursor) {
       startTime.setMilliseconds(endTime.getMilliseconds() - messageAgeToDownload);
       queryOptions.timeFilter = { startTime, endTime };
       queryOptions.pageSize = getOptions()?.messagesToDownload || 100;
-    }
   } else {
+    endTime = cursor ? new Date(cursor) : new Date();
+    if (cursor) {
+      endTime.setMilliseconds(endTime.getMilliseconds() + 1000);
+    }
     queryOptions.timeFilter = { endTime };
     queryOptions.pageSize = fetchLimit || 10;
   }
@@ -114,8 +114,6 @@ const retrieveMessages = async (
     
     if (messagesReceived <= 1) {
       chatState.value.lowResponseCount++;
-      const maxAttempts = getOptions()?.fetchMaxAttempts || 3;
-      console.log(`Low response count: ${chatState.value.lowResponseCount}/${maxAttempts}`);
     } else {
       chatState.value.lowResponseCount = 0;
     }
@@ -476,4 +474,45 @@ export const hasReachedMessageLimit = () => {
   return options?.fetchTotalLimit ? 
          getMessageList().length >= options.fetchTotalLimit : 
          false;
+};
+
+export const hasExceededFetchAttempts = () => {
+  const options = getOptions();
+  const maxAttempts = options?.fetchMaxAttempts || 3;
+  return chatState.value.lowResponseCount > maxAttempts;
+};
+
+let fetchTimeout: NodeJS.Timeout | null = null;
+
+export const cleanupFetchCycle = () => {
+  clearFetchTimeout();
+};
+
+const clearFetchTimeout = () => {
+  if (fetchTimeout) {
+    clearTimeout(fetchTimeout);
+    fetchTimeout = null;
+  }
+};
+
+export const tryFetchMessages = async () => {
+  clearFetchTimeout();
+
+  if (chatState.value.isLoadingMore) {
+    return; // Abort fetch cycle if already loading
+  }
+  if (hasReachedMessageLimit()) {
+    return; // Abort fetch cycle if reached message limit
+  }
+
+  if (hasExceededFetchAttempts()) {
+    // Pausing fetch cycle - exceeded max attempts
+    fetchTimeout = setTimeout(tryFetchMessages, 15000); 
+    return;
+  }
+
+  // Standard fetch cycle that happens while observer still visible
+  fetchTimeout = setTimeout(tryFetchMessages, 2000);
+  console.log('Fetching older messages...');
+  await loadMoreMessages();
 };

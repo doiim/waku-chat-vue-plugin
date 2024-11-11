@@ -50,7 +50,13 @@ const closeChat = () => {
   }
 };
 
-defineExpose({ openChat, closeChat });
+const connectChat = () => {
+  if (wakuChatRef.value) {
+    wakuChatRef.value.connectChat();
+  }
+};
+
+defineExpose({ openChat, closeChat, connectChat });
 
 onMounted(() => {
   const style = document.createElement("style");

@@ -329,8 +329,12 @@ const openChat = async () => {
 
   clearTimeout(idleTimeout.value);
   
-  // If not connected, start connection process
-  if (getStatus() !== "connected") {
+  connectChat();
+};
+
+const connectChat = async () => {
+   // If not connected, start connection process
+   if (getStatus() !== "connected") {
     showSettings.value = !!getOptions()?.showSettings;
     showSystemMessages.value = !!getOptions()?.showSystemMessages;
     
@@ -388,7 +392,7 @@ const animDirection = () => {
   return "slideUp";
 };
 
-defineExpose({openChat, closeChat});
+defineExpose({openChat, closeChat, connectChat});
 </script>
 
 <template>

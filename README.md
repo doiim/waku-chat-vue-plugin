@@ -161,6 +161,12 @@ Here are the available configuration options:
   - border: allow you change borders from component
     - size: (string) - border size (specify your unit) of the chat component
 
+### Exposed Events
+- `connectChat`: (() => void) - Connects to the chat while in background and fetchs the initial messages.
+- `openChat`: (() => void) - Opens the chat container.
+- `closeChat`: (() => void) - Closes the chat container.
+
+
 ## Examples
 
 You can find a vue example [here](https://github.com/doiim/waku-chat-vue).

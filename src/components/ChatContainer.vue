@@ -291,35 +291,35 @@ onBeforeUnmount(() => {
     <div class="status-indicator">
       {{ getStatus() === 'connected' ? '' : getStatus() === 'connecting' ? 'connecting...' : 'disconnected' }}
     </div>
-          <!-- Skeleton Messages -->
-      <Transition name="fade" mode="out-in">
-        <div v-if="props.isLoading" class="chat-body" :class="{ dark: isDark }" ref="messageContainerRef">
-          <div
-            v-for="i in 3"
-            :key="'skeleton-'+i"
-            class="message-container"
-            :class="{ dark: isDark }"
-          >
-            <!-- Username skeleton -->
-            <div class="user-name-baloon" :class="{ dark: isDark }">
-              <div class="skeleton-content" style="width: 80px"></div>
-            </div>
+    <!-- Skeleton Messages -->
+    <Transition name="fade" mode="out-in">
+      <div v-if="props.isLoading" class="chat-body" :class="{ dark: isDark }" ref="messageContainerRef">
+        <div
+          v-for="i in 3"
+          :key="'skeleton-'+i"
+          class="message-container"
+          :class="{ dark: isDark }"
+        >
+          <!-- Username skeleton -->
+          <div class="user-name-baloon" :class="{ dark: isDark }">
+            <div class="skeleton-content" style="width: 80px"></div>
+          </div>
 
-            <!-- Message bubble skeleton -->
-            <div class="grouped-message" :class="{ dark: isDark }">
-              <div class="message skeleton-content" :class="{ dark: isDark }">
-                <div style="width: 160px; height: 16;"></div>
-                <div style="width: 160px; height: 16;"></div>
-              </div>
-            </div>
-
-            <!-- Timestamp skeleton -->
-            <div class="timestamp" :class="{ dark: isDark }">
-              <div class="skeleton-content" style="width: 60px"></div>
+          <!-- Message bubble skeleton -->
+          <div class="grouped-message" :class="{ dark: isDark }">
+            <div class="message skeleton-content" :class="{ dark: isDark }">
+              <div style="width: 160px; height: 16;"></div>
+              <div style="width: 160px; height: 16;"></div>
             </div>
           </div>
+
+          <!-- Timestamp skeleton -->
+          <div class="timestamp" :class="{ dark: isDark }">
+            <div class="skeleton-content" style="width: 60px"></div>
+          </div>
         </div>
-        <div v-else class="chat-body" :class="{ dark: isDark }" ref="messageContainerRef">
+      </div>
+      <div v-else class="chat-body" :class="{ dark: isDark }" ref="messageContainerRef">
         <!-- Actual Messages -->
         <TransitionGroup name="fade">
           <div v-if="!props.isLoading"

@@ -79,7 +79,7 @@ const retrieveMessages = async (
   if (messageAgeToDownload && !fetchMsgsOnScroll && !cursor) {
       startTime.setMilliseconds(endTime.getMilliseconds() - messageAgeToDownload);
       queryOptions.timeFilter = { startTime, endTime };
-      queryOptions.pageSize = getOptions()?.messagesToDownload || 100;
+      queryOptions.pageSize = fetchLimit || 100;
   } else {
     endTime = cursor ? new Date(cursor) : new Date();
     if (cursor) {

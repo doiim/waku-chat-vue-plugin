@@ -22,7 +22,6 @@ import {
   getOptions,
   onDestroyWaku,
   disconnectChat,
-  //chatState,
   setFetchMsgsOnScroll,
   setFetchMaxAttempts,
   setFetchLimit,

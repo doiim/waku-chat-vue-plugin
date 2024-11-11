@@ -20,7 +20,6 @@ export interface WakuChatVuePluginOptions {
   showSettings?: boolean;
   disconnectDelay?: number;
   groupMessagesTime?: number;
-  messagesToDownload?: number;
   messageAgeToDownload?: number;
   showSystemMessages?: boolean;
   userChangeNick?: boolean;

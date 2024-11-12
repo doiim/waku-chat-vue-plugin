@@ -61,10 +61,13 @@ const retrieveMessages = async (
   cursor?: number,
 ): Promise<number> => {
   const options = getOptions();
+  
+  // Set default values for fetch parameters
   const messageAgeToDownload = options?.messageAgeToDownload;
-  const fetchMsgsOnScroll = options?.fetchMsgsOnScroll;
-  const fetchLimit = options?.fetchLimit;
-  const fetchTotalLimit = options?.fetchTotalLimit || 0;
+  const fetchMsgsOnScroll = options?.fetchMsgsOnScroll ?? true; // Default to true
+  const fetchLimit = options?.fetchLimit ?? (fetchMsgsOnScroll ? 10 : 100); // Default based on scroll mode
+  const fetchTotalLimit = options?.fetchTotalLimit ?? 0; // Default to no limit
+  const fetchMaxAttempts = options?.fetchMaxAttempts ?? 3; // Default to 3 attempts
 
   if (!wakuData.lightNode || !wakuData.ChatDecoder) return 0;
   const topic = _topic.toLowerCase().replace(/\s/g, "");
@@ -75,8 +78,17 @@ const retrieveMessages = async (
 
   const queryOptions: any = {
     contentTopic,
-    pageDirection: "backward"
+    pageDirection: "backward",
+    pageSize: fetchLimit
   };
+
+  console.log('Fetch parameters:', {
+    fetchMsgsOnScroll,
+    fetchLimit,
+    fetchTotalLimit,
+    fetchMaxAttempts,
+    messageAgeToDownload: messageAgeToDownload ? `${messageAgeToDownload/(24*60*60*1000)} days` : 'unlimited'
+  });
 
   let endTime = new Date();
   let startTime = new Date();
@@ -442,25 +454,9 @@ const pingAndReinitiateSubscription = async () => {
 };
 
 export const loadMoreMessages = async () => {
-  console.log('loadMoreMessages called with state:', {
-    isLoading: chatState.value.isLoadingMore,
-    lastCursor: chatState.value.lastCursor
-  });
-
-  if (chatState.value.isLoadingMore || !chatState.value.lastCursor) {
-    console.log('(Recursive Call Aborted) - Exiting loadMoreMessages earlier due to state conditions');
-    return;
-  }
-
   const options = getOptions();
   if (!options) {
     console.log('No options available, exiting loadMoreMessages');
-    return;
-  }
-
-  const fetchTotalLimit = options?.fetchTotalLimit || 0;
-  if (fetchTotalLimit > 0 && getMessageList().length >= fetchTotalLimit) {
-    console.log('Reached total message limit of:', fetchTotalLimit);
     return;
   }
 
@@ -468,7 +464,6 @@ export const loadMoreMessages = async () => {
     ? options.wakuChannelName 
     : "my-app";
 
-  console.log('Retrieving messages with cursor:', chatState.value.lastCursor);
   await retrieveMessages(
     channelName,
     chatState.value.room,
@@ -508,6 +503,14 @@ export const setFetchMsgsOnScroll = (enabled: boolean) => {
   }
 };
 
+export const setMessageAgeToDownload = (age: number) => {
+  const options = getOptions();
+  if (options) {
+    options.messageAgeToDownload = age;
+  }
+};
+
+
 export const hasReachedMessageLimit = () => {
   const options = getOptions();
   return options?.fetchTotalLimit ? 
@@ -519,6 +522,11 @@ export const hasExceededFetchAttempts = () => {
   const options = getOptions();
   const maxAttempts = options?.fetchMaxAttempts || 3;
   return chatState.value.lowResponseCount > maxAttempts;
+};
+
+export const hasCursorOnScrollFetching = () => {
+  const options = getOptions();
+  return !chatState.value.lastCursor && options?.fetchMsgsOnScroll == true
 };
 
 export const tryFetchMessages = async () => {
@@ -548,9 +556,9 @@ export const tryFetchMessages = async () => {
     );
     return;
   }
-
+  
   // Don't continue if we don't have a cursor
-  if (!chatState.value.lastCursor) {
+  if (hasCursorOnScrollFetching()) {
     console.log(
       '%c No cursor available, stopping fetch cycle',
       'background: #FF0000; color: white; padding: 2px 6px; border-radius: 2px;'

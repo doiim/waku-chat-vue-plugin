@@ -237,17 +237,32 @@ const isTargetVisible = ref(false);
 // Add a ref for the timeout
 const fetchTimeout = ref<NodeJS.Timeout | null>(null);
 
+const stopFetchCycle = () => {
+  if (fetchTimeout.value) {
+    clearTimeout(fetchTimeout.value);
+    fetchTimeout.value = null;
+  }
+};
+
+// Recursive fetch cycle
+const startFetchCycle = async () => {
+  if (isTargetVisible.value) {
+    await tryFetchMessages();
+    fetchTimeout.value = setTimeout(startFetchCycle, 5000);
+  }
+};
+
 const initializeObserver = () => {
-  console.log('Initializing observer');
   if (!observer.value && observerTarget.value) {
     observer.value = new IntersectionObserver(
       async (entries) => {
         const target = entries[0];
-        isTargetVisible.value = target.isIntersecting;
-        
+        isTargetVisible.value = target.isIntersecting;        
         if (target.isIntersecting) {
-          console.log('Target is intersecting, starting fetch cycle');
           await tryFetchMessages();
+          fetchTimeout.value = setTimeout(startFetchCycle, 5000);
+        } else {
+          stopFetchCycle();
         }
       },
       {
@@ -255,8 +270,6 @@ const initializeObserver = () => {
         threshold: 0.1,
       }
     );
-    
-    console.log('Observer target found, starting observation');
     observer.value.observe(observerTarget.value);
   }
 };
@@ -279,9 +292,12 @@ onBeforeUnmount(() => {
     fetchTimeout.value = null;
   }
   if (observer.value && observerTarget.value) {
-    console.log('Cleaning up observer');
     observer.value.unobserve(observerTarget.value);
     observer.value.disconnect();
+    if(fetchTimeout.value) {
+      clearTimeout(fetchTimeout.value);
+      fetchTimeout.value = null;
+    }
   }
 });
 </script>

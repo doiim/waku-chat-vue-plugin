@@ -3,6 +3,7 @@ import { ref, inject } from "vue";
 import { changeTopic, loadPlugin, upgradeMessage } from "../plugins/vue-waku";
 import { WakuChatVuePluginOptions } from "../types/ChatTypes";
 import { generate } from "random-words";
+import debug from '../utils/debug';
 
 type WakuData = {
   startWaku?: (stoppedNode: any) => Promise<any>;
@@ -24,13 +25,13 @@ export const chatState = ref<{
   room: string;
   isLoadingMore: boolean;
   lastCursor?: number;
-  lowResponseCount: number;
+  lowResponseCount: number
 }>({
   status: "idle",
   messageList: [],
   room: "",
   isLoadingMore: false,
-  lowResponseCount: 0
+  lowResponseCount: 0,
 });
 
 let sendMessageToServer = async (msg: Message) => {
@@ -82,98 +83,97 @@ const retrieveMessages = async (
     pageSize: fetchLimit
   };
 
-  console.log('Fetch parameters:', {
-    fetchMsgsOnScroll,
-    fetchLimit,
-    fetchTotalLimit,
-    fetchMaxAttempts,
-    messageAgeToDownload: messageAgeToDownload ? `${messageAgeToDownload/(24*60*60*1000)} days` : 'unlimited'
-  });
-
   let endTime = new Date();
   let startTime = new Date();
-  console.log('Options in retrieveMessages:', {
-    messageAgeToDownload,
-    fetchMsgsOnScroll,
-    fetchLimit,
-    fetchTotalLimit
-  });
 
   if (messageAgeToDownload && !fetchMsgsOnScroll && !cursor) {
       startTime.setMilliseconds(endTime.getMilliseconds() - messageAgeToDownload);
       queryOptions.timeFilter = { startTime, endTime };
-      queryOptions.pageSize = fetchLimit || 100;
   } else {
     endTime = cursor ? new Date(cursor) : new Date();
     if (cursor) {
       endTime.setMilliseconds(endTime.getMilliseconds() + 1000);
     }
     queryOptions.timeFilter = { endTime };
-    queryOptions.pageSize = fetchLimit || 10;
   }
 
   try {
     chatState.value.isLoadingMore = true;
-    console.log('Retrieving messages before:', endTime.toISOString(), {
-      fetchMsgsOnScroll,
-      pageSize: queryOptions.pageSize,
-      fetchLimit: fetchLimit,
-      timeFilter: queryOptions.timeFilter,
-      fetchTotalLimit: fetchTotalLimit,
-      currentMessageCount: getMessageList().length
-    });
-    
+    let totalSystemMessages = 0;
+    let attempts = 0;
+    const maxAttempts = 3; // Prevent infinite loops
+        
+    debug.ObjectMessage(
+      'Fetching parameters:',
+      {
+        fetchMsgsOnScroll,
+        fetchLimit,
+        fetchTotalLimit,
+        fetchMaxAttempts,
+        messageAgeToDownload
+        //'message age to download' : messageAgeToDownload ? `${messageAgeToDownload/(24*60*60*1000)} days` : 'unlimited'
+      }
+    );
     const wrappedCallback = (msg: any) => {
       try {
-        // Decode message to check type
         const decodedMsg = getChatInterface().decode(msg.payload);
-        
-        // Only count and process non-system messages
-        if (decodedMsg.type !== 'system') {
-          const result = callback(msg);
-          if (result) messagesReceived++;
-          return result;
+        if (decodedMsg.type === 'system') {
+          totalSystemMessages++;
+          return false;
         }
-        return false;
+
+        const result = callback(msg);
+        if (result) messagesReceived++;
+        return result;
       } catch {
         return false;
       }
     };
 
-    await wakuData.lightNode.store.queryWithOrderedCallback(
-      [wakuData.ChatDecoder],
-      wrappedCallback,
-      queryOptions
-    );
-    
+    // Keep fetching until we get enough non-system messages or hit max attempts
+    while (messagesReceived < fetchLimit && attempts < maxAttempts) {
+      await wakuData.lightNode.store.queryWithOrderedCallback(
+        [wakuData.ChatDecoder],
+        wrappedCallback,
+        queryOptions
+      );
+
+      // Update cursor for next fetch if needed
+      if (messagesReceived < fetchLimit && chatState.value.lastCursor) {
+        queryOptions.timeFilter.endTime = new Date(chatState.value.lastCursor);
+      }      
+      attempts++;
+    }
+
+    // Update lowResponseCount based on actual messages received
     if (messagesReceived <= 1) {
       chatState.value.lowResponseCount++;
     } else {
       chatState.value.lowResponseCount = 0;
     }
 
-    console.log('Retrieved messages:', {
-      requested: queryOptions.pageSize,
-      fetchLimit: fetchLimit,
-      fetchTotalLimit: fetchTotalLimit,
-      received: messagesReceived,
-      lowResponseCount: chatState.value.lowResponseCount,
-      currentCursor: chatState.value.lastCursor ? new Date(chatState.value.lastCursor).toISOString() : 'none'
-    });
+    debug.ObjectMessage(
+      'Retrieved messages:',
+      {
+        totalSystemMessages,
+        messagesReceived,
+        attempts,
+        lowResponseCount: chatState.value.lowResponseCount
+      },
+    );
 
     return messagesReceived;
-
   } catch (error: unknown) {
     console.error('Error retrieving messages:', error);
     if (error instanceof Error && error.message?.includes('INVALID_CURSOR')) {
-      // Reset cursor to oldest message in current message list
       // This is a workaround for the issue where the cursor is invalid
-      // it happens when if the node responds as if it has messages but no messages on the body of the response
-      // so we can't get the last message timestamp for the new cursor pointer
-      // so we just set the cursor to the oldest message in the current message list
-      // or reset it to datetime now() just in case of it happens in the first fetch
+      // it happens when the node responds only system messages and there is no msg body
+      // to get the timestamp needded for next new cursor pointer
+      // this just prevents the websocket from closing its connection.
       chatState.value.lastCursor = chatState.value.messageList.length > 0 
+      // Reset cursor to oldest message in current message list
       ? Math.min(...chatState.value.messageList.map(msg => msg.timestamp))
+      // Reset cursor to datetime now() just in case of it happens in the first time fetching
       : Date.now();
     }
     return 0;
@@ -324,19 +324,6 @@ export const loadChat = async () => {
   }
   await setRoom(options.availableRooms[0]);
 
-  sendMessageToServer = async (msg: Message) => {
-    if (!wakuData.lightNode) return;
-    if (chatState.value.status !== "connected") return;
-    if (!wakuData.chatInterfaces?.length || !wakuData.ChatEncoder) return;
-
-    const protoMessage = getChatInterface().create(msg);
-    const serialisedMessage = getChatInterface().encode(protoMessage).finish();
-
-    await wakuData.lightNode.lightPush.send(wakuData.ChatEncoder, {
-      payload: serialisedMessage,
-    });
-  };
-
   chatState.value.status = "connected";
 };
 
@@ -370,6 +357,7 @@ export const sendMessage = (
     responseTo: responseId,
   };
   setTimeout(async () => {
+    debug.ProtocolMessages(msg, 'sent');
     await sendMessageToServer(msg);
   }, 0);
 };
@@ -378,6 +366,7 @@ const messageCallback = (wakuMessage: any) => {
   if (!wakuData.chatInterfaces?.length || !wakuMessage.payload) return false;
   let messageObj: any = undefined;
   let version = wakuData.chatInterfaces.length - 1;
+
   while (messageObj === undefined && version >= 0) {
     try {
       messageObj = getChatInterface(version).decode(wakuMessage.payload);
@@ -399,23 +388,21 @@ const messageCallback = (wakuMessage: any) => {
   );
   if (existingMessageIndex !== -1) return true;
 
-  // Log the received message with styled console output
-  console.log('%c MSG: ' + `${messageObj.data}`,'background: #0066cc; color: white; padding: 2px 6px; border-radius: 2px;');
+  debug.ProtocolMessages(messageObj, 'received');
 
   if (!chatState.value.lastCursor || messageObj.timestamp < chatState.value.lastCursor) {
     chatState.value.lastCursor = messageObj.timestamp;
-    console.log('%c Cursor updated', 'color: #0055bb; padding: 2px 6px; border-radius: 2px;');
   }
 
   const insertIndex = chatState.value.messageList.findIndex(
     (message) => message.timestamp < messageObj.timestamp
   );
+
   if (insertIndex !== -1) {
     chatState.value.messageList.splice(insertIndex, 0, messageObj);
   } else {
     chatState.value.messageList.push(messageObj);
   }
-
   return true;
 };
 
@@ -455,10 +442,7 @@ const pingAndReinitiateSubscription = async () => {
 
 export const loadMoreMessages = async () => {
   const options = getOptions();
-  if (!options) {
-    console.log('No options available, exiting loadMoreMessages');
-    return;
-  }
+  if (!options) return;
 
   const channelName = options.wakuChannelName 
     ? options.wakuChannelName 
@@ -480,6 +464,10 @@ export const setFetchLimit = (limit: number) => {
   if (options) {
     options.fetchLimit = limit;
   }
+};
+
+export const setDebugMode = (enabled: boolean) => {
+  debug.setDebugEnabled(enabled);
 };
 
 export const setFetchMaxAttempts = (attempts: number) => {
@@ -510,7 +498,6 @@ export const setMessageAgeToDownload = (age: number) => {
   }
 };
 
-
 export const hasReachedMessageLimit = () => {
   const options = getOptions();
   return options?.fetchTotalLimit ? 
@@ -524,51 +511,46 @@ export const hasExceededFetchAttempts = () => {
   return chatState.value.lowResponseCount > maxAttempts;
 };
 
-export const hasCursorOnScrollFetching = () => {
+export const hasCursorWhileScrolling = () => {
   const options = getOptions();
   return !chatState.value.lastCursor && options?.fetchMsgsOnScroll == true
 };
 
 export const tryFetchMessages = async () => {
+
   // Don't continue if already loading
   if (chatState.value.isLoadingMore) {
-    console.log(
-      '%c Already in a fetch cycle, skip creating a new one',
-      'background: #FFD700; color: black; padding: 2px 6px; border-radius: 2px;'
-    );
+    debug.FetchingMessages('alreadyLoading');
     return;
   }
 
   // Don't continue if we've reached the message limit
   if (hasReachedMessageLimit()) {
-    console.log(
-      '%c Reached message limit, stopping fetch cycle',
-      'background: #4CAF50; color: white; padding: 2px 6px; border-radius: 2px;'
-    );
+    debug.FetchingMessages('limitReached');
     return;
   }
 
   // Don't continue if we've exceeded fetch attempts
   if (hasExceededFetchAttempts()) {
-    console.log(
-      '%c Exceeded fetch attempts, pausing fetch cycle',
-      'background: #FF8C00; color: white; padding: 2px 6px; border-radius: 2px;'
-    );
+    debug.FetchingMessages('maxAttempts');
     return;
   }
   
   // Don't continue if we don't have a cursor
-  if (hasCursorOnScrollFetching()) {
-    console.log(
-      '%c No cursor available, stopping fetch cycle',
-      'background: #FF0000; color: white; padding: 2px 6px; border-radius: 2px;'
-    );
+  if (hasCursorWhileScrolling()) {
+    debug.FetchingMessages('noCursor');
     return;
   }
 
-  console.log(
-    '%c Fetching older messages...',
-    'color: blue; padding: 2px 6px; border-radius: 2px;'
-  );
+  // Don't continue because options are needed to determine each cycle behaviour
+  if (!getOptions()) {
+    debug.FetchingMessages('noOptions');
+    return;
+  }
+
+  // Start fetching
+  debug.FetchingMessages('begin');
   await loadMoreMessages();
+  debug.FetchingMessages('end');
+
 };

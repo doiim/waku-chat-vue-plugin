@@ -16,6 +16,7 @@ import {
 import { formatTimestamp } from "../utils/formatation";
 import { scrollToBottom, scrollToMessage } from "../utils/animation";
 import { WakuChatConfigCss } from "../types/ChatTypes";
+import debug from "../utils/debug";
 
 const props = defineProps<{
   styleConfig?: WakuChatConfigCss;
@@ -239,6 +240,7 @@ const fetchTimeout = ref<NodeJS.Timeout | null>(null);
 
 const stopFetchCycle = () => {
   if (fetchTimeout.value) {
+    debug.ObserverMessages('stopCycle');
     clearTimeout(fetchTimeout.value);
     fetchTimeout.value = null;
   }
@@ -247,6 +249,7 @@ const stopFetchCycle = () => {
 // Recursive fetch cycle
 const startFetchCycle = async () => {
   if (isTargetVisible.value) {
+    debug.ObserverMessages('newCycle');
     await tryFetchMessages();
     fetchTimeout.value = setTimeout(startFetchCycle, 5000);
   }
@@ -259,8 +262,9 @@ const initializeObserver = () => {
         const target = entries[0];
         isTargetVisible.value = target.isIntersecting;        
         if (target.isIntersecting) {
+          debug.ObserverMessages('startCycle');
           await tryFetchMessages();
-          fetchTimeout.value = setTimeout(startFetchCycle, 5000);
+          fetchTimeout.value = setTimeout(startFetchCycle, 2000);
         } else {
           stopFetchCycle();
         }

@@ -34,6 +34,7 @@ const props = defineProps<{
   fetchMaxAttempts?: number; // Attempts to fetch before giving up
   fetchTotalLimit?: number; // Limit of messages per room
   fetchLimit?: number; // Limit of messages per fetch
+  debugMode?: boolean;
 }>();
 
 const pluginHead = ref<HTMLHeadElement | null>(null);
@@ -84,6 +85,7 @@ onMounted(() => {
     <body>
       <WakuChat
         ref="wakuChatRef"
+        :debugMode="props.debugMode"
         :externalUserId="props.externalUserId"
         :externalUserName="props.externalUserName"
         :externalUserType="props.externalUserType"

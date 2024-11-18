@@ -26,6 +26,7 @@ import {
   setFetchMaxAttempts,
   setFetchLimit,
   setFetchTotalLimit,
+  setDebugMode,
 } from "../components/WakuLogic";
 import { defaultCss, applyDefaultStyle } from "../utils/defaultStyle";
 import ChatContainer from "./ChatContainer.vue";
@@ -61,6 +62,7 @@ const props = defineProps<{
   fetchMaxAttempts?: number;
   fetchLimit?: number;
   fetchTotalLimit?: number;
+  debugMode?: boolean;
 }>();
 
 const isChatOpen = ref<boolean>(false);
@@ -78,6 +80,7 @@ const isLoading = ref(false);
 
 const propFetchOnScroll = computed(() => props.fetchMsgsOnScroll);
 const propFetchLimit = computed(() => props.fetchLimit);
+const propDebugMode = computed(() => props.debugMode);
 const propMaxAttempts = computed(() => props.fetchMaxAttempts);
 const propFetchTotalLimit = computed(() => props.fetchTotalLimit || 0);
 
@@ -93,17 +96,24 @@ watch([propFetchLimit], () => {
   }
 });
 
+watch([propFetchTotalLimit], () => {
+  if (propFetchTotalLimit.value !== undefined) {
+    setFetchTotalLimit(propFetchTotalLimit.value);
+  }
+});
+
+watch([propDebugMode], () => {
+  if (propDebugMode.value !== undefined) {
+    setDebugMode(propDebugMode.value);
+  }
+});
+
 watch([propFetchOnScroll], () => {
   if (propFetchOnScroll.value !== undefined) {
     setFetchMsgsOnScroll(propFetchOnScroll.value);
   }
 });
 
-watch([propFetchTotalLimit], () => {
-  if (propFetchTotalLimit.value !== undefined) {
-    setFetchTotalLimit(propFetchTotalLimit.value);
-  }
-});
 
 const balloonPosition = computed(() => {
   var pos = props.balloonPos;

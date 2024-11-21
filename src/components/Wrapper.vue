@@ -35,6 +35,7 @@ const props = defineProps<{
   fetchTotalLimit?: number; // Limit of messages per room
   fetchLimit?: number; // Limit of messages per fetch
   debugMode?: boolean;
+  messageAgeToDownload?: number;
 }>();
 
 const pluginHead = ref<HTMLHeadElement | null>(null);
@@ -102,6 +103,7 @@ onMounted(() => {
         :fetchMaxAttempts="props.fetchMaxAttempts"
         :fetchTotalLimit="props.fetchTotalLimit"
         :fetchLimit="props.fetchLimit"
+        :messageAgeToDownload="props.messageAgeToDownload"
       />
     </body>
   </shadow-root>

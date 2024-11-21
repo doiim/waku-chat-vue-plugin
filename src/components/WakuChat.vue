@@ -27,6 +27,7 @@ import {
   setFetchLimit,
   setFetchTotalLimit,
   setDebugMode,
+  setMessageAgeToDownload,
 } from "../components/WakuLogic";
 import { defaultCss, applyDefaultStyle } from "../utils/defaultStyle";
 import ChatContainer from "./ChatContainer.vue";
@@ -62,6 +63,7 @@ const props = defineProps<{
   fetchMaxAttempts?: number;
   fetchLimit?: number;
   fetchTotalLimit?: number;
+  messageAgeToDownload?: number;
   debugMode?: boolean;
 }>();
 
@@ -83,6 +85,7 @@ const propFetchLimit = computed(() => props.fetchLimit);
 const propDebugMode = computed(() => props.debugMode);
 const propMaxAttempts = computed(() => props.fetchMaxAttempts);
 const propFetchTotalLimit = computed(() => props.fetchTotalLimit || 0);
+const propMessageAgeToDownload = computed(() => props.messageAgeToDownload);
 
 watch([propMaxAttempts], () => {
   if (propMaxAttempts.value) {
@@ -114,6 +117,11 @@ watch([propFetchOnScroll], () => {
   }
 });
 
+watch([propMessageAgeToDownload], () => {
+  if (propMessageAgeToDownload.value !== undefined) {
+    setMessageAgeToDownload(propMessageAgeToDownload.value);
+  }
+});
 
 const balloonPosition = computed(() => {
   var pos = props.balloonPos;
@@ -595,6 +603,7 @@ defineExpose({openChat, closeChat, connectChat});
             :height="`calc(${chatSize.height} - 19px)`"
             :fetchMsgsOnScroll="props.fetchMsgsOnScroll"
             :isLoading="isLoading"
+            :fetchOnScroll="propFetchOnScroll"
           />
         </div>
       </Transition>

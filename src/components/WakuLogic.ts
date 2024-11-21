@@ -104,14 +104,14 @@ const retrieveMessages = async (
     const maxAttempts = 3; // Prevent infinite loops
         
     debug.ObjectMessage(
-      'Fetching parameters:',
+      'Fetching Parameters:',
       {
         fetchMsgsOnScroll,
         fetchLimit,
         fetchTotalLimit,
         fetchMaxAttempts,
-        messageAgeToDownload
-        //'message age to download' : messageAgeToDownload ? `${messageAgeToDownload/(24*60*60*1000)} days` : 'unlimited'
+        messageAgeToDownload,
+        'messageAgeToDownloadFormatted': messageAgeToDownload ? `${messageAgeToDownload/(24*60*60*1000)} days` : 'unlimited',
       }
     );
     const wrappedCallback = (msg: any) => {

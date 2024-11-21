@@ -37,9 +37,9 @@ const props = defineProps<{
   };
   open: boolean;
   height: string;
-  isLoading?: boolean;
+  isConnecting?: boolean;
   fetchOnScroll?: boolean;
-  loadingRoom: boolean;
+  isLoadingRoom: boolean;
 }>();
 
 const propsOpen = computed(() => {
@@ -280,8 +280,8 @@ const initializeObserver = () => {
 };
 
 // Watch for changes in loading state and target element
-watch([() => props.isLoading, observerTarget], ([isLoading, target]) => {
-  if (!isLoading && target) {
+watch([() => props.isConnecting, observerTarget], ([isConnecting, target]) => {
+  if (!isConnecting && target) {
     // Small delay to ensure DOM is ready
     nextTick(() => {
       initializeObserver();
@@ -314,7 +314,7 @@ onBeforeUnmount(() => {
     </div>
     <!-- Skeleton Messages -->
     <Transition name="fade" mode="out-in">
-      <div v-if="props.isLoading || props.loadingRoom" class="chat-body" :class="{ dark: isDark }" ref="messageContainerRef">
+      <div v-if="props.isConnecting || props.isLoadingRoom" class="chat-body" :class="{ dark: isDark }" ref="messageContainerRef">
         <div
           v-for="i in 3"
           :key="'skeleton-'+i"
@@ -343,7 +343,7 @@ onBeforeUnmount(() => {
       <div v-else class="chat-body" :class="{ dark: isDark }" ref="messageContainerRef">
         <!-- Actual Messages -->
         <TransitionGroup name="fade">
-          <div v-if="!props.isLoading"
+          <div v-if="!props.isConnecting"
             v-for="(groupedMsgs, idGroup) in groupedMessages"
             :key="groupedMsgs[0].id"
             :class="{
@@ -673,13 +673,13 @@ onBeforeUnmount(() => {
           v-model="messageInput"
           placeholder="Type your message..."
           @keypress.enter="handleSendMessage"
-          :disabled="loadingRoom"
+          :disabled="isLoadingRoom"
         />
         <button
           @click="handleSendMessage"
           class="send-button"
           :class="{ dark: isDark }"
-          :disabled="loadingRoom || !messageInput"
+          :disabled="isLoadingRoom || !messageInput"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

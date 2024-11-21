@@ -23,14 +23,14 @@ export const chatState = ref<{
   status: string;
   messageList: Message[];
   room: string;
-  isLoadingMore: boolean;
+  isFetching: boolean;
   lastCursor?: number;
   lowResponseCount: number
 }>({
   status: "idle",
   messageList: [],
   room: "",
-  isLoadingMore: false,
+  isFetching: false,
   lowResponseCount: 0,
 });
 
@@ -98,7 +98,7 @@ const retrieveMessages = async (
   }
 
   try {
-    chatState.value.isLoadingMore = true;
+    chatState.value.isFetching = true;
     let totalSystemMessages = 0;
     let attempts = 0;
     const maxAttempts = 3; // Prevent infinite loops
@@ -178,7 +178,7 @@ const retrieveMessages = async (
     }
     return 0;
   } finally {
-    chatState.value.isLoadingMore = false;
+    chatState.value.isFetching = false;
   }
 };
 
@@ -456,7 +456,7 @@ export const loadMoreMessages = async () => {
   );
 };
 
-export const getLoadingState = () => chatState.value.isLoadingMore;
+export const getLoadingState = () => chatState.value.isFetching;
 export const getLowResponseCount = () => chatState.value.lowResponseCount;
 
 export const setFetchLimit = (limit: number) => {
@@ -518,8 +518,8 @@ export const hasCursorWhileScrolling = () => {
 
 export const tryFetchMessages = async () => {
 
-  // Don't continue if already loading
-  if (chatState.value.isLoadingMore) {
+  // Don't continue if already fetching messages
+  if (chatState.value.isFetching) {
     debug.FetchingMessages('alreadyLoading');
     return;
   }

@@ -69,7 +69,7 @@ const props = defineProps<{
 
 const isChatOpen = ref<boolean>(false);
 const settingsMenu = ref<boolean>(false);
-const loadingRoom = ref<boolean>(false);
+const isLoadingRoom = ref<boolean>(false);
 const showSettings = ref<boolean>(false);
 const showSystemMessages = ref<boolean>(false);
 const userShowSystemMessages = ref<boolean>(false);
@@ -78,7 +78,7 @@ const editedUserName = ref("");
 const roomDropdownOpened = ref<boolean>(false);
 var styleConfig = ref<WakuChatConfigCss>();
 const idleTimeout = ref<NodeJS.Timeout>();
-const isLoading = ref(false);
+const isConnecting = ref(false);
 
 const propFetchOnScroll = computed(() => props.fetchMsgsOnScroll);
 const propFetchLimit = computed(() => props.fetchLimit);
@@ -319,9 +319,9 @@ const handleToggleRoomDropdown = () => {
 const changeRoomDropdown = async (selectedRoom: string) => {
   handleToggleRoomDropdown();
   if (selectedRoom === getRoom()) return;
-  loadingRoom.value = true;
+  isLoadingRoom.value = true;
   await setRoom(selectedRoom);
-  loadingRoom.value = false;
+  isLoadingRoom.value = false;
 };
 
 const enterEditMode = () => {
@@ -342,7 +342,7 @@ const saveEditedUserName = () => {
 
 const openChat = async () => {  
   // Set loading and open states immediately
-  isLoading.value = true;
+  isConnecting.value = true;
   isChatOpen.value = true;
 
   clearTimeout(idleTimeout.value);
@@ -372,10 +372,10 @@ const connectChat = async () => {
         props.onConnect();
       }
     } finally {
-      isLoading.value = false;
+      isConnecting.value = false;
     }
   } else {
-    isLoading.value = false;
+    isConnecting.value = false;
   }
   
   if (props.onOpen) {
@@ -569,9 +569,9 @@ defineExpose({openChat, closeChat, connectChat});
             :theme="theme"
             :height="`calc(${chatSize.height} - 19px)`"
             :fetchMsgsOnScroll="props.fetchMsgsOnScroll"
-            :isLoading="isLoading"
+            :isConnecting="isConnecting"
             :fetchOnScroll="propFetchOnScroll"
-            :loadingRoom="loadingRoom"
+            :isLoadingRoom="isLoadingRoom"
           />
         </div>
       </Transition>

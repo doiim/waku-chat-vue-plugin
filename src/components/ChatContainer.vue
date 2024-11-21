@@ -39,6 +39,7 @@ const props = defineProps<{
   height: string;
   isLoading?: boolean;
   fetchOnScroll?: boolean;
+  loadingRoom: boolean;
 }>();
 
 const propsOpen = computed(() => {
@@ -53,7 +54,6 @@ const height = computed(() => {
   return props.height;
 });
 
-const loadingRoom = ref<boolean>(false);
 const messageInput = ref<string>("");
 const showSystemMessages = ref<boolean>(false);
 const userShowSystemMessages = ref<boolean>(false);
@@ -314,7 +314,7 @@ onBeforeUnmount(() => {
     </div>
     <!-- Skeleton Messages -->
     <Transition name="fade" mode="out-in">
-      <div v-if="props.isLoading" class="chat-body" :class="{ dark: isDark }" ref="messageContainerRef">
+      <div v-if="props.isLoading || props.loadingRoom" class="chat-body" :class="{ dark: isDark }" ref="messageContainerRef">
         <div
           v-for="i in 3"
           :key="'skeleton-'+i"

@@ -417,39 +417,6 @@ defineExpose({openChat, closeChat, connectChat});
   <div class="waku-chat-vue-plugin">
     <Transition :name="animDirection()" mode="out-in">
         <div v-if="isChatOpen && (getStatus() === 'connected' || getStatus() === 'connecting')" class="chat-container" :class="{ dark: isDark }">
-          <Transition name="fade" mode="out-in">
-            <div
-              v-if="loadingRoom"
-              class="change-room-overlay"
-              :class="{ dark: isDark }"
-            >
-              <svg
-                width="64"
-                height="64"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke-opacity="0.4"
-                  stroke-width="4"
-                />
-                <path
-                  d="M12 22C10.6868 22 9.38642 21.7413 8.17317 21.2388C6.95991 20.7362 5.85752 19.9997 4.92893 19.0711C4.00035 18.1425 3.26375 17.0401 2.7612 15.8268C2.25866 14.6136 2 13.3132 2 12"
-                  stroke-opacity="0.8"
-                  stroke-width="4"
-                />
-                <path
-                  d="M12 2C13.3132 2 14.6136 2.25866 15.8268 2.76121C17.0401 3.26375 18.1425 4.00035 19.0711 4.92894C19.9997 5.85752 20.7363 6.95992 21.2388 8.17317C21.7413 9.38643 22 10.6868 22 12"
-                  stroke-opacity="0.8"
-                  stroke-width="4"
-                />
-              </svg>
-            </div>
-          </Transition>
           <div class="chat-header" :class="{ dark: isDark }">
             <div class="visible-section">
               <div class="room-section">
@@ -604,6 +571,7 @@ defineExpose({openChat, closeChat, connectChat});
             :fetchMsgsOnScroll="props.fetchMsgsOnScroll"
             :isLoading="isLoading"
             :fetchOnScroll="propFetchOnScroll"
+            :loadingRoom="loadingRoom"
           />
         </div>
       </Transition>
@@ -860,28 +828,6 @@ defineExpose({openChat, closeChat, connectChat});
 
 .chat-container.open {
   transform: translateY(0);
-}
-
-.change-room-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 8px;
-  background-color: rgba(0, 0, 0, 0.2);
-  stroke: v-bind("lightColors.secondary");
-  text-align: center;
-  align-content: center;
-  z-index: 100;
-}
-
-.change-room-overlay.dark {
-  stroke: v-bind("darkColors.secondary");
-}
-
-.change-room-overlay svg {
-  animation: spin 1s linear infinite;
 }
 
 .chat-header {

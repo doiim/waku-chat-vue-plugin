@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, TransitionGroup, watch, onMounted, onBeforeUnmount, nextTick } from "vue";
+import { ref, computed,  watch, onBeforeUnmount, nextTick } from "vue";
 import {
   sendMessage,
   getMessageList,
@@ -111,29 +111,6 @@ const reactions = computed(() => {
 const room = computed(() => {
   return getRoom();
 });
-
-// watch([propsOpen, room], () => {
-//   if (propsOpen) {
-//     setTimeout(() => {
-//       scrollToBottom(messageContainerRef.value);
-//     }, 0);
-//   }
-// });
-
-// watch([groupedMessages], () => {
-//   if (waitingMessage.value) {
-//     waitingMessage.value = false;
-//     setTimeout(() => {
-//       scrollToBottom(messageContainerRef.value);
-//     }, 0);
-//   }
-// });
-
-// onMounted(() => {
-//   setTimeout(() => {
-//     scrollToBottom(messageContainerRef.value);
-//   }, 0);
-// });
 
 const handleSendMessage = () => {
   if (messageInput.value) {

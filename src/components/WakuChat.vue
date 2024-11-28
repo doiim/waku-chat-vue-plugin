@@ -80,7 +80,7 @@ var styleConfig = ref<WakuChatConfigCss>();
 const idleTimeout = ref<NodeJS.Timeout>();
 const isConnecting = ref(false);
 
-const propFetchOnScroll = computed(() => props.fetchMsgsOnScroll);
+const propFetchMsgsOnScroll = computed(() => props.fetchMsgsOnScroll);
 const propFetchLimit = computed(() => props.fetchLimit);
 const propDebugMode = computed(() => props.debugMode);
 const propMaxAttempts = computed(() => props.fetchMaxAttempts);
@@ -111,9 +111,9 @@ watch([propDebugMode], () => {
   }
 });
 
-watch([propFetchOnScroll], () => {
-  if (propFetchOnScroll.value !== undefined) {
-    setFetchMsgsOnScroll(propFetchOnScroll.value);
+watch([propFetchMsgsOnScroll], () => {
+  if (propFetchMsgsOnScroll.value !== undefined) {
+    setFetchMsgsOnScroll(propFetchMsgsOnScroll.value);
   }
 });
 
@@ -570,7 +570,6 @@ defineExpose({openChat, closeChat, connectChat});
             :height="`calc(${chatSize.height} - 19px)`"
             :fetchMsgsOnScroll="props.fetchMsgsOnScroll"
             :isConnecting="isConnecting"
-            :fetchOnScroll="propFetchOnScroll"
             :isLoadingRoom="isLoadingRoom"
           />
         </div>

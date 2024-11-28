@@ -38,7 +38,7 @@ const props = defineProps<{
   open: boolean;
   height: string;
   isConnecting?: boolean;
-  fetchOnScroll?: boolean;
+  fetchMsgsOnScroll?: boolean;
   isLoadingRoom: boolean;
 }>();
 
@@ -235,11 +235,24 @@ const startFetchCycle = async () => {
 
 const initializeObserver = () => {
   if (!observer.value && observerTarget.value) {
+    console.log('start observer', {
+      isConnecting: props.isConnecting,
+      isLoadingRoom: props.isLoadingRoom,
+      hasTarget: !!observerTarget.value,
+      fetchMsgsOnScroll: props.fetchMsgsOnScroll // Add this
+    });
     observer.value = new IntersectionObserver(
       async (entries) => {
         const target = entries[0];
         isTargetVisible.value = target.isIntersecting;        
+
+        console.log('intersection state:', {
+          isIntersecting: target.isIntersecting,
+          isFetching: getLoadingState()
+        });
+
         if (target.isIntersecting) {
+          console.log("intersection state: start cycle");
           debug.ObserverMessages('startCycle');
           await tryFetchMessages();
           fetchTimeout.value = setTimeout(startFetchCycle, 2000);
@@ -570,12 +583,12 @@ onBeforeUnmount(() => {
             </Transition>
           </div>
         </TransitionGroup>
-        <div ref="observerTarget" class="observer-target" v-if="fetchOnScroll">   
+        <div ref="observerTarget" class="observer-target">   
           <div v-if="getLoadingState()" class="loading-indicator">
             <div class="spinner"></div>
             Searching for older messages...
           </div>
-          <div v-else-if="hasReachedMessageLimit()" class="loading-indicator">
+          <div v-else-if="hasReachedMessageLimit() || !props.fetchMsgsOnScroll" class="loading-indicator">
             End of available history
           </div>
           <div v-else-if="getLowResponseCount() < getFetchMaxAttempts()" class="loading-indicator">
@@ -584,11 +597,6 @@ onBeforeUnmount(() => {
           </div>
           <div v-else class="loading-indicator">
             Network busy or end of chat history
-          </div>
-        </div>
-        <div class="observer-target" v-else>
-          <div class="loading-indicator">
-            End of available history
           </div>
         </div>
       </div>

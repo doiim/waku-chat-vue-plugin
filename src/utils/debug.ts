@@ -261,7 +261,7 @@ const OBSERVER_STYLES: ObserverStylesType = {
     content: createStyle(BASE_STYLES.content, { bg: '#ffe7d4', text: '#333' })
   },
   alive: {
-    header: createStyle(BASE_STYLES.header, { bg: '#dec000', text: 'white' }),
+    header: createStyle(BASE_STYLES.header, { bg: '#ffc400', text: 'white' }),
     label: createStyle(BASE_STYLES.label, { bg: '#fffb91', text: '#333' }),
     content: createStyle(BASE_STYLES.content, { bg: '#f5f7d2', text: '#333' })
   },

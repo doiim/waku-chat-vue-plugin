@@ -575,7 +575,7 @@ onBeforeUnmount(() => {
             </Transition>
           </div>
         </TransitionGroup>
-        <div ref="observerTarget" class="observer-target">   
+        <div ref="observerTarget" class="observer-target" v-if="fetchMsgsOnScroll">
           <div v-if="getLoadingState()" class="loading-indicator">
             <div class="spinner"></div>
             Searching for older messages...
@@ -589,6 +589,11 @@ onBeforeUnmount(() => {
           </div>
           <div v-else class="loading-indicator">
             Network busy or end of chat history
+          </div>
+        </div>
+        <div v-else class="observer-target">
+          <div class="loading-indicator">
+            End of available history
           </div>
         </div>
       </div>

@@ -45,7 +45,7 @@ type FetchingStylesType = {
 };
 
 
-type ObserverStates = 'newCycle' | 'startCycle' | 'stopCycle' | 'unknown';
+type ObserverStates = 'newCycle' | 'startCycle' | 'stopCycle' | 'killed' | 'alive' | 'unknown';
 type ObserverStylesType = {
   [key in ObserverStates]: StyleConfig
 };
@@ -76,7 +76,7 @@ const ObjectMessage = (title: string, data: TableData) => {
 const ObserverMessages = (state: ObserverStates) => {
   if (!debug) return;
   
-  const msgType: ObserverStates = isValidFetchingState(state) ? state : 'unknown';
+  const msgType: ObserverStates = isValidObserverState(state) ? state : 'unknown';
   const styles = OBSERVER_STYLES[msgType];
 
   let message = '';
@@ -90,6 +90,12 @@ const ObserverMessages = (state: ObserverStates) => {
     break;
   case 'stopCycle':
     message = 'Undetected, stopping cycle interations';
+    break;
+  case 'killed':
+    message = 'Not tracking anything';
+    break;
+  case 'alive':
+    message = 'Tracking scroll position';
     break;
   case 'unknown':
     message = 'Unknown observer state';
@@ -184,8 +190,12 @@ const isValidMessageType = (type: string): type is MessageType => {
   return ['text', 'reaction', 'system', 'other'].includes(type);
 };
 
+const isValidObserverState = (state: string): state is FetchingStates => {
+  return ['newCycle', 'startCycle', 'stopCycle', 'alive', 'killed', 'unknown'].includes(state);
+};
+
 const isValidFetchingState = (state: string): state is FetchingStates => {
-  return ['begin', 'alreadyLoading', 'limitReached', 'maxAttempts', 'noCursor', 'noOptions', 'newCycle', 'startCycle', 'stopCycle', 'end', 'unknown'].includes(state);
+  return ['begin', 'alreadyLoading', 'limitReached', 'maxAttempts', 'noCursor', 'noOptions', 'end', 'unknown'].includes(state);
 };
 
 const createStyle = (baseStyle: string[], colors: { bg: string, text: string }) => {
@@ -244,6 +254,16 @@ const OBSERVER_STYLES: ObserverStylesType = {
     header: createStyle(BASE_STYLES.header, { bg: '#cc6600', text: 'white' }),
     label: createStyle(BASE_STYLES.label, { bg: '#ffcc99', text: '#333' }),
     content: createStyle(BASE_STYLES.content, { bg: '#fff2e6', text: '#333' })
+  },
+  killed: {
+    header: createStyle(BASE_STYLES.header, { bg: '#b35400', text: 'white' }),
+    label: createStyle(BASE_STYLES.label, { bg: '#ffcda1', text: '#333' }),
+    content: createStyle(BASE_STYLES.content, { bg: '#ffe7d4', text: '#333' })
+  },
+  alive: {
+    header: createStyle(BASE_STYLES.header, { bg: '#dec000', text: 'white' }),
+    label: createStyle(BASE_STYLES.label, { bg: '#fffb91', text: '#333' }),
+    content: createStyle(BASE_STYLES.content, { bg: '#f5f7d2', text: '#333' })
   },
   unknown: {
     header: createStyle(BASE_STYLES.header, { bg: '#ff0000', text: 'white' }),

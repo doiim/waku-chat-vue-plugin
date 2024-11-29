@@ -233,67 +233,59 @@ const startFetchCycle = async () => {
   }
 };
 
-const initializeObserver = () => {
-  if (!observer.value && observerTarget.value) {
-    console.log('start observer', {
-      isConnecting: props.isConnecting,
-      isLoadingRoom: props.isLoadingRoom,
-      hasTarget: !!observerTarget.value,
-      fetchMsgsOnScroll: props.fetchMsgsOnScroll // Add this
-    });
-    observer.value = new IntersectionObserver(
-      async (entries) => {
-        const target = entries[0];
-        isTargetVisible.value = target.isIntersecting;        
-
-        console.log('intersection state:', {
-          isIntersecting: target.isIntersecting,
-          isFetching: getLoadingState()
-        });
-
-        if (target.isIntersecting) {
-          console.log("intersection state: start cycle");
-          debug.ObserverMessages('startCycle');
-          await tryFetchMessages();
-          fetchTimeout.value = setTimeout(startFetchCycle, 2000);
-        } else {
-          stopFetchCycle();
-        }
-      },
-      {
-        root: messageContainerRef.value,
-        threshold: 0.1,
-      }
-    );
-    observer.value.observe(observerTarget.value);
+const killObserver = () => {
+  isTargetVisible.value = false;
+  stopFetchCycle();
+  if (observerTarget.value) {
+    observer.value?.unobserve(observerTarget.value);
+    observer.value?.disconnect();
+    observer.value = null;
+    debug.ObserverMessages('killed');
   }
 };
 
-// Watch for changes in loading state and target element
-watch([() => props.isConnecting, observerTarget], ([isConnecting, target]) => {
-  if (!isConnecting && target) {
-    // Small delay to ensure DOM is ready
-    nextTick(() => {
-      initializeObserver();
-    });
-  }
-});
+const initializeObserver = () => {
+  if (!observerTarget.value) return;
+  
+  observer.value = new IntersectionObserver(
+    async (entries) => {
+      const target = entries[0];
+      isTargetVisible.value = target.isIntersecting;        
 
-// Cleanup
-onBeforeUnmount(() => {
-  isTargetVisible.value = false; // Stop any pending fetch cycles
-  if (fetchTimeout.value) {
-    clearTimeout(fetchTimeout.value);
-    fetchTimeout.value = null;
-  }
-  if (observer.value && observerTarget.value) {
-    observer.value.unobserve(observerTarget.value);
-    observer.value.disconnect();
-    if(fetchTimeout.value) {
-      clearTimeout(fetchTimeout.value);
-      fetchTimeout.value = null;
+      if (target.isIntersecting) {
+        debug.ObserverMessages('startCycle');
+        await tryFetchMessages();
+        fetchTimeout.value = setTimeout(startFetchCycle, 2000);
+      } else {
+        stopFetchCycle();
+      }
+    },
+    {
+      root: messageContainerRef.value,
+      threshold: 0.1,
     }
+  );  
+  observer.value.observe(observerTarget.value);  
+  debug.ObserverMessages('alive');
+};
+
+// kill observation if starts loading a new room
+watch([() => props.isLoadingRoom], (newRoom) => {
+  if (newRoom) {
+      killObserver();
+    }
+})
+
+// start observation if there's a target in chatcontainer
+watch([observerTarget], (newTarget) => {
+  if(!props.isConnecting && !!newTarget){
+    initializeObserver();
   }
+})
+
+// kill observation if chat has closed
+onBeforeUnmount(() => {
+  killObserver();
 });
 </script>
 

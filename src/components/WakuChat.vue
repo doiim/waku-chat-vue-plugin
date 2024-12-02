@@ -22,6 +22,12 @@ import {
   getOptions,
   onDestroyWaku,
   disconnectChat,
+  setFetchMsgsOnScroll,
+  setFetchMaxAttempts,
+  setFetchLimit,
+  setFetchTotalLimit,
+  setDebugMode,
+  setMessageAgeToDownload,
 } from "../components/WakuLogic";
 import { defaultCss, applyDefaultStyle } from "../utils/defaultStyle";
 import ChatContainer from "./ChatContainer.vue";
@@ -53,11 +59,17 @@ const props = defineProps<{
     width?: string;
     height?: string;
   };
+  fetchMsgsOnScroll?: boolean;
+  fetchMaxAttempts?: number;
+  fetchLimit?: number;
+  fetchTotalLimit?: number;
+  messageAgeToDownload?: number;
+  debugMode?: boolean;
 }>();
 
 const isChatOpen = ref<boolean>(false);
 const settingsMenu = ref<boolean>(false);
-const loadingRoom = ref<boolean>(false);
+const isLoadingRoom = ref<boolean>(false);
 const showSettings = ref<boolean>(false);
 const showSystemMessages = ref<boolean>(false);
 const userShowSystemMessages = ref<boolean>(false);
@@ -66,6 +78,50 @@ const editedUserName = ref("");
 const roomDropdownOpened = ref<boolean>(false);
 var styleConfig = ref<WakuChatConfigCss>();
 const idleTimeout = ref<NodeJS.Timeout>();
+const isConnecting = ref(false);
+
+const propFetchMsgsOnScroll = computed(() => props.fetchMsgsOnScroll);
+const propFetchLimit = computed(() => props.fetchLimit);
+const propDebugMode = computed(() => props.debugMode);
+const propMaxAttempts = computed(() => props.fetchMaxAttempts);
+const propFetchTotalLimit = computed(() => props.fetchTotalLimit || 0);
+const propMessageAgeToDownload = computed(() => props.messageAgeToDownload);
+
+watch([propMaxAttempts], () => {
+  if (propMaxAttempts.value) {
+    setFetchMaxAttempts(propMaxAttempts.value);
+  }
+});
+
+watch([propFetchLimit], () => {
+  if (propFetchLimit.value) {
+    setFetchLimit(propFetchLimit.value);
+  }
+});
+
+watch([propFetchTotalLimit], () => {
+  if (propFetchTotalLimit.value !== undefined) {
+    setFetchTotalLimit(propFetchTotalLimit.value);
+  }
+});
+
+watch([propDebugMode], () => {
+  if (propDebugMode.value !== undefined) {
+    setDebugMode(propDebugMode.value);
+  }
+});
+
+watch([propFetchMsgsOnScroll], () => {
+  if (propFetchMsgsOnScroll.value !== undefined) {
+    setFetchMsgsOnScroll(propFetchMsgsOnScroll.value);
+  }
+});
+
+watch([propMessageAgeToDownload], () => {
+  if (propMessageAgeToDownload.value !== undefined) {
+    setMessageAgeToDownload(propMessageAgeToDownload.value);
+  }
+});
 
 const balloonPosition = computed(() => {
   var pos = props.balloonPos;
@@ -263,9 +319,9 @@ const handleToggleRoomDropdown = () => {
 const changeRoomDropdown = async (selectedRoom: string) => {
   handleToggleRoomDropdown();
   if (selectedRoom === getRoom()) return;
-  loadingRoom.value = true;
+  isLoadingRoom.value = true;
   await setRoom(selectedRoom);
-  loadingRoom.value = false;
+  isLoadingRoom.value = false;
 };
 
 const enterEditMode = () => {
@@ -284,11 +340,22 @@ const saveEditedUserName = () => {
   exitEditMode();
 };
 
-const openChat = async () => {
+const openChat = async () => {  
+  // Set loading and open states immediately
+  isConnecting.value = true;
+  isChatOpen.value = true;
+
   clearTimeout(idleTimeout.value);
-  if (getStatus() !== "connected") {
+  
+  connectChat();
+};
+
+const connectChat = async () => {
+   // If not connected, start connection process
+   if (getStatus() !== "connected") {
     showSettings.value = !!getOptions()?.showSettings;
     showSystemMessages.value = !!getOptions()?.showSystemMessages;
+    
     if (propUserId.value) {
       setMyID(propUserId.value);
     }
@@ -298,15 +365,22 @@ const openChat = async () => {
     if (propUserType.value) {
       setMyType(propUserType.value);
     }
-    await loadChat();
-    if (props.onConnect) {
-      props.onConnect();
+    
+    try {
+      await loadChat();
+      if (props.onConnect) {
+        props.onConnect();
+      }
+    } finally {
+      isConnecting.value = false;
     }
+  } else {
+    isConnecting.value = false;
   }
+  
   if (props.onOpen) {
     props.onOpen();
   }
-  isChatOpen.value = true;
 };
 
 const closeChat = () => {
@@ -336,47 +410,13 @@ const animDirection = () => {
   return "slideUp";
 };
 
-defineExpose({ openChat, closeChat });
+defineExpose({openChat, closeChat, connectChat});
 </script>
 
 <template>
   <div class="waku-chat-vue-plugin">
-    <div v-if="getStatus() === 'connected'" key="connected">
-      <Transition :name="animDirection()" mode="out-in">
-        <div v-if="isChatOpen" class="chat-container" :class="{ dark: isDark }">
-          <Transition name="fade" mode="out-in">
-            <div
-              v-if="loadingRoom"
-              class="change-room-overlay"
-              :class="{ dark: isDark }"
-            >
-              <svg
-                width="64"
-                height="64"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke-opacity="0.4"
-                  stroke-width="4"
-                />
-                <path
-                  d="M12 22C10.6868 22 9.38642 21.7413 8.17317 21.2388C6.95991 20.7362 5.85752 19.9997 4.92893 19.0711C4.00035 18.1425 3.26375 17.0401 2.7612 15.8268C2.25866 14.6136 2 13.3132 2 12"
-                  stroke-opacity="0.8"
-                  stroke-width="4"
-                />
-                <path
-                  d="M12 2C13.3132 2 14.6136 2.25866 15.8268 2.76121C17.0401 3.26375 18.1425 4.00035 19.0711 4.92894C19.9997 5.85752 20.7363 6.95992 21.2388 8.17317C21.7413 9.38643 22 10.6868 22 12"
-                  stroke-opacity="0.8"
-                  stroke-width="4"
-                />
-              </svg>
-            </div>
-          </Transition>
+    <Transition :name="animDirection()" mode="out-in">
+        <div v-if="isChatOpen && (getStatus() === 'connected' || getStatus() === 'connecting')" class="chat-container" :class="{ dark: isDark }">
           <div class="chat-header" :class="{ dark: isDark }">
             <div class="visible-section">
               <div class="room-section">
@@ -528,6 +568,9 @@ defineExpose({ openChat, closeChat });
             :open="isChatOpen"
             :theme="theme"
             :height="`calc(${chatSize.height} - 19px)`"
+            :fetchMsgsOnScroll="props.fetchMsgsOnScroll"
+            :isConnecting="isConnecting"
+            :isLoadingRoom="isLoadingRoom"
           />
         </div>
       </Transition>
@@ -552,49 +595,24 @@ defineExpose({ openChat, closeChat });
           </svg>
         </button>
       </Transition>
-    </div>
-    <div
-      v-else-if="getStatus() === 'connecting'"
-      class="spinner"
-      :class="{ dark: isDark }"
-      key="conecting"
-    >
-      <svg
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle cx="12" cy="12" r="10" stroke-opacity="0.4" stroke-width="4" />
-        <path
-          d="M12 22C10.6868 22 9.38642 21.7413 8.17317 21.2388C6.95991 20.7362 5.85752 19.9997 4.92893 19.0711C4.00035 18.1425 3.26375 17.0401 2.7612 15.8268C2.25866 14.6136 2 13.3132 2 12"
-          stroke-opacity="0.8"
-          stroke-width="4"
-        />
-        <path
-          d="M12 2C13.3132 2 14.6136 2.25866 15.8268 2.76121C17.0401 3.26375 18.1425 4.00035 19.0711 4.92894C19.9997 5.85752 20.7363 6.95992 21.2388 8.17317C21.7413 9.38643 22 10.6868 22 12"
-          stroke-opacity="0.8"
-          stroke-width="4"
-        />
-      </svg>
-    </div>
-    <div v-else key="disconnected">
-      <button @click="openChat" class="load-button" :class="{ dark: isDark }">
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </button>
-    </div>
+      <Transition name="fastFade" mode="out-in">
+        <div v-if="getStatus() === 'disconnected'">
+          <button @click="openChat" class="load-button" :class="{ dark: isDark }">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+      </Transition>
   </div>
 </template>
 
@@ -809,28 +827,6 @@ defineExpose({ openChat, closeChat });
 
 .chat-container.open {
   transform: translateY(0);
-}
-
-.change-room-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 8px;
-  background-color: rgba(0, 0, 0, 0.2);
-  stroke: v-bind("lightColors.secondary");
-  text-align: center;
-  align-content: center;
-  z-index: 100;
-}
-
-.change-room-overlay.dark {
-  stroke: v-bind("darkColors.secondary");
-}
-
-.change-room-overlay svg {
-  animation: spin 1s linear infinite;
 }
 
 .chat-header {

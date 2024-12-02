@@ -3,6 +3,7 @@ import { ref, inject } from "vue";
 import { changeTopic, loadPlugin, upgradeMessage } from "../plugins/vue-waku";
 import { WakuChatVuePluginOptions } from "../types/ChatTypes";
 import { generate } from "random-words";
+import debug from '../utils/debug';
 
 type WakuData = {
   startWaku?: (stoppedNode: any) => Promise<any>;
@@ -18,59 +19,167 @@ type WakuData = {
 
 let wakuData: WakuData = {};
 
-const chatState = ref<{
+export const chatState = ref<{
   status: string;
   messageList: Message[];
   room: string;
+  isFetching: boolean;
+  lastCursor?: number;
+  lowResponseCount: number
 }>({
   status: "idle",
   messageList: [],
   room: "",
+  isFetching: false,
+  lowResponseCount: 0,
 });
 
 let sendMessageToServer = async (msg: Message) => {
-  console.log(msg);
+  if (!wakuData.lightNode) return;
+  if (chatState.value.status !== "connected") return;
+  if (!wakuData.chatInterfaces?.length || !wakuData.ChatEncoder) return;
+
+  try {
+    const protoMessage = getChatInterface().create(msg);
+    const serialisedMessage = getChatInterface().encode(protoMessage).finish();
+
+    await wakuData.lightNode.lightPush.send(wakuData.ChatEncoder, {
+      payload: serialisedMessage,
+    });
+  } catch (error) {
+    console.error('Error sending message:', error);
+  }
 };
 
 const myInfo = ref<Participant>({ id: "", name: "", type: "" });
 
+export const getFetchMaxAttempts = () => getOptions()?.fetchMaxAttempts || 3;
+
 const retrieveMessages = async (
   _channel: string,
   _topic: string,
-  callback: (msg: any) => boolean
-) => {
-  if (!wakuData.lightNode || !wakuData.ChatDecoder) return;
+  callback: (msg: any) => boolean,
+  cursor?: number,
+): Promise<number> => {
+  const options = getOptions();
+  
+  // Set default values for fetch parameters
+  const messageAgeToDownload = options?.messageAgeToDownload;
+  const fetchMsgsOnScroll = options?.fetchMsgsOnScroll ?? true; // Default to true
+  const fetchLimit = options?.fetchLimit ?? (fetchMsgsOnScroll ? 10 : 100); // Default based on scroll mode
+  const fetchTotalLimit = options?.fetchTotalLimit ?? 0; // Default to no limit
+  const fetchMaxAttempts = options?.fetchMaxAttempts ?? 3; // Default to 3 attempts
+
+  if (!wakuData.lightNode || !wakuData.ChatDecoder) return 0;
   const topic = _topic.toLowerCase().replace(/\s/g, "");
   const channel = _channel.toLowerCase().replace(/\s/g, "");
 
-  // Choose a content topic
   const contentTopic = `/${channel}/1/${topic}/proto`;
+  let messagesReceived = 0;
 
-  // Retrieve a week of messages
   const queryOptions: any = {
     contentTopic,
     pageDirection: "backward",
+    pageSize: fetchLimit
   };
-  let messageAgeToDownload = getOptions()?.messageAgeToDownload;
 
-  if (messageAgeToDownload) {
-    const endTime = new Date();
-    const startTime = new Date();
-    startTime.setMilliseconds(endTime.getMilliseconds() - messageAgeToDownload);
-    queryOptions.timeFilter = {
-      startTime,
-      endTime,
-    };
+  let endTime = new Date();
+  let startTime = new Date();
+
+  if (messageAgeToDownload && !fetchMsgsOnScroll && !cursor) {
+      startTime.setMilliseconds(endTime.getMilliseconds() - messageAgeToDownload);
+      queryOptions.timeFilter = { startTime, endTime };
+  } else {
+    endTime = cursor ? new Date(cursor) : new Date();
+    if (cursor) {
+      endTime.setMilliseconds(endTime.getMilliseconds() + 1000);
+    }
+    queryOptions.timeFilter = { endTime };
   }
 
-  var msgsToDownload = getOptions()?.messagesToDownload;
-  queryOptions.pageSize = msgsToDownload ? msgsToDownload : 100;
+  try {
+    chatState.value.isFetching = true;
+    let totalSystemMessages = 0;
+    let attempts = 0;
+    const maxAttempts = 3; // Prevent infinite loops
+        
+    debug.ObjectMessage(
+      'Fetching Parameters:',
+      {
+        fetchMsgsOnScroll,
+        fetchLimit,
+        fetchTotalLimit,
+        fetchMaxAttempts,
+        messageAgeToDownload,
+        'messageAgeToDownloadFormatted': messageAgeToDownload ? `${messageAgeToDownload/(24*60*60*1000)} days` : 'unlimited',
+      }
+    );
+    const wrappedCallback = (msg: any) => {
+      try {
+        const decodedMsg = getChatInterface().decode(msg.payload);
+        if (decodedMsg.type === 'system') {
+          totalSystemMessages++;
+          return false;
+        }
 
-  await wakuData.lightNode.store.queryWithOrderedCallback(
-    [wakuData.ChatDecoder],
-    callback,
-    queryOptions
-  );
+        const result = callback(msg);
+        if (result) messagesReceived++;
+        return result;
+      } catch {
+        return false;
+      }
+    };
+
+    // Keep fetching until we get enough non-system messages or hit max attempts
+    while (messagesReceived < fetchLimit && attempts < maxAttempts) {
+      await wakuData.lightNode.store.queryWithOrderedCallback(
+        [wakuData.ChatDecoder],
+        wrappedCallback,
+        queryOptions
+      );
+
+      // Update cursor for next fetch if needed
+      if (messagesReceived < fetchLimit && chatState.value.lastCursor) {
+        queryOptions.timeFilter.endTime = new Date(chatState.value.lastCursor);
+      }      
+      attempts++;
+    }
+
+    // Update lowResponseCount based on actual messages received
+    if (messagesReceived <= 1) {
+      chatState.value.lowResponseCount++;
+    } else {
+      chatState.value.lowResponseCount = 0;
+    }
+
+    debug.ObjectMessage(
+      'Retrieved messages:',
+      {
+        totalSystemMessages,
+        messagesReceived,
+        attempts,
+        lowResponseCount: chatState.value.lowResponseCount
+      },
+    );
+
+    return messagesReceived;
+  } catch (error: unknown) {
+    console.error('Error retrieving messages:', error);
+    if (error instanceof Error && error.message?.includes('INVALID_CURSOR')) {
+      // This is a workaround for the issue where the cursor is invalid
+      // it happens when the node responds only system messages and there is no msg body
+      // to get the timestamp needded for next new cursor pointer
+      // this just prevents the websocket from closing its connection.
+      chatState.value.lastCursor = chatState.value.messageList.length > 0 
+      // Reset cursor to oldest message in current message list
+      ? Math.min(...chatState.value.messageList.map(msg => msg.timestamp))
+      // Reset cursor to datetime now() just in case of it happens in the first time fetching
+      : Date.now();
+    }
+    return 0;
+  } finally {
+    chatState.value.isFetching = false;
+  }
 };
 
 export const setRoom = async (_room: string) => {
@@ -106,6 +215,7 @@ export const setRoom = async (_room: string) => {
     wakuData.pingInterval = setInterval(pingAndReinitiateSubscription, 10000);
 
   chatState.value.room = _room;
+  chatState.value.lowResponseCount = 0;
   sendMessage("enter", "system");
 };
 
@@ -214,19 +324,6 @@ export const loadChat = async () => {
   }
   await setRoom(options.availableRooms[0]);
 
-  sendMessageToServer = async (msg: Message) => {
-    if (!wakuData.lightNode) return;
-    if (chatState.value.status !== "connected") return;
-    if (!wakuData.chatInterfaces?.length || !wakuData.ChatEncoder) return;
-
-    const protoMessage = getChatInterface().create(msg);
-    const serialisedMessage = getChatInterface().encode(protoMessage).finish();
-
-    await wakuData.lightNode.lightPush.send(wakuData.ChatEncoder, {
-      payload: serialisedMessage,
-    });
-  };
-
   chatState.value.status = "connected";
 };
 
@@ -260,6 +357,7 @@ export const sendMessage = (
     responseTo: responseId,
   };
   setTimeout(async () => {
+    debug.ProtocolMessages(msg, 'sent');
     await sendMessageToServer(msg);
   }, 0);
 };
@@ -268,6 +366,7 @@ const messageCallback = (wakuMessage: any) => {
   if (!wakuData.chatInterfaces?.length || !wakuMessage.payload) return false;
   let messageObj: any = undefined;
   let version = wakuData.chatInterfaces.length - 1;
+
   while (messageObj === undefined && version >= 0) {
     try {
       messageObj = getChatInterface(version).decode(wakuMessage.payload);
@@ -288,15 +387,22 @@ const messageCallback = (wakuMessage: any) => {
     (message) => message.id === messageObj.id
   );
   if (existingMessageIndex !== -1) return true;
+
+  debug.ProtocolMessages(messageObj, 'received');
+
+  if (!chatState.value.lastCursor || messageObj.timestamp < chatState.value.lastCursor) {
+    chatState.value.lastCursor = messageObj.timestamp;
+  }
+
   const insertIndex = chatState.value.messageList.findIndex(
-    (message) => message.timestamp > messageObj.timestamp
+    (message) => message.timestamp < messageObj.timestamp
   );
+
   if (insertIndex !== -1) {
     chatState.value.messageList.splice(insertIndex, 0, messageObj);
   } else {
     chatState.value.messageList.push(messageObj);
   }
-
   return true;
 };
 
@@ -312,11 +418,9 @@ const pingAndReinitiateSubscription = async () => {
   if (!wakuData.ChatDecoder) return;
   if (!wakuData.subscription) return;
   try {
-    // Ping the subscription
     await wakuData.subscription.ping();
   } catch (error) {
     if (
-      // Check if the error message includes "peer has no subscriptions"
       error instanceof Error &&
       error.message.includes("peer has no subscriptions")
     ) {
@@ -334,4 +438,119 @@ const pingAndReinitiateSubscription = async () => {
       );
     }
   }
+};
+
+export const loadMoreMessages = async () => {
+  const options = getOptions();
+  if (!options) return;
+
+  const channelName = options.wakuChannelName 
+    ? options.wakuChannelName 
+    : "my-app";
+
+  await retrieveMessages(
+    channelName,
+    chatState.value.room,
+    messageCallback,
+    chatState.value.lastCursor
+  );
+};
+
+export const getLoadingState = () => chatState.value.isFetching;
+export const getLowResponseCount = () => chatState.value.lowResponseCount;
+
+export const setFetchLimit = (limit: number) => {
+  const options = getOptions();
+  if (options) {
+    options.fetchLimit = limit;
+  }
+};
+
+export const setDebugMode = (enabled: boolean) => {
+  debug.setDebugEnabled(enabled);
+};
+
+export const setFetchMaxAttempts = (attempts: number) => {
+  const options = getOptions();
+  if (options) {
+    options.fetchMaxAttempts = attempts;
+  }
+};
+
+export const setFetchTotalLimit = (max: number) => {
+  const options = getOptions();
+  if (options) {
+    options.fetchTotalLimit = max;
+  }
+};
+
+export const setFetchMsgsOnScroll = (enabled: boolean) => {
+  const options = getOptions();
+  if (options) {
+    options.fetchMsgsOnScroll = enabled;
+  }
+};
+
+export const setMessageAgeToDownload = (age: number) => {
+  const options = getOptions();
+  if (options) {
+    options.messageAgeToDownload = age;
+  }
+};
+
+export const hasReachedMessageLimit = () => {
+  const options = getOptions();
+  return options?.fetchTotalLimit ? 
+         getMessageList().length >= options.fetchTotalLimit : 
+         false;
+};
+
+export const hasExceededFetchAttempts = () => {
+  const options = getOptions();
+  const maxAttempts = options?.fetchMaxAttempts || 3;
+  return chatState.value.lowResponseCount > maxAttempts;
+};
+
+export const hasCursorWhileScrolling = () => {
+  const options = getOptions();
+  return !chatState.value.lastCursor && options?.fetchMsgsOnScroll == true
+};
+
+export const tryFetchMessages = async () => {
+
+  // Don't continue if already fetching messages
+  if (chatState.value.isFetching) {
+    debug.FetchingMessages('alreadyLoading');
+    return;
+  }
+
+  // Don't continue if we've reached the message limit
+  if (hasReachedMessageLimit()) {
+    debug.FetchingMessages('limitReached');
+    return;
+  }
+
+  // Don't continue if we've exceeded fetch attempts
+  if (hasExceededFetchAttempts()) {
+    debug.FetchingMessages('maxAttempts');
+    return;
+  }
+  
+  // Don't continue if we don't have a cursor
+  if (hasCursorWhileScrolling()) {
+    debug.FetchingMessages('noCursor');
+    return;
+  }
+
+  // Don't continue because options are needed to determine each cycle behaviour
+  if (!getOptions()) {
+    debug.FetchingMessages('noOptions');
+    return;
+  }
+
+  // Start fetching
+  debug.FetchingMessages('begin');
+  await loadMoreMessages();
+  debug.FetchingMessages('end');
+
 };

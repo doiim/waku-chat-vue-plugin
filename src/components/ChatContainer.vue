@@ -1,15 +1,22 @@
 <script setup lang="ts">
-import { ref, computed, TransitionGroup, watch, onMounted } from "vue";
+import { ref, computed,  watch, onBeforeUnmount, nextTick } from "vue";
 import {
   sendMessage,
   getMessageList,
   getRoom,
   getMyID,
   getOptions,
+  tryFetchMessages,
+  getLoadingState,
+  getStatus,
+  getLowResponseCount,
+  getFetchMaxAttempts,
+  hasReachedMessageLimit
 } from "../components/WakuLogic";
 import { formatTimestamp } from "../utils/formatation";
 import { scrollToBottom, scrollToMessage } from "../utils/animation";
 import { WakuChatConfigCss } from "../types/ChatTypes";
+import debug from "../utils/debug";
 
 const props = defineProps<{
   styleConfig?: WakuChatConfigCss;
@@ -30,6 +37,9 @@ const props = defineProps<{
   };
   open: boolean;
   height: string;
+  isConnecting?: boolean;
+  fetchMsgsOnScroll?: boolean;
+  isLoadingRoom: boolean;
 }>();
 
 const propsOpen = computed(() => {
@@ -44,7 +54,6 @@ const height = computed(() => {
   return props.height;
 });
 
-const loadingRoom = ref<boolean>(false);
 const messageInput = ref<string>("");
 const showSystemMessages = ref<boolean>(false);
 const userShowSystemMessages = ref<boolean>(false);
@@ -103,29 +112,6 @@ const room = computed(() => {
   return getRoom();
 });
 
-watch([propsOpen, room], () => {
-  if (propsOpen) {
-    setTimeout(() => {
-      scrollToBottom(messageContainerRef.value);
-    }, 0);
-  }
-});
-
-watch([groupedMessages], () => {
-  if (waitingMessage.value) {
-    waitingMessage.value = false;
-    setTimeout(() => {
-      scrollToBottom(messageContainerRef.value);
-    }, 0);
-  }
-});
-
-onMounted(() => {
-  setTimeout(() => {
-    scrollToBottom(messageContainerRef.value);
-  }, 0);
-});
-
 const handleSendMessage = () => {
   if (messageInput.value) {
     var responseId =
@@ -137,6 +123,7 @@ const handleSendMessage = () => {
   }
   messageInput.value = "";
   waitingMessage.value = true;
+  scrollToBottom(messageContainerRef.value);
 };
 
 const checkPreviousMsgName = (idx: number) => {
@@ -218,191 +205,180 @@ const printSystemMessage = (msg: any) => {
   }
   return "";
 };
+
+// Add ref for observer
+const observerTarget = ref<HTMLElement | null>(null);
+const observer = ref<IntersectionObserver | null>(null);
+
+// Add a new ref to track visibility
+const isTargetVisible = ref(false);
+
+// Add a ref for the timeout
+const fetchTimeout = ref<NodeJS.Timeout | null>(null);
+
+const stopFetchCycle = () => {
+  if (fetchTimeout.value) {
+    debug.ObserverMessages('stopCycle');
+    clearTimeout(fetchTimeout.value);
+    fetchTimeout.value = null;
+  }
+};
+
+// Recursive fetch cycle
+const startFetchCycle = async () => {
+  if (isTargetVisible.value) {
+    debug.ObserverMessages('newCycle');
+    await tryFetchMessages();
+    fetchTimeout.value = setTimeout(startFetchCycle, 5000);
+  }
+};
+
+const killObserver = () => {
+  isTargetVisible.value = false;
+  stopFetchCycle();
+  if (observerTarget.value) {
+    observer.value?.unobserve(observerTarget.value);
+    observer.value?.disconnect();
+    observer.value = null;
+    debug.ObserverMessages('killed');
+  }
+};
+
+const initializeObserver = () => {
+  if (!observerTarget.value) return;
+  
+  observer.value = new IntersectionObserver(
+    async (entries) => {
+      const target = entries[0];
+      isTargetVisible.value = target.isIntersecting;        
+
+      if (target.isIntersecting) {
+        debug.ObserverMessages('startCycle');
+        await tryFetchMessages();
+        fetchTimeout.value = setTimeout(startFetchCycle, 2000);
+      } else {
+        stopFetchCycle();
+      }
+    },
+    {
+      root: messageContainerRef.value,
+      threshold: 0.1,
+    }
+  );  
+  observer.value.observe(observerTarget.value);  
+  debug.ObserverMessages('alive');
+};
+
+// kill observation if starts loading a new room
+watch([() => props.isLoadingRoom], (newRoom) => {
+  if (newRoom) {
+      killObserver();
+    }
+})
+
+// start observation if there's a target in chatcontainer
+watch([observerTarget], (newTarget) => {
+  if(!props.isConnecting && !!newTarget){
+    initializeObserver();
+  }
+})
+
+// kill observation if chat has closed
+onBeforeUnmount(() => {
+  killObserver();
+});
 </script>
 
 <template>
   <div class="main-container" :class="{ dark: isDark }">
-    <div class="chat-body" :class="{ dark: isDark }" ref="messageContainerRef">
-      <TransitionGroup name="fade">
+    <div class="status-indicator">
+      {{ getStatus() === 'connected' ? '' : getStatus() === 'connecting' ? 'connecting...' : 'disconnected' }}
+    </div>
+    <!-- Skeleton Messages -->
+    <Transition name="fade" mode="out-in">
+      <div v-if="props.isConnecting || props.isLoadingRoom" class="chat-body" :class="{ dark: isDark }" ref="messageContainerRef">
         <div
-          v-for="(groupedMsgs, idGroup) in groupedMessages"
-          :key="groupedMsgs[0].id"
-          :class="{
-            'own-message': groupedMsgs[0].author.id === getMyID(),
-            dark: isDark,
-          }"
+          v-for="i in 3"
+          :key="'skeleton-'+i"
           class="message-container"
-          :id="groupedMsgs[0].id"
+          :class="{ dark: isDark }"
         >
-          <Transition name="fade">
-            <div
-              v-if="
-                groupedMsgs[0].type === 'text' && checkPreviousMsgName(idGroup)
-              "
-              class="user-name-baloon"
-              :class="{ dark: isDark }"
-            >
-              <div>{{ groupedMsgs[0].author.name }}</div>
-              <div v-if="groupedMsgs[0].author.type" class="user-type">
-                {{ groupedMsgs[0].author.type }}
-              </div>
+          <!-- Username skeleton -->
+          <div class="user-name-baloon" :class="{ dark: isDark }">
+            <div class="skeleton-content" style="width: 80px"></div>
+          </div>
+
+          <!-- Message bubble skeleton -->
+          <div class="grouped-message" :class="{ dark: isDark }">
+            <div class="message skeleton-content" :class="{ dark: isDark }">
+              <div style="width: 160px; height: 16;"></div>
+              <div style="width: 160px; height: 16;"></div>
             </div>
-          </Transition>
-          <Transition name="fade">
-            <div
-              v-if="groupedMsgs[0].type === 'text'"
-              class="grouped-message"
-              :class="{ dark: isDark }"
-            >
-              <button
-                class="interact-button"
-                v-if="groupedMsgs[0].author.id === getMyID()"
-                @click="setResponse(idGroup)"
-              >
-                <svg
-                  width="14"
-                  height="12"
-                  viewBox="0 0 14 12"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M1 4.75H7.66667C10.6122 4.75 13 6.98858 13 9.75V11M1 4.75L5 8.5M1 4.75L5 1"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </button>
-              <button
-                class="interact-button"
+          </div>
+
+          <!-- Timestamp skeleton -->
+          <div class="timestamp" :class="{ dark: isDark }">
+            <div class="skeleton-content" style="width: 60px"></div>
+          </div>
+        </div>
+      </div>
+      <div v-else class="chat-body" :class="{ dark: isDark }" ref="messageContainerRef">
+        <!-- Actual Messages -->
+        <TransitionGroup name="fade">
+          <div v-if="!props.isConnecting"
+            v-for="(groupedMsgs, idGroup) in groupedMessages"
+            :key="groupedMsgs[0].id"
+            :class="{
+              'own-message': groupedMsgs[0].author.id === getMyID(),
+              dark: isDark,
+            }"
+            class="message-container"
+            :id="groupedMsgs[0].id"
+          >
+            <Transition name="fade" mode="out-in">
+              <div
                 v-if="
-                  !messageReacted(groupedMsgs[0].id) &&
-                  groupedMsgs[0].author.id === getMyID()
+                  groupedMsgs[0].type === 'text' && checkPreviousMsgName(idGroup)
                 "
-                @click="reactMessage(idGroup, 'like')"
+                class="user-name-baloon"
+                :class="{ dark: isDark }"
               >
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M3.5 11V5.4253M1 6.5V10C1 10.5523 1.45911 11 2.02544 11H8.90935C9.66854 11 10.3142 10.4598 10.4296 9.72809L10.9818 6.22809C11.1251 5.31945 10.4042 4.5 9.46151 4.5H7.66536C7.3822 4.5 7.15264 4.27614 7.15264 4V2.23292C7.15264 1.552 6.5866 1 5.88836 1C5.72181 1 5.57089 1.09565 5.50325 1.24406L3.69893 5.20307C3.61664 5.38363 3.43302 5.5 3.2304 5.5H2.02544C1.45911 5.5 1 5.94772 1 6.5Z"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </button>
-              <div class="message" :class="{ dark: isDark }">
-                <TransitionGroup name="fade">
-                  <div
-                    v-if="
-                      groupedMsgs[0].responseTo &&
-                      groupedResponse(groupedMsgs[0].responseTo).length <= 0
-                    "
-                    class="grouped-message grouped-response response-disabled"
-                    :class="{ dark: isDark }"
-                  >
-                    Couldn&apos;t load the message
-                  </div>
-                  <div
-                    v-else-if="groupedMsgs[0].responseTo"
-                    @click="
-                      scrollToMessage(
-                        groupedMsgs[0].responseTo,
-                        messageContainerRef
-                      )
-                    "
-                    class="grouped-message grouped-response"
-                    :class="{ dark: isDark }"
-                  >
-                    <div class="user-name-baloon" :class="{ dark: isDark }">
-                      <div>
-                        {{
-                          groupedResponse(groupedMsgs[0].responseTo)[0].author
-                            .name
-                        }}
-                      </div>
-                      <div
-                        v-if="
-                          groupedResponse(groupedMsgs[0].responseTo)[0].author
-                            .type
-                        "
-                        class="user-type"
-                      >
-                        {{
-                          groupedResponse(groupedMsgs[0].responseTo)[0].author
-                            .type
-                        }}
-                      </div>
-                    </div>
-                    <div class="message" :class="{ dark: isDark }">
-                      <div
-                        v-for="(message, idMsg) in groupedResponse(
-                          groupedMsgs[0].responseTo
-                        ).slice(0, 4)"
-                        :key="idMsg"
-                        class="message-content"
-                      >
-                        {{ message.data }}
-                      </div>
-                      <div
-                        v-if="
-                          groupedResponse(groupedMsgs[0].responseTo).length > 4
-                        "
-                        class="message-content"
-                      >
-                        ...
-                      </div>
-                    </div>
-                  </div>
-                </TransitionGroup>
-                <TransitionGroup name="fade">
-                  <div
-                    v-for="(message, idxMsg) in groupedMsgs"
-                    class="message-content"
-                    :key="idxMsg"
-                  >
-                    {{ message.data }}
-                  </div>
-                  <div
-                    v-for="(msgReact, idxReact) in getMessageReactions(
-                      groupedMsgs[0].id
-                    )"
-                    class="message-react"
-                    :class="{ dark: isDark }"
-                    :key="idxReact"
-                  >
-                    <button
-                      v-if="msgReact.reaction === 'like'"
-                      @click="reactMessage(idGroup, 'none')"
-                    >
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 12 12"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M3.5 11V5.4253M1 6.5V10C1 10.5523 1.45911 11 2.02544 11H8.90935C9.66854 11 10.3142 10.4598 10.4296 9.72809L10.9818 6.22809C11.1251 5.31945 10.4042 4.5 9.46151 4.5H7.66536C7.3822 4.5 7.15264 4.27614 7.15264 4V2.23292C7.15264 1.552 6.5866 1 5.88836 1C5.72181 1 5.57089 1.09565 5.50325 1.24406L3.69893 5.20307C3.61664 5.38363 3.43302 5.5 3.2304 5.5H2.02544C1.45911 5.5 1 5.94772 1 6.5Z"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                      </svg>
-                      <div>{{ msgReact.quantity }}</div>
-                    </button>
-                  </div>
-                </TransitionGroup>
+                <div>{{ groupedMsgs[0].author.name }}</div>
+                <div v-if="groupedMsgs[0].author.type" class="user-type">
+                  {{ groupedMsgs[0].author.type }}
+                </div>
               </div>
-              <TransitionGroup name="fade">
+            </Transition>
+            <Transition name="fade" mode="out-in">
+              <div
+                v-if="groupedMsgs[0].type === 'text'"
+                class="grouped-message"
+                :class="{ dark: isDark }"
+              >
+                <button
+                  class="interact-button"
+                  v-if="groupedMsgs[0].author.id === getMyID()"
+                  @click="setResponse(idGroup)"
+                >
+                  <svg
+                    width="14"
+                    height="12"
+                    viewBox="0 0 14 12"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M1 4.75H7.66667C10.6122 4.75 13 6.98858 13 9.75V11M1 4.75L5 8.5M1 4.75L5 1"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </button>
                 <button
                   class="interact-button"
                   v-if="
                     !messageReacted(groupedMsgs[0].id) &&
-                    groupedMsgs[0].author.id !== getMyID()
+                    groupedMsgs[0].author.id === getMyID()
                   "
                   @click="reactMessage(idGroup, 'like')"
                 >
@@ -420,61 +396,208 @@ const printSystemMessage = (msg: any) => {
                     />
                   </svg>
                 </button>
-                <button
-                  class="interact-button"
-                  v-if="groupedMsgs[0].author.id !== getMyID()"
-                  @click="setResponse(idGroup)"
-                >
-                  <svg
-                    width="14"
-                    height="12"
-                    viewBox="0 0 14 12"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M1 4.75H7.66667C10.6122 4.75 13 6.98858 13 9.75V11M1 4.75L5 8.5M1 4.75L5 1"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                  </svg>
-                </button>
-              </TransitionGroup>
-            </div>
-            <div
-              v-else-if="
-                showSystemMessages &&
-                userShowSystemMessages &&
-                groupedMsgs[0].type === 'system'
-              "
-              class="system-message"
-              :class="{ dark: isDark }"
-            >
-              <TransitionGroup name="fade">
-                <div
-                  v-for="(message, idMsg) in groupedMsgs"
-                  class="message-content"
-                  :key="idMsg"
-                >
-                  {{ printSystemMessage(message) }}
+                <div class="message" :class="{ dark: isDark }">
+                  <TransitionGroup name="fade">
+                    <div
+                      v-if="
+                        groupedMsgs[0].responseTo &&
+                        groupedResponse(groupedMsgs[0].responseTo).length <= 0
+                      "
+                      class="grouped-message grouped-response response-disabled"
+                      :class="{ dark: isDark }"
+                    >
+                      Couldn&apos;t load the message
+                    </div>
+                    <div
+                      v-else-if="groupedMsgs[0].responseTo"
+                      @click="
+                        scrollToMessage(
+                          groupedMsgs[0].responseTo,
+                          messageContainerRef
+                        )
+                      "
+                      class="grouped-message grouped-response"
+                      :class="{ dark: isDark }"
+                    >
+                      <div class="user-name-baloon" :class="{ dark: isDark }">
+                        <div>
+                          {{
+                            groupedResponse(groupedMsgs[0].responseTo)[0].author
+                              .name
+                          }}
+                        </div>
+                        <div
+                          v-if="
+                            groupedResponse(groupedMsgs[0].responseTo)[0].author
+                              .type
+                          "
+                          class="user-type"
+                        >
+                          {{
+                            groupedResponse(groupedMsgs[0].responseTo)[0].author
+                              .type
+                          }}
+                        </div>
+                      </div>
+                      <div class="message" :class="{ dark: isDark }">
+                        <div
+                          v-for="(message, idMsg) in groupedResponse(
+                            groupedMsgs[0].responseTo
+                          ).slice(0, 4)"
+                          :key="idMsg"
+                          class="message-content"
+                        >
+                          {{ message.data }}
+                        </div>
+                        <div
+                          v-if="
+                            groupedResponse(groupedMsgs[0].responseTo).length > 4
+                          "
+                          class="message-content"
+                        >
+                          ...
+                        </div>
+                      </div>
+                    </div>
+                  </TransitionGroup>
+                  <TransitionGroup name="fade">
+                    <div
+                      v-for="(message, idxMsg) in groupedMsgs"
+                      class="message-content"
+                      :key="idxMsg"
+                    >
+                      {{ message.data }}
+                    </div>
+                    <div
+                      v-for="(msgReact, idxReact) in getMessageReactions(
+                        groupedMsgs[0].id
+                      )"
+                      class="message-react"
+                      :class="{ dark: isDark }"
+                      :key="idxReact"
+                    >
+                      <button
+                        v-if="msgReact.reaction === 'like'"
+                        @click="reactMessage(idGroup, 'none')"
+                      >
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 12 12"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M3.5 11V5.4253M1 6.5V10C1 10.5523 1.45911 11 2.02544 11H8.90935C9.66854 11 10.3142 10.4598 10.4296 9.72809L10.9818 6.22809C11.1251 5.31945 10.4042 4.5 9.46151 4.5H7.66536C7.3822 4.5 7.15264 4.27614 7.15264 4V2.23292C7.15264 1.552 6.5866 1 5.88836 1C5.72181 1 5.57089 1.09565 5.50325 1.24406L3.69893 5.20307C3.61664 5.38363 3.43302 5.5 3.2304 5.5H2.02544C1.45911 5.5 1 5.94772 1 6.5Z"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                        <div>{{ msgReact.quantity }}</div>
+                      </button>
+                    </div>
+                  </TransitionGroup>
                 </div>
-              </TransitionGroup>
-            </div>
-          </Transition>
-          <Transition name="fade">
-            <div
-              v-if="groupedMsgs[0].type === 'text'"
-              class="timestamp"
-              :class="{ dark: isDark }"
-            >
-              {{
-                formatTimestamp(groupedMsgs[groupedMsgs.length - 1].timestamp)
-              }}
-            </div>
-          </Transition>
+                <TransitionGroup name="fade">
+                  <button
+                    class="interact-button"
+                    v-if="
+                      !messageReacted(groupedMsgs[0].id) &&
+                      groupedMsgs[0].author.id !== getMyID()
+                    "
+                    @click="reactMessage(idGroup, 'like')"
+                  >
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M3.5 11V5.4253M1 6.5V10C1 10.5523 1.45911 11 2.02544 11H8.90935C9.66854 11 10.3142 10.4598 10.4296 9.72809L10.9818 6.22809C11.1251 5.31945 10.4042 4.5 9.46151 4.5H7.66536C7.3822 4.5 7.15264 4.27614 7.15264 4V2.23292C7.15264 1.552 6.5866 1 5.88836 1C5.72181 1 5.57089 1.09565 5.50325 1.24406L3.69893 5.20307C3.61664 5.38363 3.43302 5.5 3.2304 5.5H2.02544C1.45911 5.5 1 5.94772 1 6.5Z"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    class="interact-button"
+                    v-if="groupedMsgs[0].author.id !== getMyID()"
+                    @click="setResponse(idGroup)"
+                  >
+                    <svg
+                      width="14"
+                      height="12"
+                      viewBox="0 0 14 12"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M1 4.75H7.66667C10.6122 4.75 13 6.98858 13 9.75V11M1 4.75L5 8.5M1 4.75L5 1"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </TransitionGroup>
+              </div>
+              <div
+                v-else-if="
+                  showSystemMessages &&
+                  userShowSystemMessages &&
+                  groupedMsgs[0].type === 'system'
+                "
+                class="system-message"
+                :class="{ dark: isDark }"
+              >
+                <TransitionGroup name="fade">
+                  <div
+                    v-for="(message, idMsg) in groupedMsgs"
+                    class="message-content"
+                    :key="idMsg"
+                  >
+                    {{ printSystemMessage(message) }}
+                  </div>
+                </TransitionGroup>
+              </div>
+            </Transition>
+            <Transition name="fade" mode="out-in">
+              <div
+                v-if="groupedMsgs[0].type === 'text'"
+                class="timestamp"
+                :class="{ dark: isDark }"
+              >
+                {{
+                  formatTimestamp(groupedMsgs[groupedMsgs.length - 1].timestamp)
+                }}
+              </div>
+            </Transition>
+          </div>
+        </TransitionGroup>
+        <div ref="observerTarget" class="observer-target" v-if="fetchMsgsOnScroll">
+          <div v-if="getLoadingState()" class="loading-indicator">
+            <div class="spinner"></div>
+            Searching for older messages...
+          </div>
+          <div v-else-if="hasReachedMessageLimit() || !props.fetchMsgsOnScroll" class="loading-indicator">
+            End of available history
+          </div>
+          <div v-else-if="getLowResponseCount() < getFetchMaxAttempts()" class="loading-indicator">
+            <div class="spinner"></div>
+            Searching (Attempt {{ getLowResponseCount() }}/{{ getFetchMaxAttempts() }})
+          </div>
+          <div v-else class="loading-indicator">
+            Network busy or end of chat history
+          </div>
         </div>
-      </TransitionGroup>
-    </div>
+        <div v-else class="observer-target">
+          <div class="loading-indicator">
+            End of available history
+          </div>
+        </div>
+      </div>
+    </Transition>
     <div
       :class="`chat-footer ${
         responseTo !== undefined ? 'footer-response' : ''
@@ -532,13 +655,13 @@ const printSystemMessage = (msg: any) => {
           v-model="messageInput"
           placeholder="Type your message..."
           @keypress.enter="handleSendMessage"
-          :disabled="loadingRoom"
+          :disabled="isLoadingRoom"
         />
         <button
           @click="handleSendMessage"
           class="send-button"
           :class="{ dark: isDark }"
-          :disabled="loadingRoom || !messageInput"
+          :disabled="isLoadingRoom || !messageInput"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -574,7 +697,9 @@ const printSystemMessage = (msg: any) => {
   flex: 1;
   overflow-y: auto;
   padding: 16px 1px 0px 16px;
-  margin-right: 15px;
+  margin-right: 15px;  
+  display: flex;
+  flex-direction: column-reverse;
 }
 
 .chat-body::-webkit-scrollbar {
@@ -825,6 +950,12 @@ const printSystemMessage = (msg: any) => {
   color: v-bind("lightColors.grayScale[5]");
   box-shadow: 0px 1px 3px 0px
     rgba(0, 0, 0, v-bind("styleConfig?.shadows.messageBalloon"));
+  display: flex;  
+  flex-direction: column-reverse;
+}
+
+.message-content {
+  order: -1;
 }
 
 .message.dark {
@@ -849,6 +980,8 @@ const printSystemMessage = (msg: any) => {
 }
 
 .grouped-response .message {
+  max-width: 100%;
+  margin-left: 0;
   background-color: v-bind("lightColors.grayScale[3]");
   color: v-bind("lightColors.grayScale[1]");
   box-shadow: none;
@@ -869,7 +1002,7 @@ const printSystemMessage = (msg: any) => {
 }
 
 .own-message .grouped-response .message {
-  margin-left: auto;
+  width: 100%;
   background-color: v-bind("lightColors.secondary");
   color: v-bind("lightColors.grayScale[1]");
 }
@@ -1092,4 +1225,94 @@ const printSystemMessage = (msg: any) => {
     opacity: 1;
   }
 }
+
+.status-indicator{
+  text-align: left;
+  font-size: 10px;
+  color: v-bind("lightColors.grayScale[3]");
+  pointer-events: none;
+  position: absolute;
+  bottom: 5px;
+  right: 20px;
+}
+
+.observer-target {
+  height: 20px;
+  width: 100%;
+  margin-bottom: 40px;
+}
+
+.observer-debug {
+  text-align: center;
+  padding: 10px;
+  font-size: 12px;
+  color: #666;
+}
+
+.loading-indicator {
+  text-align: center;
+  padding: 10px;
+  color: v-bind("lightColors.grayScale[3]");
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid v-bind("lightColors.grayScale[2]");
+  border-top: 2px solid v-bind("lightColors.primary");
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.dark .spinner {
+  border: 2px solid v-bind("darkColors.grayScale[2]");
+  border-top: 2px solid v-bind("darkColors.primary");
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.skeleton-content {
+  min-height: 16px;
+  background-color: v-bind("lightColors.grayScale[1]");
+  border-radius: 4px;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.dark .skeleton-content {
+  background-color: v-bind("darkColors.grayScale[1]");
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+.attempt-counter {
+  text-align: center;
+  padding: 10px;
+  font-size: 12px;
+  color: v-bind("lightColors.grayScale[3]");
+}
+
+.dark .attempt-counter {
+  color: v-bind("darkColors.grayScale[3]");
+}
+
+.retry-message {
+  font-size: 10px;
+  margin-top: 4px;
+  opacity: 0.8;
+}
+
 </style>

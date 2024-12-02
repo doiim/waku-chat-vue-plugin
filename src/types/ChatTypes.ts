@@ -20,11 +20,14 @@ export interface WakuChatVuePluginOptions {
   showSettings?: boolean;
   disconnectDelay?: number;
   groupMessagesTime?: number;
-  messagesToDownload?: number;
   messageAgeToDownload?: number;
   showSystemMessages?: boolean;
   userChangeNick?: boolean;
   hideClose?: boolean;
+  fetchMsgsOnScroll?: boolean;
+  fetchMaxAttempts?: number;
+  fetchTotalLimit?: number;
+  fetchLimit?: number;
 }
 
 export interface WakuChatColorConfig {

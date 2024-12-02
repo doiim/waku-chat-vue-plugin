@@ -30,6 +30,12 @@ const props = defineProps<{
     width?: string;
     height?: string;
   };
+  fetchMsgsOnScroll?: boolean; // Fetch messages on scroll
+  fetchMaxAttempts?: number; // Attempts to fetch before giving up
+  fetchTotalLimit?: number; // Limit of messages per room
+  fetchLimit?: number; // Limit of messages per fetch
+  debugMode?: boolean;
+  messageAgeToDownload?: number;
 }>();
 
 const pluginHead = ref<HTMLHeadElement | null>(null);
@@ -46,7 +52,13 @@ const closeChat = () => {
   }
 };
 
-defineExpose({ openChat, closeChat });
+const connectChat = () => {
+  if (wakuChatRef.value) {
+    wakuChatRef.value.connectChat();
+  }
+};
+
+defineExpose({ openChat, closeChat, connectChat });
 
 onMounted(() => {
   const style = document.createElement("style");
@@ -74,6 +86,7 @@ onMounted(() => {
     <body>
       <WakuChat
         ref="wakuChatRef"
+        :debugMode="props.debugMode"
         :externalUserId="props.externalUserId"
         :externalUserName="props.externalUserName"
         :externalUserType="props.externalUserType"
@@ -86,6 +99,11 @@ onMounted(() => {
         :chatPos="props.chatPos"
         :animationDirection="props.animationDirection"
         :chatSize="props.chatSize"
+        :fetchMsgsOnScroll="props.fetchMsgsOnScroll"
+        :fetchMaxAttempts="props.fetchMaxAttempts"
+        :fetchTotalLimit="props.fetchTotalLimit"
+        :fetchLimit="props.fetchLimit"
+        :messageAgeToDownload="props.messageAgeToDownload"
       />
     </body>
   </shadow-root>

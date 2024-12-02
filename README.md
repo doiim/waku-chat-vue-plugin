@@ -131,8 +131,15 @@ Here are the available configuration options:
 - `wakuPeers`: (string[]) (optional) - Waku peers to connect by default. If you don't set this, Waku will use automatic peers. Use this to set your own peers.
 - `disconnectDelay`: (number) (optional) - Time in milisseconds which chat can be minimized before being disconnected. 5 minutes if not set.
 - `groupMessagesTime`: (number) (optional) - Time in milisseconds which messages from the same sender can be grouped. 1 minute if not set.
-- `messagesToDownload`: (number) (optional) - Max number of messages to retrieve when user connects to chat. Default 100 messages.
 - `messageAgeToDownload`: (number) (optional) - Max age of messages in milisseconds which messages would be downloaded when user connects to chat. Default not considering age of messages.
+- `fetchMsgsOnScroll`: (boolean) (optional) (Default = true) - Enable/disable loading messages when scrolling up in chat history. When enabled, messages are loaded in batches as user scrolls. When disabled, messages are loaded based on messageAgeToDownload.
+- `fetchMaxAttempts`: (number) (optional) (Default = 3) - Maximum number of consecutive attempts to fetch messages when receiving low/no responses. After exceeding this limit, fetching pauses temporarily.
+- `fetchTotalLimit`: (number) (optional) (Default 0 or null) - Maximum total number of messages to load when fetchMsgsOnScroll is enabled. Set to 0 for unlimited history. This limit is not applied when fetchMsgsOnScroll is disabled.
+  - if `fetchMsgsOnScroll` is true: (default 0 - unlimited)
+  - if `fetchMsgsOnScroll` is false: (default null - not applicable)
+- `fetchLimit`: (number) (optional) (Default 10 or 100)- Controls the number of messages retrieved in each fetch operation:
+  - if `fetchMsgsOnScroll` is true: (default 10)
+  - if `fetchMsgsOnScroll` is false: (default 100)
 - `showSystemMessages`: (boolean) (optional) - Show or not system messages. Default not show.
 - `userChangeNick`: (boolean) (optional) - Allow users to change their nicknames.
 - `hideClose`: (boolean) (optional) - Hides the close button from chat, default is false.
@@ -153,6 +160,12 @@ Here are the available configuration options:
     - messageBalloon: (number) - shadow from the message balloon
   - border: allow you change borders from component
     - size: (string) - border size (specify your unit) of the chat component
+
+### Exposed Events
+- `connectChat`: (() => void) - Connects to the chat while in background and fetchs the initial messages.
+- `openChat`: (() => void) - Opens the chat container.
+- `closeChat`: (() => void) - Closes the chat container.
+
 
 ## Examples
 

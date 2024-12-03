@@ -30,12 +30,7 @@ const props = defineProps<{
     width?: string;
     height?: string;
   };
-  fetchMsgsOnScroll?: boolean; // Fetch messages on scroll
-  fetchMaxAttempts?: number; // Attempts to fetch before giving up
-  fetchTotalLimit?: number; // Limit of messages per room
-  fetchLimit?: number; // Limit of messages per fetch
   debugMode?: boolean;
-  messageAgeToDownload?: number;
 }>();
 
 const pluginHead = ref<HTMLHeadElement | null>(null);
@@ -99,11 +94,6 @@ onMounted(() => {
         :chatPos="props.chatPos"
         :animationDirection="props.animationDirection"
         :chatSize="props.chatSize"
-        :fetchMsgsOnScroll="props.fetchMsgsOnScroll"
-        :fetchMaxAttempts="props.fetchMaxAttempts"
-        :fetchTotalLimit="props.fetchTotalLimit"
-        :fetchLimit="props.fetchLimit"
-        :messageAgeToDownload="props.messageAgeToDownload"
       />
     </body>
   </shadow-root>

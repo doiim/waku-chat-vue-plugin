@@ -22,12 +22,7 @@ import {
   getOptions,
   onDestroyWaku,
   disconnectChat,
-  setFetchMsgsOnScroll,
-  setFetchMaxAttempts,
-  setFetchLimit,
-  setFetchTotalLimit,
   setDebugMode,
-  setMessageAgeToDownload,
 } from "../components/WakuLogic";
 import { defaultCss, applyDefaultStyle } from "../utils/defaultStyle";
 import ChatContainer from "./ChatContainer.vue";
@@ -59,11 +54,6 @@ const props = defineProps<{
     width?: string;
     height?: string;
   };
-  fetchMsgsOnScroll?: boolean;
-  fetchMaxAttempts?: number;
-  fetchLimit?: number;
-  fetchTotalLimit?: number;
-  messageAgeToDownload?: number;
   debugMode?: boolean;
 }>();
 
@@ -80,30 +70,8 @@ var styleConfig = ref<WakuChatConfigCss>();
 const idleTimeout = ref<NodeJS.Timeout>();
 const isConnecting = ref(false);
 
-const propFetchMsgsOnScroll = computed(() => props.fetchMsgsOnScroll);
-const propFetchLimit = computed(() => props.fetchLimit);
 const propDebugMode = computed(() => props.debugMode);
-const propMaxAttempts = computed(() => props.fetchMaxAttempts);
-const propFetchTotalLimit = computed(() => props.fetchTotalLimit || 0);
-const propMessageAgeToDownload = computed(() => props.messageAgeToDownload);
 
-watch([propMaxAttempts], () => {
-  if (propMaxAttempts.value) {
-    setFetchMaxAttempts(propMaxAttempts.value);
-  }
-});
-
-watch([propFetchLimit], () => {
-  if (propFetchLimit.value) {
-    setFetchLimit(propFetchLimit.value);
-  }
-});
-
-watch([propFetchTotalLimit], () => {
-  if (propFetchTotalLimit.value !== undefined) {
-    setFetchTotalLimit(propFetchTotalLimit.value);
-  }
-});
 
 watch([propDebugMode], () => {
   if (propDebugMode.value !== undefined) {
@@ -111,17 +79,6 @@ watch([propDebugMode], () => {
   }
 });
 
-watch([propFetchMsgsOnScroll], () => {
-  if (propFetchMsgsOnScroll.value !== undefined) {
-    setFetchMsgsOnScroll(propFetchMsgsOnScroll.value);
-  }
-});
-
-watch([propMessageAgeToDownload], () => {
-  if (propMessageAgeToDownload.value !== undefined) {
-    setMessageAgeToDownload(propMessageAgeToDownload.value);
-  }
-});
 
 const balloonPosition = computed(() => {
   var pos = props.balloonPos;
@@ -568,7 +525,6 @@ defineExpose({openChat, closeChat, connectChat});
             :open="isChatOpen"
             :theme="theme"
             :height="`calc(${chatSize.height} - 19px)`"
-            :fetchMsgsOnScroll="props.fetchMsgsOnScroll"
             :isConnecting="isConnecting"
             :isLoadingRoom="isLoadingRoom"
           />

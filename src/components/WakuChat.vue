@@ -772,7 +772,7 @@ defineExpose({openChat, closeChat, connectChat});
   border-radius: 8px;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.3s linear;
   box-shadow: 0px 10px 25px -5px rgba(0, 0, 0, v-bind("styleConfig?.shadows.openedComponent"));
 }
 
@@ -1040,11 +1040,11 @@ defineExpose({openChat, closeChat, connectChat});
 }
 
 .slideUp-enter-active {
-  animation: translate-up 0.5s reverse;
+  animation: translate-up 0.3s ease reverse;
 }
 
 .slideUp-leave-active {
-  animation: translate-up 0.5s;
+  animation: translate-up 0.3s ease;
 }
 
 @keyframes translate-up {
@@ -1058,11 +1058,11 @@ defineExpose({openChat, closeChat, connectChat});
 }
 
 .slideDown-enter-active {
-  animation: translate-down 0.5s reverse;
+  animation: translate-down 0.3s ease reverse;
 }
 
 .slideDown-leave-active {
-  animation: translate-down 0.5s;
+  animation: translate-down 0.3s ease;
 }
 
 @keyframes translate-down {
@@ -1076,11 +1076,11 @@ defineExpose({openChat, closeChat, connectChat});
 }
 
 .slideLeft-enter-active {
-  animation: translate-left 0.5s reverse;
+  animation: translate-left 0.3s ease reverse;
 }
 
 .slideLeft-leave-active {
-  animation: translate-left 0.5s;
+  animation: translate-left 0.3s ease;
 }
 
 @keyframes translate-left {
@@ -1094,11 +1094,11 @@ defineExpose({openChat, closeChat, connectChat});
 }
 
 .slideRight-enter-active {
-  animation: translate-right 0.5s reverse;
+  animation: translate-right 0.3s ease reverse;
 }
 
 .slideRight-leave-active {
-  animation: translate-right 0.5s;
+  animation: translate-right 0.3s ease;
 }
 
 @keyframes translate-right {

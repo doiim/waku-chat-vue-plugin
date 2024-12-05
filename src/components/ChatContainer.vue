@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed,  watch, onBeforeUnmount, nextTick } from "vue";
+import { ref, computed,  watch, onBeforeUnmount } from "vue";
 import {
   sendMessage,
   getMessageList,
@@ -38,7 +38,6 @@ const props = defineProps<{
   open: boolean;
   height: string;
   isConnecting?: boolean;
-  fetchMsgsOnScroll?: boolean;
   isLoadingRoom: boolean;
 }>();
 
@@ -52,6 +51,10 @@ const isDark = computed(() => {
 
 const height = computed(() => {
   return props.height;
+});
+
+const fetchMsgsOnScroll = computed(() => {
+  return getOptions()?.fetchMsgsOnScroll
 });
 
 const messageInput = ref<string>("");
@@ -274,14 +277,14 @@ watch([() => props.isLoadingRoom], (newRoom) => {
   if (newRoom) {
       killObserver();
     }
-})
+});
 
 // start observation if there's a target in chatcontainer
 watch([observerTarget], (newTarget) => {
   if(!props.isConnecting && !!newTarget){
     initializeObserver();
   }
-})
+});
 
 // kill observation if chat has closed
 onBeforeUnmount(() => {
@@ -580,7 +583,7 @@ onBeforeUnmount(() => {
             <div class="spinner"></div>
             Searching for older messages...
           </div>
-          <div v-else-if="hasReachedMessageLimit() || !props.fetchMsgsOnScroll" class="loading-indicator">
+          <div v-else-if="hasReachedMessageLimit() || !fetchMsgsOnScroll" class="loading-indicator">
             End of available history
           </div>
           <div v-else-if="getLowResponseCount() < getFetchMaxAttempts()" class="loading-indicator">

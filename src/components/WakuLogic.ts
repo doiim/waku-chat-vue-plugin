@@ -293,9 +293,13 @@ export const getOptions = () => {
 };
 
 const loadOptions = () => {
+  // load default options
   wakuData.ChatOptions = inject("ChatOptions") as any;
   if (wakuData.ChatOptions && !wakuData.ChatOptions.availableRooms.length) {
     wakuData.ChatOptions.availableRooms = ["General"];
+  }
+  if (wakuData.ChatOptions && wakuData.ChatOptions.fetchMsgsOnScroll == undefined) {
+    wakuData.ChatOptions.fetchMsgsOnScroll = true;
   }
 };
 
@@ -459,43 +463,8 @@ export const loadMoreMessages = async () => {
 export const getLoadingState = () => chatState.value.isFetching;
 export const getLowResponseCount = () => chatState.value.lowResponseCount;
 
-export const setFetchLimit = (limit: number) => {
-  const options = getOptions();
-  if (options) {
-    options.fetchLimit = limit;
-  }
-};
-
 export const setDebugMode = (enabled: boolean) => {
   debug.setDebugEnabled(enabled);
-};
-
-export const setFetchMaxAttempts = (attempts: number) => {
-  const options = getOptions();
-  if (options) {
-    options.fetchMaxAttempts = attempts;
-  }
-};
-
-export const setFetchTotalLimit = (max: number) => {
-  const options = getOptions();
-  if (options) {
-    options.fetchTotalLimit = max;
-  }
-};
-
-export const setFetchMsgsOnScroll = (enabled: boolean) => {
-  const options = getOptions();
-  if (options) {
-    options.fetchMsgsOnScroll = enabled;
-  }
-};
-
-export const setMessageAgeToDownload = (age: number) => {
-  const options = getOptions();
-  if (options) {
-    options.messageAgeToDownload = age;
-  }
 };
 
 export const hasReachedMessageLimit = () => {

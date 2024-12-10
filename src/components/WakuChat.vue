@@ -22,12 +22,7 @@ import {
   getOptions,
   onDestroyWaku,
   disconnectChat,
-  setFetchMsgsOnScroll,
-  setFetchMaxAttempts,
-  setFetchLimit,
-  setFetchTotalLimit,
   setDebugMode,
-  setMessageAgeToDownload,
 } from "../components/WakuLogic";
 import { defaultCss, applyDefaultStyle } from "../utils/defaultStyle";
 import ChatContainer from "./ChatContainer.vue";
@@ -59,11 +54,6 @@ const props = defineProps<{
     width?: string;
     height?: string;
   };
-  fetchMsgsOnScroll?: boolean;
-  fetchMaxAttempts?: number;
-  fetchLimit?: number;
-  fetchTotalLimit?: number;
-  messageAgeToDownload?: number;
   debugMode?: boolean;
 }>();
 
@@ -80,30 +70,8 @@ var styleConfig = ref<WakuChatConfigCss>();
 const idleTimeout = ref<NodeJS.Timeout>();
 const isConnecting = ref(false);
 
-const propFetchMsgsOnScroll = computed(() => props.fetchMsgsOnScroll);
-const propFetchLimit = computed(() => props.fetchLimit);
 const propDebugMode = computed(() => props.debugMode);
-const propMaxAttempts = computed(() => props.fetchMaxAttempts);
-const propFetchTotalLimit = computed(() => props.fetchTotalLimit || 0);
-const propMessageAgeToDownload = computed(() => props.messageAgeToDownload);
 
-watch([propMaxAttempts], () => {
-  if (propMaxAttempts.value) {
-    setFetchMaxAttempts(propMaxAttempts.value);
-  }
-});
-
-watch([propFetchLimit], () => {
-  if (propFetchLimit.value) {
-    setFetchLimit(propFetchLimit.value);
-  }
-});
-
-watch([propFetchTotalLimit], () => {
-  if (propFetchTotalLimit.value !== undefined) {
-    setFetchTotalLimit(propFetchTotalLimit.value);
-  }
-});
 
 watch([propDebugMode], () => {
   if (propDebugMode.value !== undefined) {
@@ -111,17 +79,6 @@ watch([propDebugMode], () => {
   }
 });
 
-watch([propFetchMsgsOnScroll], () => {
-  if (propFetchMsgsOnScroll.value !== undefined) {
-    setFetchMsgsOnScroll(propFetchMsgsOnScroll.value);
-  }
-});
-
-watch([propMessageAgeToDownload], () => {
-  if (propMessageAgeToDownload.value !== undefined) {
-    setMessageAgeToDownload(propMessageAgeToDownload.value);
-  }
-});
 
 const balloonPosition = computed(() => {
   var pos = props.balloonPos;
@@ -568,7 +525,6 @@ defineExpose({openChat, closeChat, connectChat});
             :open="isChatOpen"
             :theme="theme"
             :height="`calc(${chatSize.height} - 19px)`"
-            :fetchMsgsOnScroll="props.fetchMsgsOnScroll"
             :isConnecting="isConnecting"
             :isLoadingRoom="isLoadingRoom"
           />
@@ -816,7 +772,7 @@ defineExpose({openChat, closeChat, connectChat});
   border-radius: 8px;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.3s linear;
   box-shadow: 0px 10px 25px -5px rgba(0, 0, 0, v-bind("styleConfig?.shadows.openedComponent"));
 }
 
@@ -1084,11 +1040,11 @@ defineExpose({openChat, closeChat, connectChat});
 }
 
 .slideUp-enter-active {
-  animation: translate-up 0.5s reverse;
+  animation: translate-up 0.3s ease reverse;
 }
 
 .slideUp-leave-active {
-  animation: translate-up 0.5s;
+  animation: translate-up 0.3s ease;
 }
 
 @keyframes translate-up {
@@ -1102,11 +1058,11 @@ defineExpose({openChat, closeChat, connectChat});
 }
 
 .slideDown-enter-active {
-  animation: translate-down 0.5s reverse;
+  animation: translate-down 0.3s ease reverse;
 }
 
 .slideDown-leave-active {
-  animation: translate-down 0.5s;
+  animation: translate-down 0.3s ease;
 }
 
 @keyframes translate-down {
@@ -1120,11 +1076,11 @@ defineExpose({openChat, closeChat, connectChat});
 }
 
 .slideLeft-enter-active {
-  animation: translate-left 0.5s reverse;
+  animation: translate-left 0.3s ease reverse;
 }
 
 .slideLeft-leave-active {
-  animation: translate-left 0.5s;
+  animation: translate-left 0.3s ease;
 }
 
 @keyframes translate-left {
@@ -1138,11 +1094,11 @@ defineExpose({openChat, closeChat, connectChat});
 }
 
 .slideRight-enter-active {
-  animation: translate-right 0.5s reverse;
+  animation: translate-right 0.3s ease reverse;
 }
 
 .slideRight-leave-active {
-  animation: translate-right 0.5s;
+  animation: translate-right 0.3s ease;
 }
 
 @keyframes translate-right {
